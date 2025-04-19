@@ -1,30 +1,27 @@
 package projetalgo;
 
-import javafx.util.Pair;
-
 public class Node {
 
-    private final Pair<Double, Double> coords;
-    private final String name;
-    private final int id;
+    private Coord coord;
+    private String name;
+    private int id;
 
-
-    public Node(int ID, String Name, Pair<Double, Double> Coords) {
-        coords = Coords; 
-        name = Name; 
-        id = ID; 
-    }
-
-    public Pair<Double, Double> getCoords() {
-        return coords;
-    }
-    
-    public String getName() {
-        return name;
+    public Node(int id, String name, Coord coord) {
+        this.coord = coord ;
+        this.name = name;
+        this.id = id;
     }
 
     public int getId() {
-        return id;
+        return this.id;
+    }
+
+    public String getName() {
+        return this.name;
+    }
+
+    public Coord getCoord() {
+        return this.coord;
     }
 
 }

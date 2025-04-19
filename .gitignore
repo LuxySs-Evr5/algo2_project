@@ -8,3 +8,6 @@ build
 
 # Ignore vscode settings
 .vscode
+
+# Ignore jetbrains idea settings
+.idea
