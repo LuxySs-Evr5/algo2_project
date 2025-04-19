@@ -15,14 +15,23 @@ repositories {
     mavenCentral()
 }
 
+val osName = System.getProperty("os.name")
+val platform = when {
+    osName.startsWith("Windows") -> "win"
+    osName.startsWith("Mac") -> "mac"
+    else -> "linux"
+}
+
 dependencies {
+    implementation("org.openjfx:javafx-base:21.0.1:$platform")
+    implementation("org.openjfx:javafx-controls:21.0.1:$platform")
+    implementation("org.openjfx:javafx-graphics:21.0.1:$platform")
+    implementation(libs.guava)
+
     // Use JUnit Jupiter for testing.
     testImplementation(libs.junit.jupiter)
 
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-
-    // This dependency is used by the application.
-    implementation(libs.guava)
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

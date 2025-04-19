@@ -4,7 +4,12 @@
 [versions]
 guava = "33.3.1-jre"
 junit-jupiter = "5.11.3"
+javafx = "21.0.1"
 
 [libraries]
 guava = { module = "com.google.guava:guava", version.ref = "guava" }
 junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
+
+javafx-base = { module = "org.openjfx:javafx-base", version.ref = "javafx" }
+javafx-controls = { module = "org.openjfx:javafx-controls", version.ref = "javafx" }
+javafx-graphics = { module = "org.openjfx:javafx-graphics", version.ref = "javafx" }
