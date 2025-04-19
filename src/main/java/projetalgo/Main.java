@@ -1,4 +1,4 @@
-package org.example;
+package projetalgo;
 
 import javafx.util.Pair;
 
