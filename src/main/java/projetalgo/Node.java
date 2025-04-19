@@ -18,9 +18,11 @@ public class Node {
     public Pair<Double, Double> getCoords() {
         return coords;
     }
+    
     public String getName() {
         return name;
     }
+
     public int getId() {
         return id;
     }
