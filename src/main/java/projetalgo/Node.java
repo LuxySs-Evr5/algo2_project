@@ -4,15 +4,15 @@ import javafx.util.Pair;
 
 public class Node {
 
-    private Pair<Double, Double> coords;
-    private String name;
-    private int id;
+    private final Pair<Double, Double> coords;
+    private final String name;
+    private final int id;
 
 
-    public Node(int id, String name, Pair<Double, Double> coords) {
-        coords = coords; 
-        name = name; 
-        id = id; 
+    public Node(int ID, String Name, Pair<Double, Double> Coords) {
+        coords = Coords; 
+        name = Name; 
+        id = ID; 
     }
 
 }
