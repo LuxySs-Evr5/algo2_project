@@ -15,4 +15,14 @@ public class Node {
         id = ID; 
     }
 
+    public Pair<Double, Double> getCoords() {
+        return coords;
+    }
+    public String getName() {
+        return name;
+    }
+    public int getId() {
+        return id;
+    }
+
 }
