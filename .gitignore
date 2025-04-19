@@ -5,3 +5,6 @@ GTFS
 
 # Ignore Gradle build output directory
 build
+
+# Ignore vscode settings
+.vscode
