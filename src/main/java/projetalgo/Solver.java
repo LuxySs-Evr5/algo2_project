@@ -125,48 +125,27 @@ public class Solver {
     }
 
     public void loadData(String routesCSV, String stopTimesCSV, String stopsCSV, String tripsCSV) throws IOException {
-        List<List<String>> stopTimes = csvToMatrix(stopTimesCSV);
 
-        for (int i = 1; i < stopTimes.size() - 1; i++) {
-            List<String> row0 = stopTimes.get(i);
-            List<String> row1 = stopTimes.get(i + 1);
-
-            Stop[] stops = {
-                    // WARN: very bad, creating stops twice (see below when parsing stops.csv)
-                    new Stop(row0.get(2)),
-                    new Stop(row1.get(2))
-            };
-
-            Connection connection = new Connection(i, stops[0], stops[1],
-                    TimeConversion.toSeconds(row0.get(1)),
-                    TimeConversion.toSeconds(row1.get(1)));
-
-            connections.add(connection);
-        }
-
-        // TODO: will have to move this elsewhere
-        connections.sort(Comparator.comparingInt(Connection::getTDep));
-
-        // ------------------- Stops.csv -------------------
+        // ------------------- stops.csv -------------------
 
         List<List<String>> parsedStopsCSV = csvToMatrix(stopsCSV);
-        List<Stop> stops = new ArrayList<>();
+        HashMap<String, Stop> stopIdToStop = new HashMap<>();
 
         for (List<String> stopRow : parsedStopsCSV) {
             String stopId = stopRow.get(0);
-            stops.add(new Stop(stopId));
+            stopIdToStop.put(stopId, new Stop(stopId));
         }
 
         // TODO: change this
         int FOOTPATH_DURATION = 3;
 
-        int pathCount = 0;
+        List<Stop> stops = new ArrayList<>(stopIdToStop.values());
 
         // generate all paths
         for (int i = 0; i < stops.size(); i++) {
             for (int j = i + 1; j < stops.size(); j++) {
-
-                Footpath footpath = new Footpath(i + j - 1, stops.get(i), stops.get(j), FOOTPATH_DURATION);
+                Footpath footpath = new Footpath(i + j - 1, stops.get(i), stops.get(j),
+                        FOOTPATH_DURATION);
 
                 stopIdToFootpaths
                         .computeIfAbsent(stops.get(i).getId(), k -> new ArrayList<>())
@@ -175,15 +154,28 @@ public class Solver {
                 stopIdToFootpaths
                         .computeIfAbsent(stops.get(j).getId(), k -> new ArrayList<>())
                         .add(footpath);
-
-                pathCount++;
             }
         }
 
-        int stopCount = stops.size();
+        // ----------------- stop_times.csv -----------------
 
-        System.out.printf("pathCount: %d, stopCount: %d\n", pathCount, stopCount);
+        List<List<String>> stopTimes = csvToMatrix(stopTimesCSV);
 
+        for (int i = 1; i < stopTimes.size() - 1; i++) {
+            List<String> row0 = stopTimes.get(i);
+            List<String> row1 = stopTimes.get(i + 1);
+
+            Connection connection = new Connection(i,
+                    stopIdToStop.get(row0.get(2)),
+                    stopIdToStop.get(row1.get(2)),
+                    TimeConversion.toSeconds(row0.get(1)),
+                    TimeConversion.toSeconds(row1.get(1)));
+
+            connections.add(connection);
+        }
+
+        // TODO: will have to move this elsewhere
+        connections.sort(Comparator.comparingInt(Connection::getTDep));
     }
 
 }
