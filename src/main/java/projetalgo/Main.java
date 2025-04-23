@@ -3,9 +3,9 @@ package projetalgo;
 public class Main {
 
     public static void main(String[] args) {
-        Solution solution = new Solution();
-        solution.setup();
-        solution.solve();
+        Solver solver = new Solver();
+        solver.setup();
+        solver.solve();
     }
 
 }

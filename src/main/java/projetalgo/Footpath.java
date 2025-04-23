@@ -17,14 +17,13 @@ public class Footpath {
         this.stops[1] = stop1;
     }
 
-    public int get_dur() {
+    public int getDur() {
         return dur;
     }
 
-    public Stop[] get_stops() {
+    public Stop[] getStops() {
         return stops;
     }
-
 
     public boolean contains(Stop stop) {
         return stop.equals(stops[0]) || stop.equals(stops[1]);
@@ -33,7 +32,6 @@ public class Footpath {
     public Stop getOtherStop(Stop stop) {
         return stop.equals(stops[0]) ? stops[1] : stops[0];
     }
-
 
     @Override
     public String toString() {
