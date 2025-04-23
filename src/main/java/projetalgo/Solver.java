@@ -70,7 +70,7 @@ public class Solver {
         List<Footpath> footpathsFromPDep = stopIdToFootpaths.get(pDepId);
         if (footpathsFromPDep != null) {
             for (Footpath f : stopIdToFootpaths.get(pDepId)) {
-                bestKnown.put(f.getOtherStop(pDepId).getId(), f.getTravelTime());
+                bestKnown.put(f.getOtherStop(pDepId).getId(), tDep + f.getTravelTime());
             }
         }
 
@@ -84,11 +84,11 @@ public class Solver {
             if (cIsReachable && cIsFaster) {
                 bestKnown.put(c.getPArr().getId(), c.getTArr());
 
-                List<Footpath> footpathsFromPArr = stopIdToFootpaths.get(c.getPArr().getId());
-                if (footpathsFromPArr != null) {
+                List<Footpath> footpathsFromCPArr = stopIdToFootpaths.get(c.getPArr().getId());
+                if (footpathsFromCPArr != null) {
                     Stop footpathPDep = c.getPArr();
 
-                    for (Footpath f : footpathsFromPArr) {
+                    for (Footpath f : footpathsFromCPArr) {
                         Stop footpathPArr = f.getOtherStop(footpathPDep.getId());
 
                         int footpathTArr = bestKnown.get(footpathPDep.getId()) + f.getTravelTime();

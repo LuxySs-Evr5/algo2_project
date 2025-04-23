@@ -31,7 +31,7 @@ public class Main {
 
             String pDepId = "SNCB-8896008";
             String pArrId = "SNCB-8896388";
-            String strTDep = "00:00:00";
+            String strTDep = "06:03:30";
 
             int tDep = TimeConversion.toSeconds(strTDep);
             System.out.printf("tDep: %s = %d\n", strTDep, tDep);
