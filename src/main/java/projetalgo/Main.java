@@ -9,9 +9,16 @@ public class Main {
         try {
             solver.loadData("./GTFS/SNCB/routes.csv", "./GTFS/SNCB/stop_times.csv", "./GTFS/SNCB/stops.csv", "./GTFS/SNCB/trips.csv");
 
+            // Test data
+            // String pDepId = "A";
+            // String pArrId = "E";
+            // String strTDep = "00:00:00";
+
             String pDepId = "SNCB-8896008";
             String pArrId = "SNCB-8896388";
             String strTDep = "06:04:00";
+
+
             int tDep = TimeConversion.toSeconds(strTDep);
             System.out.printf("tDep: %s = %d\n", strTDep, tDep);
 

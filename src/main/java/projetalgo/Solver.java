@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class Solver {
 
-    private HashMap<Stop, List<Footpath>> stopsToFootpaths;
+    private HashMap<Stop, List<Footpath>> stopToFootpaths;
     private List<Connection> connections;
     private List<Footpath> footpaths; // TODO: is that useful ? probably won't be.
 
@@ -22,7 +22,7 @@ public class Solver {
     public Solver() {
         this.connections = new ArrayList<>();
         this.footpaths = new ArrayList<>();
-        this.stopsToFootpaths = new HashMap<>();
+        this.stopToFootpaths = new HashMap<>();
     }
 
     /**
@@ -85,7 +85,7 @@ public class Solver {
             if (cIsReachable && cIsFaster) {
                 bestKnown.put(c.getPArr().getId(), c.getTArr());
 
-                List<Footpath> footpaths = stopsToFootpaths.get(c.getPArr());
+                List<Footpath> footpaths = stopToFootpaths.get(c.getPArr());
                 if (footpaths != null) {
                     Stop footpathPDep = c.getPArr();
 
@@ -134,10 +134,10 @@ public class Solver {
 
         connections.sort(Comparator.comparingInt(Connection::getTDep));
 
-        stopsToFootpaths = new HashMap<>();
+        stopToFootpaths = new HashMap<>();
         for (Footpath p : footpaths) {
             for (Stop stop : p.getStops())
-                stopsToFootpaths
+                stopToFootpaths
                         .computeIfAbsent(stop, k -> new ArrayList<>())
                         .add(p);
         }
@@ -168,8 +168,8 @@ public class Solver {
             connections.add(connection);
         }
 
+        // TODO: will have to move this elsewhere
         connections.sort(Comparator.comparingInt(Connection::getTDep));
-
     }
 
 }

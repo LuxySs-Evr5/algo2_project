@@ -32,7 +32,7 @@ public class Connection {
     }
 
     public String toString() {
-        return String.format("id: %d, (%s <-> %s), (%d -> %d)", id, pDep, pArr, tDep, tArr);
+        return String.format("id: %d, (%s -> %s), (%d -> %d)", id, pDep, pArr, tDep, tArr);
     }
 
 }
