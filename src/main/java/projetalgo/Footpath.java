@@ -25,12 +25,18 @@ public class Footpath {
         return stops;
     }
 
-    public boolean contains(Stop stop) {
-        return stop.equals(stops[0]) || stop.equals(stops[1]);
+    public boolean contains(String stopId) {
+        return stopId.equals(stops[0].getId()) || stopId.equals(stops[1].getId());
     }
 
-    public Stop getOtherStop(Stop stop) {
-        return stop.equals(stops[0]) ? stops[1] : stops[0];
+    public Stop getOtherStop(String stopId) {
+        if (stopId.equals(stops[0].getId())) {
+            return stops[1];
+        } else if (stopId.equals(stops[1].getId())) {
+            return stops[0];
+        } else {
+            throw new IllegalArgumentException("Stop ID not part of this footpath.");
+        }
     }
 
     @Override

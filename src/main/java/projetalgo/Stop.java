@@ -3,19 +3,14 @@ package projetalgo;
 import java.util.Objects;
 
 public class Stop {
-    private int id;
+    private String id;
 
-    public Stop(int id) {
+    public Stop(String id) {
         this.id = id;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(id);
     }
 
     @Override

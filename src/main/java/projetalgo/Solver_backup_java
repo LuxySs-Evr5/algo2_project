@@ -8,28 +8,29 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
+import java.util.List;
 
 public class Solver {
 
     private HashMap<Stop, List<Footpath>> stopsToFootpaths;
     private List<Connection> connections;
     private List<Footpath> footpaths; // TODO: is that useful ? probably won't be.
+    private int numStops;
+    private Stop pDep;
+    private Stop pArr;
+    private int tDep;
 
     public static final String COMMA_DELIMITER = ",";
 
     public Solver() {
-        this.connections = new ArrayList<>();
-        this.footpaths = new ArrayList<>();
-        this.stopsToFootpaths = new HashMap<>();
     }
 
     /**
      * Returns the index of the first connection departing at or after our departure
      * time.
      */
-    int getEarliestReachableConnectionIdx(int tDep) {
+    int getEarliestReachableConnectionIdx() {
 
         int i = 0;
         int j = connections.size();
@@ -49,76 +50,66 @@ public class Solver {
     /**
      * Returns the list of connections departing at or after our depature time.
      */
-    List<Connection> getFilteredConnections(int tDep) {
+    List<Connection> getFilteredConnections() {
         return connections.subList(
-                getEarliestReachableConnectionIdx(tDep),
+                getEarliestReachableConnectionIdx(),
                 connections.size());
     }
 
     /**
      * Connections must be sorted by their departure time.
      */
-    public void solve(String pDepId, String pArrId, int tDep) {
-        List<Connection> filteredConnections = getFilteredConnections(tDep);
+    public void solve() {
+        List<Connection> filteredConnections = getFilteredConnections();
 
-        // Not in hashmap means infinity
-        Map<String, Integer> bestKnown = new HashMap<>();
+        int[] bestKnown = new int[numStops];
+        Arrays.fill(bestKnown, Integer.MAX_VALUE);
 
-        // The time to get to pDep is tDep because we are already there
-        bestKnown.put(pDepId, tDep);
+        bestKnown[pDep.getId()] = 0;
 
-        // Footpaths initial setup
-        // I don't think this is an effective way to do it
         for (Footpath f : footpaths) {
-            boolean canStartWith = f.contains(pDepId);
+            boolean canStartWith = f.contains(pDep);
             if (canStartWith)
-                bestKnown.put(f.getOtherStop(pDepId).getId(), f.getDur());
+                bestKnown[f.getOtherStop(pDep).getId()] = f.getDur();
         }
 
         for (Connection c : filteredConnections) {
-            // τ (pdep(c)) ≤ τdep(c).
-            boolean cIsReachable = bestKnown.getOrDefault(c.getPDep().getId(), Integer.MAX_VALUE) <= c.getTDep();
-
-            // τarr(c) < τ (parr(c))
-            boolean cIsFaster = c.getTArr() < bestKnown.getOrDefault(c.getPArr().getId(), Integer.MAX_VALUE);
+            boolean cIsReachable = bestKnown[c.getPDep().getId()] <= c.getTDep(); // τ (pdep(c)) ≤ τdep(c).
+            boolean cIsFaster = c.getTArr() < bestKnown[c.getPArr().getId()]; // τarr(c) < τ (parr(c))
 
             if (cIsReachable && cIsFaster) {
-                bestKnown.put(c.getPArr().getId(), c.getTArr());
+                bestKnown[c.getPArr().getId()] = c.getTArr();
 
                 List<Footpath> footpaths = stopsToFootpaths.get(c.getPArr());
                 if (footpaths != null) {
                     Stop footpathPDep = c.getPArr();
 
                     for (Footpath f : footpaths) {
-                        Stop footpathPArr = f.getOtherStop(footpathPDep.getId());
+                        Stop footpathPArr = f.getOtherStop(footpathPDep);
 
-                        int footpathTArr = bestKnown.get(footpathPDep.getId()) + f.getDur();
-                        boolean fpIsFaster = footpathTArr < bestKnown.get(footpathPArr.getId());
+                        int footpathTArr = bestKnown[footpathPDep.getId()] + f.getDur();
+                        boolean fpIsFaster = footpathTArr < bestKnown[footpathPArr.getId()];
                         if (fpIsFaster)
-                            bestKnown.put(footpathPArr.getId(), footpathTArr);
+                            bestKnown[footpathPArr.getId()] = footpathTArr;
+
+                        System.out.printf("fp: %s, faster: %b%n", f, fpIsFaster);
                     }
                 }
             }
 
+            System.out.printf("c: %s, reachable: %b, faster: %b%n", c.toString(), cIsReachable, cIsFaster);
         }
 
-        System.out.printf("bestKnown at the end: %s\n\n", bestKnown);
-
-        Integer totalSec = bestKnown.get(pArrId);
-        if (totalSec == null) {
-            System.out.println("unreachable target");
-        } else {
-            System.out.printf("sec = %d (%s)\n", totalSec, TimeConversion.fromSeconds(totalSec));
-        }
+        System.out.println(Arrays.toString(bestKnown));
     }
 
     public void setup() {
         List<Stop> stops = Arrays.asList(
-                new Stop("0"),
-                new Stop("1"),
-                new Stop("2"),
-                new Stop("3"),
-                new Stop("4"));
+                new Stop(0),
+                new Stop(1),
+                new Stop(2),
+                new Stop(3),
+                new Stop(4));
 
         connections = new ArrayList<>(Arrays.asList(
                 new Connection(0, stops.get(0), stops.get(1), 0, 1),
@@ -141,9 +132,16 @@ public class Solver {
                         .computeIfAbsent(stop, k -> new ArrayList<>())
                         .add(p);
         }
+
+        numStops = stops.size();
+        pDep = stops.get(0);
+        pArr = stops.get(4);
+        tDep = 0;
     }
 
     public void loadData(String routesCSV, String stopTimesCSV, String stopsCSV, String tripsCSV) throws IOException {
+        public Map<String, int> stopsLongIdToShortIdMap = new HashMap<>();
+
         List<List<String>> stopTimes = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(stopTimesCSV))) {
             String line;
@@ -153,22 +151,25 @@ public class Solver {
             }
         }
 
-        for (int i = 1; i < stopTimes.size() - 1; i++) {
+        for (int i = 1; i < stopTimesCSV.length() - 1; i++) {
             List<String> row0 = stopTimes.get(i);
             List<String> row1 = stopTimes.get(i + 1);
 
+            // TODO: row0.get(2) is a String but we want sth that allows us to index in an
+            // array
+            Integer.parseInt(row0.get(2));
+
             Stop[] stops = new Stop[2];
-            stops[0] = new Stop(row0.get(2));
-            stops[1] = new Stop(row1.get(2));
+
+            stops[0] = new Stop(Integer.parseInt(row0.get(2)));
+            stops[1] = new Stop(Integer.parseInt(row1.get(2)));
 
             Connection connection = new Connection(i, stops[0], stops[1],
-                    TimeConversion.toSeconds(row0.get(1)),
-                    TimeConversion.toSeconds(row1.get(1)));
+                    TimeToSeconds.toSeconds(row0.get(1)),
+                    TimeToSeconds.toSeconds(row1.get(1)));
 
-            connections.add(connection);
+            // System.out.println(row);
         }
-
-        connections.sort(Comparator.comparingInt(Connection::getTDep));
 
     }
 
