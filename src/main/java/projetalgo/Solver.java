@@ -70,7 +70,7 @@ public class Solver {
         List<Footpath> footpathsFromPDep = stopIdToFootpaths.get(pDepId);
         if (footpathsFromPDep != null) {
             for (Footpath f : stopIdToFootpaths.get(pDepId)) {
-                bestKnown.put(f.getOtherStop(pDepId).getId(), f.getDur());
+                bestKnown.put(f.getOtherStop(pDepId).getId(), f.getTravelTime());
             }
         }
 
@@ -91,7 +91,7 @@ public class Solver {
                     for (Footpath f : footpathsFromPArr) {
                         Stop footpathPArr = f.getOtherStop(footpathPDep.getId());
 
-                        int footpathTArr = bestKnown.get(footpathPDep.getId()) + f.getDur();
+                        int footpathTArr = bestKnown.get(footpathPDep.getId()) + f.getTravelTime();
                         boolean fpIsFaster = footpathTArr < bestKnown.get(footpathPArr.getId());
                         if (fpIsFaster)
                             bestKnown.put(footpathPArr.getId(), footpathTArr);
@@ -131,21 +131,22 @@ public class Solver {
         List<List<String>> parsedStopsCSV = csvToMatrix(stopsCSV);
         HashMap<String, Stop> stopIdToStop = new HashMap<>();
 
-        for (List<String> stopRow : parsedStopsCSV) {
+        for (int i = 1; i < parsedStopsCSV.size(); i++) {
+            List<String> stopRow = parsedStopsCSV.get(i);
             String stopId = stopRow.get(0);
-            stopIdToStop.put(stopId, new Stop(stopId));
+            Double lat = Double.parseDouble(stopRow.get(2));
+            Double lon = Double.parseDouble(stopRow.get(3));
+            Coord coord = new Coord(lat, lon);
+            stopIdToStop.put(stopId, new Stop(stopId, coord));
         }
-
-        // TODO: change this
-        int FOOTPATH_DURATION = 3;
 
         List<Stop> stops = new ArrayList<>(stopIdToStop.values());
 
         // generate all paths
         for (int i = 0; i < stops.size(); i++) {
             for (int j = i + 1; j < stops.size(); j++) {
-                Footpath footpath = new Footpath(i + j - 1, stops.get(i), stops.get(j),
-                        FOOTPATH_DURATION);
+                // TODO: Change Footpath ids
+                Footpath footpath = new Footpath(i + j - 1, stops.get(i), stops.get(j));
 
                 stopIdToFootpaths
                         .computeIfAbsent(stops.get(i).getId(), k -> new ArrayList<>())

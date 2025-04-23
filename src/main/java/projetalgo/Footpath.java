@@ -3,11 +3,12 @@ package projetalgo;
 public class Footpath {
     private int id;
     private Stop[] stops;
-    private int dur;
 
-    public Footpath(int id, Stop stop0, Stop stop1, int dur) {
+    public static double WALKING_SPEED = 5; // km/s
+    public static double EARTH_RADIUS = 6371.0; // km
+
+    public Footpath(int id, Stop stop0, Stop stop1) {
         this.id = id;
-        this.dur = dur;
 
         if (stop0.equals(stop1)) {
             throw new IllegalArgumentException("A Footpath must connect two distinct stops.");
@@ -15,8 +16,37 @@ public class Footpath {
         this.stops = new Stop[] { stop0, stop1 };
     }
 
-    public int getDur() {
-        return dur;
+    /**
+     * Uses haversine formula to compute the distance between the two stops that
+     * it links.
+     */
+    public double getDistance() {
+        Coord coord0 = stops[0].getCoord();
+        Coord coord1 = stops[1].getCoord();
+
+        double lat1 = Math.toRadians(coord0.lat());
+        double lon1 = Math.toRadians(coord0.lon());
+        double lat2 = Math.toRadians(coord1.lat());
+        double lon2 = Math.toRadians(coord1.lon());
+
+        double dLat = lat2 - lat1;
+        double dLon = lon2 - lon1;
+
+        double a = Math.pow(Math.sin(dLat / 2), 2)
+                + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dLon / 2), 2);
+
+        double c = 2 * Math.asin(Math.sqrt(a));
+
+        return EARTH_RADIUS * c;
+    }
+
+    /**
+     * Returns the travel time in seconds assuming constant walking speed.
+     */
+    public int getTravelTime() {
+        double distanceInKm = getDistance();
+        double speedInKmPerSecond = WALKING_SPEED / 3600.0; // km/h -> km/s
+        return (int) Math.round(distanceInKm / speedInKmPerSecond);
     }
 
     public Stop[] getStops() {
@@ -39,7 +69,7 @@ public class Footpath {
 
     @Override
     public String toString() {
-        return String.format("id: %d, (%s <-> %s), %d", id, stops[0], stops[1], dur);
+        return String.format("id: %d, (%s <-> %s), %d", id, stops[0], stops[1], getTravelTime());
     }
 
 }
