@@ -12,9 +12,7 @@ public class Footpath {
         if (stop0.equals(stop1)) {
             throw new IllegalArgumentException("A Footpath must connect two distinct stops.");
         }
-        this.stops = new Stop[2];
-        this.stops[0] = stop0;
-        this.stops[1] = stop1;
+        this.stops = new Stop[] { stop0, stop1 };
     }
 
     public int getDur() {

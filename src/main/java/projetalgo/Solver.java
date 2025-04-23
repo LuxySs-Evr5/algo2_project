@@ -5,7 +5,6 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +12,7 @@ import java.util.Map;
 
 public class Solver {
 
-    private HashMap<Stop, List<Footpath>> stopToFootpaths;
+    private HashMap<String, List<Footpath>> stopIdToFootpaths;
     private List<Connection> connections;
     private List<Footpath> footpaths; // TODO: is that useful ? probably won't be.
 
@@ -22,7 +21,7 @@ public class Solver {
     public Solver() {
         this.connections = new ArrayList<>();
         this.footpaths = new ArrayList<>();
-        this.stopToFootpaths = new HashMap<>();
+        this.stopIdToFootpaths = new HashMap<>();
     }
 
     /**
@@ -68,11 +67,11 @@ public class Solver {
         bestKnown.put(pDepId, tDep);
 
         // Footpaths initial setup
-        // I don't think this is an effective way to do it
-        for (Footpath f : footpaths) {
-            boolean canStartWith = f.contains(pDepId);
-            if (canStartWith)
+        List<Footpath> footpathsFromPDep = stopIdToFootpaths.get(pDepId);
+        if (footpathsFromPDep != null) {
+            for (Footpath f : stopIdToFootpaths.get(pDepId)) {
                 bestKnown.put(f.getOtherStop(pDepId).getId(), f.getDur());
+            }
         }
 
         for (Connection c : filteredConnections) {
@@ -85,11 +84,11 @@ public class Solver {
             if (cIsReachable && cIsFaster) {
                 bestKnown.put(c.getPArr().getId(), c.getTArr());
 
-                List<Footpath> footpaths = stopToFootpaths.get(c.getPArr());
-                if (footpaths != null) {
+                List<Footpath> footpathsFromPArr = stopIdToFootpaths.get(c.getPArr().getId());
+                if (footpathsFromPArr != null) {
                     Stop footpathPDep = c.getPArr();
 
-                    for (Footpath f : footpaths) {
+                    for (Footpath f : footpathsFromPArr) {
                         Stop footpathPArr = f.getOtherStop(footpathPDep.getId());
 
                         int footpathTArr = bestKnown.get(footpathPDep.getId()) + f.getDur();
@@ -112,54 +111,31 @@ public class Solver {
         }
     }
 
-    public void setup() {
-        List<Stop> stops = Arrays.asList(
-                new Stop("0"),
-                new Stop("1"),
-                new Stop("2"),
-                new Stop("3"),
-                new Stop("4"));
-
-        connections = new ArrayList<>(Arrays.asList(
-                new Connection(0, stops.get(0), stops.get(1), 0, 1),
-                new Connection(1, stops.get(1), stops.get(3), 1, 2),
-                new Connection(2, stops.get(0), stops.get(2), 1, 3),
-                new Connection(3, stops.get(2), stops.get(3), 3, 4),
-                new Connection(4, stops.get(0), stops.get(4), 0, 0),
-                new Connection(5, stops.get(4), stops.get(2), 0, 2),
-                new Connection(6, stops.get(4), stops.get(1), 0, 1)));
-
-        footpaths = new ArrayList<>(Collections.singletonList(
-                new Footpath(0, stops.get(4), stops.get(3), 1)));
-
-        connections.sort(Comparator.comparingInt(Connection::getTDep));
-
-        stopToFootpaths = new HashMap<>();
-        for (Footpath p : footpaths) {
-            for (Stop stop : p.getStops())
-                stopToFootpaths
-                        .computeIfAbsent(stop, k -> new ArrayList<>())
-                        .add(p);
-        }
-    }
-
-    public void loadData(String routesCSV, String stopTimesCSV, String stopsCSV, String tripsCSV) throws IOException {
-        List<List<String>> stopTimes = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(stopTimesCSV))) {
+    public List<List<String>> csvToMatrix(String csvPath) throws IOException {
+        List<List<String>> mat = new ArrayList<>();
+        try (BufferedReader br = new BufferedReader(new FileReader(csvPath))) {
             String line;
             while ((line = br.readLine()) != null) {
                 String[] values = line.split(",");
-                stopTimes.add(Arrays.asList(values));
+                mat.add(Arrays.asList(values));
             }
         }
+
+        return mat;
+    }
+
+    public void loadData(String routesCSV, String stopTimesCSV, String stopsCSV, String tripsCSV) throws IOException {
+        List<List<String>> stopTimes = csvToMatrix(stopTimesCSV);
 
         for (int i = 1; i < stopTimes.size() - 1; i++) {
             List<String> row0 = stopTimes.get(i);
             List<String> row1 = stopTimes.get(i + 1);
 
-            Stop[] stops = new Stop[2];
-            stops[0] = new Stop(row0.get(2));
-            stops[1] = new Stop(row1.get(2));
+            Stop[] stops = {
+                    // WARN: very bad, creating stops twice (see below when parsing stops.csv)
+                    new Stop(row0.get(2)),
+                    new Stop(row1.get(2))
+            };
 
             Connection connection = new Connection(i, stops[0], stops[1],
                     TimeConversion.toSeconds(row0.get(1)),
@@ -170,6 +146,44 @@ public class Solver {
 
         // TODO: will have to move this elsewhere
         connections.sort(Comparator.comparingInt(Connection::getTDep));
+
+        // ------------------- Stops.csv -------------------
+
+        List<List<String>> parsedStopsCSV = csvToMatrix(stopsCSV);
+        List<Stop> stops = new ArrayList<>();
+
+        for (List<String> stopRow : parsedStopsCSV) {
+            String stopId = stopRow.get(0);
+            stops.add(new Stop(stopId));
+        }
+
+        // TODO: change this
+        int FOOTPATH_DURATION = 3;
+
+        int pathCount = 0;
+
+        // generate all paths
+        for (int i = 0; i < stops.size(); i++) {
+            for (int j = i + 1; j < stops.size(); j++) {
+
+                Footpath footpath = new Footpath(i + j - 1, stops.get(i), stops.get(j), FOOTPATH_DURATION);
+
+                stopIdToFootpaths
+                        .computeIfAbsent(stops.get(i).getId(), k -> new ArrayList<>())
+                        .add(footpath);
+
+                stopIdToFootpaths
+                        .computeIfAbsent(stops.get(j).getId(), k -> new ArrayList<>())
+                        .add(footpath);
+
+                pathCount++;
+            }
+        }
+
+        int stopCount = stops.size();
+
+        System.out.printf("pathCount: %d, stopCount: %d\n", pathCount, stopCount);
+
     }
 
 }
