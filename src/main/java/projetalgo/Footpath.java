@@ -1,7 +1,7 @@
 package projetalgo;
 
 public class Footpath {
-    private int id;
+    private final int id;
     private Stop[] stops;
 
     public static double WALKING_SPEED = 5; // km/s

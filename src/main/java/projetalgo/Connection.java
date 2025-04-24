@@ -1,11 +1,11 @@
 package projetalgo;
 
 public class Connection {
-    private int id;
-    private Stop pDep; // point de départ
-    private Stop pArr; // point d'arrivée
-    private int tDep;// temps de départ
-    private int tArr;// temps d'arrivée
+    private final int id;
+    private final Stop pDep; // point de départ
+    private final Stop pArr; // point d'arrivée
+    private final int tDep;// temps de départ
+    private final int tArr;// temps d'arrivée
 
     public Connection(int id, Stop pDep, Stop pArr, int tDep, int tArr) {
         this.id = id;
@@ -31,7 +31,8 @@ public class Connection {
         return tArr;
     }
 
-    public String toString() {
+    @Override
+    public String toString() { 
         return String.format("id: %d, (%s -> %s), (%d -> %d)", id, pDep, pArr, tDep, tArr);
     }
 

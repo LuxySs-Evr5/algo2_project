@@ -1,10 +1,8 @@
 package projetalgo;
 
-import java.util.Objects;
-
 public class Stop {
-    private String id;
-    private Coord coord;
+    private final String id;
+    private final Coord coord;
 
     public Stop(String id, Coord coord) {
         this.id = id;
