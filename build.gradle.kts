@@ -26,6 +26,9 @@ dependencies {
     implementation("org.openjfx:javafx-base:21.0.1:$platform")
     implementation("org.openjfx:javafx-controls:21.0.1:$platform")
     implementation("org.openjfx:javafx-graphics:21.0.1:$platform")
+
+    implementation("com.opencsv:opencsv:5.10")
+
     implementation(libs.guava)
 
     // Use JUnit Jupiter for testing.

@@ -10,6 +10,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.opencsv.CSVReader;
+import com.opencsv.exceptions.CsvValidationException;
+
 public class Solver {
 
     private HashMap<String, List<Footpath>> stopIdToFootpaths;
@@ -111,20 +114,21 @@ public class Solver {
         }
     }
 
-    public List<List<String>> csvToMatrix(String csvPath) throws IOException {
+    public List<List<String>> csvToMatrix(String csvPath) throws IOException, CsvValidationException {
         List<List<String>> mat = new ArrayList<>();
-        try (BufferedReader br = new BufferedReader(new FileReader(csvPath))) {
-            String line;
-            while ((line = br.readLine()) != null) {
-                String[] values = line.split(",");
-                mat.add(Arrays.asList(values));
+
+        try (CSVReader reader = new CSVReader(new FileReader(csvPath))) {
+            String[] line;
+            while ((line = reader.readNext()) != null) {
+                mat.add(List.of(line));
             }
         }
 
         return mat;
     }
 
-    public void loadData(String routesCSV, String stopTimesCSV, String stopsCSV, String tripsCSV) throws IOException {
+    public void loadData(String routesCSV, String stopTimesCSV, String stopsCSV, String tripsCSV)
+            throws IOException, CsvValidationException {
 
         // ------------------- stops.csv -------------------
 
@@ -143,6 +147,7 @@ public class Solver {
         List<Stop> stops = new ArrayList<>(stopIdToStop.values());
 
         // generate all paths
+        // TODO: Use Ball Tree here
         for (int i = 0; i < stops.size(); i++) {
             for (int j = i + 1; j < stops.size(); j++) {
                 // TODO: Change Footpath ids

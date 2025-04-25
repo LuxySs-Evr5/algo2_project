@@ -2,6 +2,8 @@ package projetalgo;
 
 import java.io.IOException;
 
+import com.opencsv.exceptions.CsvValidationException;
+
 public class Main {
 
     public static void main(String[] args) {
@@ -37,8 +39,9 @@ public class Main {
             System.out.printf("tDep: %s = %d\n", strTDep, tDep);
 
             solver.solve(pDepId, pArrId, tDep);
-        } catch (IOException e) {
-            System.err.println("data file not found");
+        }
+        catch (IOException | CsvValidationException e) {
+            System.err.println("data file not found or invalid csv");
         }
     }
 
