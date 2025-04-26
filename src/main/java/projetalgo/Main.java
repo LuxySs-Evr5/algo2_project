@@ -31,8 +31,8 @@ public class Main {
             // String pArrId = "E";
             // String strTDep = "00:00:00";
 
-            String pDepId = "SNCB-8896008";
-            String pArrId = "SNCB-8896388";
+            String pDepId = "Courtrai";
+            String pArrId = "Bissegem";
             String strTDep = "06:03:30";
 
             int tDep = TimeConversion.toSeconds(strTDep);
