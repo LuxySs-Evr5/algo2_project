@@ -9,6 +9,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Stack;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
@@ -58,6 +59,11 @@ public class Solver {
                 connections.size());
     }
 
+    private static int getBestKnownArrivalTime(Map<String, BestKnownEntry> bestKnown, String stopId) {
+        BestKnownEntry entry = bestKnown.get(stopId);
+        return (entry != null) ? entry.getTArr() : Integer.MAX_VALUE;
+    }
+
     /**
      * Connections must be sorted by their departure time.
      */
@@ -67,11 +73,14 @@ public class Solver {
         // NOTE: could use a List<Stops> to iterate and get the id, no need for a
         // hashmap
 
+        // All stopIds that match pDepName
+        List<String> pDepIds = new ArrayList<>();
+
         // All stopIds that match pArrName
         List<String> pArrIds = new ArrayList<>();
 
         // Not in hashmap means infinity
-        Map<String, Integer> bestKnown = new HashMap<>();
+        Map<String, BestKnownEntry> bestKnown = new HashMap<>();
 
         for (Map.Entry<String, Stop> entry : stopIdToStop.entrySet()) {
             String keyStopId = entry.getKey();
@@ -85,14 +94,17 @@ public class Solver {
             if (valueStop.getName().equals(pDepName)) {
                 System.out.printf("found a pDep: %s : %s\n", valueStop.getName(), keyStopId);
 
+                pDepIds.add(keyStopId);
+
                 // The time to get to pDep is tDep because we are already there
-                bestKnown.put(keyStopId, tDep);
+                bestKnown.put(keyStopId, new BestKnownEntry(tDep, null));
 
                 // Footpaths initial setup
                 List<Footpath> footpathsFromPDep = stopIdToFootpaths.get(keyStopId);
                 if (footpathsFromPDep != null) {
                     for (Footpath f : stopIdToFootpaths.get(keyStopId)) {
-                        bestKnown.put(f.getOtherStop(keyStopId).getId(), tDep + f.getTravelTime());
+                        bestKnown.put(f.getOtherStop(keyStopId).getId(),
+                                new BestKnownEntry(tDep + f.getTravelTime(), f));
                     }
                 }
             }
@@ -104,13 +116,13 @@ public class Solver {
 
         for (Connection c : filteredConnections) {
             // τ (pdep(c)) ≤ τdep(c).
-            boolean cIsReachable = bestKnown.getOrDefault(c.getPDep().getId(), Integer.MAX_VALUE) <= c.getTDep();
+            boolean cIsReachable = getBestKnownArrivalTime(bestKnown, c.getPDep().getId()) <= c.getTDep();
 
             // τarr(c) < τ (parr(c))
-            boolean cIsFaster = c.getTArr() < bestKnown.getOrDefault(c.getPArr().getId(), Integer.MAX_VALUE);
+            boolean cIsFaster = c.getTArr() < getBestKnownArrivalTime(bestKnown, c.getPArr().getId());
 
             if (cIsReachable && cIsFaster) {
-                bestKnown.put(c.getPArr().getId(), c.getTArr());
+                bestKnown.put(c.getPArr().getId(), new BestKnownEntry(c.getTArr(), c));
 
                 List<Footpath> footpathsFromCPArr = stopIdToFootpaths.get(c.getPArr().getId());
                 if (footpathsFromCPArr != null) {
@@ -119,10 +131,10 @@ public class Solver {
                     for (Footpath f : footpathsFromCPArr) {
                         Stop footpathPArr = f.getOtherStop(footpathPDep.getId());
 
-                        int footpathTArr = bestKnown.get(footpathPDep.getId()) + f.getTravelTime();
-                        boolean fpIsFaster = footpathTArr < bestKnown.get(footpathPArr.getId());
+                        int footpathTArr = getBestKnownArrivalTime(bestKnown, footpathPDep.getId()) + f.getTravelTime();
+                        boolean fpIsFaster = footpathTArr < getBestKnownArrivalTime(bestKnown, footpathPDep.getId());
                         if (fpIsFaster)
-                            bestKnown.put(footpathPArr.getId(), footpathTArr);
+                            bestKnown.put(footpathPArr.getId(), new BestKnownEntry(footpathTArr, f));
                     }
                 }
             }
@@ -132,7 +144,8 @@ public class Solver {
         String pArrIdFastest = null;
 
         for (String pArrId : pArrIds) {
-            int tArr = bestKnown.getOrDefault(pArrId, Integer.MAX_VALUE);
+            int tArr = getBestKnownArrivalTime(bestKnown, pArrId);
+
             if (tArr < tArrFastest) {
                 pArrIdFastest = pArrId;
                 tArrFastest = tArr;
@@ -141,10 +154,51 @@ public class Solver {
 
         if (pArrIdFastest == null) {
             System.out.println("unreachable target");
-        } else {
-            System.out.printf("pArr: %s, sec = %d (%s)\n", stopIdToStop.get(pArrIdFastest).getName(), tArrFastest,
-                    TimeConversion.fromSeconds(tArrFastest));
+            return;
         }
+
+        System.out.printf("pArr: %s, sec = %d (%s)\n", stopIdToStop.get(pArrIdFastest).getName(), tArrFastest,
+                TimeConversion.fromSeconds(tArrFastest));
+
+        // reconstruct the solution from pArr to one of pDep
+        // TODO: path isn't a good name because (could be confused with footpath)
+        Stack<BestKnownEntry> finalPath = new Stack<>();
+        String currentStopId = pArrIdFastest;
+        String pDepId = new String();
+        boolean done = false;
+        while (!done) {
+            // System.out.printf("pushing %s\n", currentStopId);
+            finalPath.push(bestKnown.get(currentStopId));
+
+            // System.out.printf("getOtherStop(currentStopId): %s\n",
+            // finalPath.peek().getMovement().getOtherStop(currentStopId).getId());
+
+            // pushed the first BestKnownEntry (starts from one of pDepIds), stop and save
+            // its id
+            String candidateId = finalPath.peek().getMovement().getOtherStop(currentStopId).getId();
+            if (pDepIds.contains(candidateId)) {
+                pDepId = candidateId;
+                break;
+            }
+
+            Movement movement = finalPath.peek().getMovement();
+            Stop otherStop = movement.getOtherStop(currentStopId);
+            finalPath.push(bestKnown.get(otherStop.getId()));
+        }
+
+        if (pDepId.isEmpty()) {
+            return;
+        }
+
+        System.out.println(finalPath);
+        currentStopId = pDepId;
+        System.out.printf("next stop: %s\n", currentStopId);
+        while (!finalPath.isEmpty()) {
+            Movement movement = finalPath.pop().getMovement();
+            currentStopId = movement.getOtherStop(currentStopId).getId();
+            System.out.printf("next stop: %s\n", currentStopId);
+        }
+
     }
 
     public List<List<String>> csvToMatrix(String csvPath) throws IOException, CsvValidationException {

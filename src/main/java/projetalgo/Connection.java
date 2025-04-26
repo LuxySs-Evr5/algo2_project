@@ -1,6 +1,6 @@
 package projetalgo;
 
-public class Connection {
+public class Connection implements Movement {
     private final int id;
     private final Stop pDep; // point de départ
     private final Stop pArr; // point d'arrivée
@@ -29,6 +29,17 @@ public class Connection {
 
     public int getTArr() {
         return tArr;
+    }
+
+    @Override
+    public Stop getOtherStop(String stopId) {
+        if (stopId.equals(pDep.getId())) {
+            return pArr;
+        } else if (stopId.equals(pArr.getId())) {
+            return pDep;
+        } else {
+            throw new IllegalArgumentException("Stop ID not part of this footpath.");
+        }
     }
 
     @Override

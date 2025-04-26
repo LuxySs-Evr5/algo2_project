@@ -1,6 +1,6 @@
 package projetalgo;
 
-public class Footpath {
+public class Footpath implements Movement {
     private final int id;
     private Stop[] stops;
 
@@ -57,6 +57,7 @@ public class Footpath {
         return stopId.equals(stops[0].getId()) || stopId.equals(stops[1].getId());
     }
 
+    @Override
     public Stop getOtherStop(String stopId) {
         if (stopId.equals(stops[0].getId())) {
             return stops[1];
