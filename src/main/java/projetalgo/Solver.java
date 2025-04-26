@@ -167,23 +167,21 @@ public class Solver {
         String pDepId = new String();
         boolean done = false;
         while (!done) {
-            // System.out.printf("pushing %s\n", currentStopId);
-            finalPath.push(bestKnown.get(currentStopId));
+            BestKnownEntry currentEntry = bestKnown.get(currentStopId);
 
-            // System.out.printf("getOtherStop(currentStopId): %s\n",
-            // finalPath.peek().getMovement().getOtherStop(currentStopId).getId());
+            finalPath.push(currentEntry);
 
-            // pushed the first BestKnownEntry (starts from one of pDepIds), stop and save
-            // its id
-            String candidateId = finalPath.peek().getMovement().getOtherStop(currentStopId).getId();
-            if (pDepIds.contains(candidateId)) {
-                pDepId = candidateId;
+            String otherStopId = currentEntry.getMovement()
+                    .getOtherStop(currentStopId).getId();
+
+            System.out.printf("otherStopId: %s \n", otherStopId);
+
+            if (pDepIds.contains(otherStopId)) {
+                pDepId = otherStopId;
                 break;
             }
 
-            Movement movement = finalPath.peek().getMovement();
-            Stop otherStop = movement.getOtherStop(currentStopId);
-            finalPath.push(bestKnown.get(otherStop.getId()));
+            currentStopId = otherStopId;
         }
 
         if (pDepId.isEmpty()) {
@@ -192,7 +190,7 @@ public class Solver {
 
         System.out.println(finalPath);
         currentStopId = pDepId;
-        System.out.printf("next stop: %s\n", currentStopId);
+        System.out.printf("dep stop: %s\n", currentStopId);
         while (!finalPath.isEmpty()) {
             Movement movement = finalPath.pop().getMovement();
             currentStopId = movement.getOtherStop(currentStopId).getId();
