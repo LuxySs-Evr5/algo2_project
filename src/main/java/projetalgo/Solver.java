@@ -67,17 +67,19 @@ public class Solver {
         // NOTE: could use a List<Stops> to iterate and get the id, no need for a
         // hashmap
 
-        // will be set in the for loop below
-        String pArrId = null;
+        // All stopIds that match pArrName
+        List<String> pArrIds = new ArrayList<>();
 
         // Not in hashmap means infinity
         Map<String, Integer> bestKnown = new HashMap<>();
+
         for (Map.Entry<String, Stop> entry : stopIdToStop.entrySet()) {
             String keyStopId = entry.getKey();
             Stop valueStop = entry.getValue();
 
             if (valueStop.getName().equals(pArrName)) {
-                pArrId = keyStopId;
+                pArrIds.add(keyStopId);
+                System.out.printf("found a pArr: %s : %s\n", pArrName, keyStopId);
             }
 
             if (valueStop.getName().equals(pDepName)) {
@@ -96,7 +98,7 @@ public class Solver {
             }
         }
 
-        if (pArrId == null) { // pArr not found
+        if (pArrIds.size() == 0) { // no pArrId not found
             System.out.println("invalid destination");
         }
 
@@ -124,16 +126,24 @@ public class Solver {
                     }
                 }
             }
-
         }
 
-        System.out.printf("bestKnown at the end: %s\n\n", bestKnown);
+        int tArrFastest = Integer.MAX_VALUE;
+        String pArrIdFastest = null;
 
-        Integer totalSec = bestKnown.get(pArrId);
-        if (totalSec == null) {
+        for (String pArrId : pArrIds) {
+            int tArr = bestKnown.getOrDefault(pArrId, Integer.MAX_VALUE);
+            if (tArr < tArrFastest) {
+                pArrIdFastest = pArrId;
+                tArrFastest = tArr;
+            }
+        }
+
+        if (pArrIdFastest == null) {
             System.out.println("unreachable target");
         } else {
-            System.out.printf("sec = %d (%s)\n", totalSec, TimeConversion.fromSeconds(totalSec));
+            System.out.printf("pArr: %s, sec = %d (%s)\n", stopIdToStop.get(pArrIdFastest).getName(), tArrFastest,
+                    TimeConversion.fromSeconds(tArrFastest));
         }
     }
 
@@ -191,20 +201,45 @@ public class Solver {
 
         List<List<String>> stopTimes = csvToMatrix(stopTimesCSV);
 
-        for (int i = 1; i < stopTimes.size() - 1; i++) {
-            List<String> row0 = stopTimes.get(i);
-            List<String> row1 = stopTimes.get(i + 1);
+        // Step 1: group by trip_id
+        Map<String, List<StopTimeEntry>> tripIdToStopTimes = new HashMap<>();
 
-            Connection connection = new Connection(i,
-                    stopIdToStop.get(row0.get(2)),
-                    stopIdToStop.get(row1.get(2)),
-                    TimeConversion.toSeconds(row0.get(1)),
-                    TimeConversion.toSeconds(row1.get(1)));
+        for (int i = 1; i < stopTimes.size(); i++) {
+            List<String> row = stopTimes.get(i);
+            String tripId = row.get(0);
+            int departureTime = TimeConversion.toSeconds(row.get(1));
+            String stopId = row.get(2);
+            int stopSequence = Integer.parseInt(row.get(3));
 
-            connections.add(connection);
+            StopTimeEntry entry = new StopTimeEntry(tripId, departureTime, stopId, stopSequence);
+
+            tripIdToStopTimes
+                    .computeIfAbsent(tripId, k -> new ArrayList<>())
+                    .add(entry);
         }
 
-        // TODO: will have to move this elsewhere
+        // Step 2: create Connections by trip
+        connections = new ArrayList<>();
+        int connectionId = 0;
+
+        for (List<StopTimeEntry> entries : tripIdToStopTimes.values()) {
+            entries.sort(Comparator.comparingInt(e -> e.stopSequence)); // sort by stop_sequence
+
+            for (int i = 0; i < entries.size() - 1; i++) {
+                StopTimeEntry from = entries.get(i);
+                StopTimeEntry to = entries.get(i + 1);
+
+                Connection connection = new Connection(
+                        connectionId++,
+                        stopIdToStop.get(from.stopId),
+                        stopIdToStop.get(to.stopId),
+                        from.departureTime,
+                        to.departureTime);
+                connections.add(connection);
+            }
+        }
+
+        // Final sort by departure time
         connections.sort(Comparator.comparingInt(Connection::getTDep));
     }
 
