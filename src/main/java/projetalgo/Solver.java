@@ -89,7 +89,8 @@ public class Solver {
      * in a stack to reverse the order. Then replays the path forward from the
      * departure.
      */
-    void reconstructSolution(Map<String, BestKnownEntry> bestKnown, List<String> pDepIds, String pArrIdEarliest) {
+    Stack<BestKnownEntry> reconstructSolution(Map<String, BestKnownEntry> bestKnown, List<String> pDepIds,
+            String pArrIdEarliest) {
         // Reconstruct the solution backwards (from pArr to one of pDeps)
         // TODO: path isn't a good name because (could be confused with footpath)
         Stack<BestKnownEntry> finalPath = new Stack<>();
@@ -106,13 +107,51 @@ public class Solver {
                     .getPDep().getId();
         }
 
-        // Pop the stack to replay the path forward.
-        Stop currentStop = finalPath.peek().getMovement().getPDep();
-        System.out.printf("dep stop: %s\n", currentStop.getName());
+        return finalPath;
+    }
+
+    public void printInstructions(Stack<BestKnownEntry> finalPath) {
+        String currentTripId = null;
+        Stop tripStartStop = null;
+        Stop previousStop = null;
+
         while (!finalPath.isEmpty()) {
             BestKnownEntry entry = finalPath.pop();
-            currentStop = entry.getMovement().getPArr();
-            System.out.printf("next stop: %s\n", currentStop.getName());
+            Movement movement = entry.getMovement();
+            Stop pDep = movement.getPDep();
+            Stop pArr = movement.getPArr();
+
+            if (movement instanceof Footpath) {
+                if (currentTripId != null) {
+                    System.out.println("Take trip " + currentTripId + " from " +
+                            tripStartStop.getName() + " to "
+                            + previousStop.getName());
+                    currentTripId = null;
+                    tripStartStop = null;
+                }
+                System.out.println("Walk from " + pDep.getName() + " to " + pArr.getName());
+            } else if (movement instanceof Connection connection) {
+                String tripId = connection.getTripId();
+                if (currentTripId == null) {
+                    currentTripId = tripId;
+                    tripStartStop = pDep;
+                } else if (!tripId.equals(currentTripId)) {
+                    System.out.println("Take trip " + currentTripId + " from " +
+                            tripStartStop.getName() + " to "
+                            + previousStop.getName());
+                    currentTripId = tripId;
+                    tripStartStop = pDep;
+                }
+                // Same trip -> continue
+            }
+
+            previousStop = pArr;
+        }
+
+        if (currentTripId != null) {
+            System.out.println("Take trip " + currentTripId + " from " +
+                    tripStartStop.getName() + " to "
+                    + previousStop.getName());
         }
     }
 
@@ -204,7 +243,8 @@ public class Solver {
         System.out.printf("pArr: %s, sec = %d (%s)\n", stopIdToStop.get(pArrIdEarliest).getName(), tArrEarliest,
                 TimeConversion.fromSeconds(tArrEarliest));
 
-        reconstructSolution(bestKnown, pDepIds, pArrIdEarliest);
+        Stack<BestKnownEntry> finalPath = reconstructSolution(bestKnown, pDepIds, pArrIdEarliest);
+        printInstructions(finalPath);
     }
 
     public List<List<String>> csvToMatrix(String csvPath) throws IOException, CsvValidationException {
