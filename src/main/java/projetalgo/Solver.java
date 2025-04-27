@@ -71,35 +71,35 @@ public class Solver {
     /**
      * Returns the stopId of the arrival stop we arrive at earliest.
      */
-    private static String findPArrIdFastest(Map<String, BestKnownEntry> bestKnown, List<String> pArrIds) {
-        int tArrFastest = Integer.MAX_VALUE;
-        String pArrIdFastest = null;
+    private static String findPArrIdEarliest(Map<String, BestKnownEntry> bestKnown, List<String> pArrIds) {
+        int tArrEarliest = Integer.MAX_VALUE;
+        String pArrIdEarliest = null;
 
         for (String pArrId : pArrIds) {
             int tArr = getBestKnownArrivalTime(bestKnown, pArrId);
 
-            if (tArr < tArrFastest) {
-                pArrIdFastest = pArrId;
-                tArrFastest = tArr;
+            if (tArr < tArrEarliest) {
+                pArrIdEarliest = pArrId;
+                tArrEarliest = tArr;
             }
         }
 
-        return pArrIdFastest;
+        return pArrIdEarliest;
     }
 
     /**
-     * Reconstructs and prints the path from the fastest arrival stop back to a
+     * Reconstructs and prints the path from the earliest arrival stop back to a
      * departure stop.
      *
      * Traverses the path backwards using the best known entries, storing movements
      * in a stack to reverse the order. Then replays the path forward from the
      * departure.
      */
-    void reconstructSolution(Map<String, BestKnownEntry> bestKnown, List<String> pDepIds, String pArrIdFastest) {
+    void reconstructSolution(Map<String, BestKnownEntry> bestKnown, List<String> pDepIds, String pArrIdEarliest) {
         // Reconstruct the solution backwards (from pArr to one of pDeps)
         // TODO: path isn't a good name because (could be confused with footpath)
         Stack<BestKnownEntry> finalPath = new Stack<>();
-        String currentStopId = pArrIdFastest;
+        String currentStopId = pArrIdEarliest;
         while (!pDepIds.contains(currentStopId)) {
             BestKnownEntry currentEntry = bestKnown.get(currentStopId);
             finalPath.push(currentEntry);
@@ -199,18 +199,18 @@ public class Solver {
         }
 
         // TODO: call here
-        String pArrIdFastest = findPArrIdFastest(bestKnown, pArrIds);
-        if (pArrIdFastest == null) {
+        String pArrIdEarliest = findPArrIdEarliest(bestKnown, pArrIds);
+        if (pArrIdEarliest == null) {
             System.out.println("unreachable target");
             return;
         }
 
-        int tArrFastest = bestKnown.get(pArrIdFastest).getTArr();
+        int tArrEarliest = bestKnown.get(pArrIdEarliest).getTArr();
 
-        System.out.printf("pArr: %s, sec = %d (%s)\n", stopIdToStop.get(pArrIdFastest).getName(), tArrFastest,
-                TimeConversion.fromSeconds(tArrFastest));
+        System.out.printf("pArr: %s, sec = %d (%s)\n", stopIdToStop.get(pArrIdEarliest).getName(), tArrEarliest,
+                TimeConversion.fromSeconds(tArrEarliest));
 
-        reconstructSolution(bestKnown, pDepIds, pArrIdFastest);
+        reconstructSolution(bestKnown, pDepIds, pArrIdEarliest);
     }
 
     public List<List<String>> csvToMatrix(String csvPath) throws IOException, CsvValidationException {
