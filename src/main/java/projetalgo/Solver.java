@@ -59,11 +59,18 @@ public class Solver {
                 connections.size());
     }
 
+    /**
+     * Returns the earliest known arrival time at stopId, or Integer.MAX_VALUE if
+     * unknown.
+     */
     private static int getBestKnownArrivalTime(Map<String, BestKnownEntry> bestKnown, String stopId) {
         BestKnownEntry entry = bestKnown.get(stopId);
         return (entry != null) ? entry.getTArr() : Integer.MAX_VALUE;
     }
 
+    /**
+     * Returns the stopId of the arrival stop we arrive at earliest.
+     */
     private static String findPArrIdFastest(Map<String, BestKnownEntry> bestKnown, List<String> pArrIds) {
         int tArrFastest = Integer.MAX_VALUE;
         String pArrIdFastest = null;
