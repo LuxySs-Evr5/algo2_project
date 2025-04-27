@@ -19,11 +19,9 @@ public class Solver {
     private HashMap<String, Stop> stopIdToStop;
     private HashMap<String, List<Footpath>> stopIdToFootpaths;
     private List<Connection> connections;
-    private List<Footpath> footpaths; // TODO: is that useful ? probably won't be.
 
     public Solver() {
         this.connections = new ArrayList<>();
-        this.footpaths = new ArrayList<>();
         this.stopIdToFootpaths = new HashMap<>();
     }
 
