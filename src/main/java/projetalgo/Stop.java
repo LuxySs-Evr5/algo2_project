@@ -5,6 +5,8 @@ public class Stop {
     private final Coord coord;
     private final String name;
 
+    public static double EARTH_RADIUS = 6371.0; // km
+
     public Stop(String id, String name, Coord coord) {
         this.id = id;
         this.name = name;
@@ -27,5 +29,5 @@ public class Stop {
     public String toString() {
         return String.format("Name: %s, id: %s, coord: %s", name, id, coord);
     }
-
+    
 }

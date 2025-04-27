@@ -24,20 +24,7 @@ public class Footpath implements Movement {
         Coord coord0 = stops[0].getCoord();
         Coord coord1 = stops[1].getCoord();
 
-        double lat1 = Math.toRadians(coord0.lat());
-        double lon1 = Math.toRadians(coord0.lon());
-        double lat2 = Math.toRadians(coord1.lat());
-        double lon2 = Math.toRadians(coord1.lon());
-
-        double dLat = lat2 - lat1;
-        double dLon = lon2 - lon1;
-
-        double a = Math.pow(Math.sin(dLat / 2), 2)
-                + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dLon / 2), 2);
-
-        double c = 2 * Math.asin(Math.sqrt(a));
-
-        return EARTH_RADIUS * c;
+        return Coord.distance(coord0, coord1);
     }
 
     /**
