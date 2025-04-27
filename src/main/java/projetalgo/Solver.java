@@ -284,12 +284,13 @@ public class Solver {
         // TODO: Use Ball Tree here
         for (int i = 0; i < stops.size(); i++) {
             for (int j = 0; j < stops.size(); j++) {
-                Footpath footpath = new Footpath(stops.get(i), stops.get(j));
+                if (i != j) {
+                    Footpath footpath = new Footpath(stops.get(i), stops.get(j));
 
-                stopIdToFootpaths
-                        .computeIfAbsent(stops.get(i).getId(), k -> new ArrayList<>())
-                        .add(footpath);
-
+                    stopIdToFootpaths
+                            .computeIfAbsent(stops.get(i).getId(), k -> new ArrayList<>())
+                            .add(footpath);
+                }
             }
         }
 
