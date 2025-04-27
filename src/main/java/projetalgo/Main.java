@@ -32,7 +32,7 @@ public class Main {
             // String strTDep = "00:00:00";
 
             String pDepId = "Courtrai";
-            String pArrId = "Waregem";
+            String pArrId = "Bascharage-Sanem (LU)";
             String strTDep = "06:03:30";
 
             int tDep = TimeConversion.toSeconds(strTDep);

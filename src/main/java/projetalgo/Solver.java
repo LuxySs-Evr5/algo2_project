@@ -21,8 +21,6 @@ public class Solver {
     private List<Connection> connections;
     private List<Footpath> footpaths; // TODO: is that useful ? probably won't be.
 
-    public static final String COMMA_DELIMITER = ",";
-
     public Solver() {
         this.connections = new ArrayList<>();
         this.footpaths = new ArrayList<>();
@@ -105,7 +103,7 @@ public class Solver {
             finalPath.push(currentEntry);
 
             String otherStopId = currentEntry.getMovement()
-                    .getOtherStop(currentStopId).getId();
+                    .getPDep().getId();
 
             System.out.printf("otherStopId: %s \n", otherStopId);
 
@@ -117,7 +115,7 @@ public class Solver {
         System.out.printf("dep stop: %s\n", currentStopId);
         while (!finalPath.isEmpty()) {
             BestKnownEntry entry = finalPath.pop();
-            currentStopId = entry.getMovement().getOtherStop(currentStopId).getId();
+            currentStopId = entry.getMovement().getPArr().getId();
             System.out.printf("next stop: %s\n", currentStopId);
         }
     }
@@ -161,7 +159,7 @@ public class Solver {
                 List<Footpath> footpathsFromPDep = stopIdToFootpaths.get(keyStopId);
                 if (footpathsFromPDep != null) {
                     for (Footpath f : stopIdToFootpaths.get(keyStopId)) {
-                        bestKnown.put(f.getOtherStop(keyStopId).getId(),
+                        bestKnown.put(f.getPArr().getId(),
                                 new BestKnownEntry(tDep + f.getTravelTime(), f));
                     }
                 }
@@ -187,7 +185,7 @@ public class Solver {
                     Stop footpathPDep = c.getPArr();
 
                     for (Footpath f : footpathsFromCPArr) {
-                        Stop footpathPArr = f.getOtherStop(footpathPDep.getId());
+                        Stop footpathPArr = f.getPArr();
 
                         int footpathTArr = getBestKnownArrivalTime(bestKnown, footpathPDep.getId()) + f.getTravelTime();
                         boolean fpIsFaster = footpathTArr < getBestKnownArrivalTime(bestKnown, footpathPDep.getId());
@@ -249,17 +247,13 @@ public class Solver {
         // generate all paths
         // TODO: Use Ball Tree here
         for (int i = 0; i < stops.size(); i++) {
-            for (int j = i + 1; j < stops.size(); j++) {
-                // TODO: Change Footpath ids
-                Footpath footpath = new Footpath(i + j - 1, stops.get(i), stops.get(j));
+            for (int j = 0; j < stops.size(); j++) {
+                Footpath footpath = new Footpath(stops.get(i), stops.get(j));
 
                 stopIdToFootpaths
                         .computeIfAbsent(stops.get(i).getId(), k -> new ArrayList<>())
                         .add(footpath);
 
-                stopIdToFootpaths
-                        .computeIfAbsent(stops.get(j).getId(), k -> new ArrayList<>())
-                        .add(footpath);
             }
         }
 

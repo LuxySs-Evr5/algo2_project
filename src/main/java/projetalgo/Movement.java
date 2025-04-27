@@ -2,6 +2,8 @@ package projetalgo;
 
 public interface Movement { 
 
-    public Stop getOtherStop(String stopId);
+    public Stop getPDep();
+
+    public Stop getPArr();
 
 }

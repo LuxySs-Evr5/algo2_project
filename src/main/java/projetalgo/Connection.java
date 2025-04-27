@@ -15,10 +15,12 @@ public class Connection implements Movement {
         this.tArr = tArr;
     }
 
+    @Override
     public Stop getPDep() {
         return pDep;
     }
 
+    @Override
     public Stop getPArr() {
         return pArr;
     }
@@ -29,17 +31,6 @@ public class Connection implements Movement {
 
     public int getTArr() {
         return tArr;
-    }
-
-    @Override
-    public Stop getOtherStop(String stopId) {
-        if (stopId.equals(pDep.getId())) {
-            return pArr;
-        } else if (stopId.equals(pArr.getId())) {
-            return pDep;
-        } else {
-            throw new IllegalArgumentException("Stop ID not part of this footpath.");
-        }
     }
 
     @Override
