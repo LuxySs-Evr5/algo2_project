@@ -96,14 +96,14 @@ public class Solver {
         String currentStopId = pArrIdEarliest;
         while (!pDepIds.contains(currentStopId)) {
             BestKnownEntry currentEntry = bestKnown.get(currentStopId);
+            if (currentEntry == null) {
+                throw new IllegalStateException("No path found to a departure stop from: " + currentStopId);
+            }
+
             finalPath.push(currentEntry);
 
-            String otherStopId = currentEntry.getMovement()
+            currentStopId = currentEntry.getMovement()
                     .getPDep().getId();
-
-            System.out.printf("otherStopId: %s \n", otherStopId);
-
-            currentStopId = otherStopId;
         }
 
         // Pop the stack to replay the path forward.
