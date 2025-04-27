@@ -88,6 +88,41 @@ public class Solver {
     }
 
     /**
+     * Reconstructs and prints the path from the fastest arrival stop back to a
+     * departure stop.
+     *
+     * Traverses the path backwards using the best known entries, storing movements
+     * in a stack to reverse the order. Then replays the path forward from the
+     * departure.
+     */
+    void reconstructSolution(Map<String, BestKnownEntry> bestKnown, List<String> pDepIds, String pArrIdFastest) {
+        // Reconstruct the solution backwards (from pArr to one of pDeps)
+        // TODO: path isn't a good name because (could be confused with footpath)
+        Stack<BestKnownEntry> finalPath = new Stack<>();
+        String currentStopId = pArrIdFastest;
+        while (!pDepIds.contains(currentStopId)) {
+            BestKnownEntry currentEntry = bestKnown.get(currentStopId);
+            finalPath.push(currentEntry);
+
+            String otherStopId = currentEntry.getMovement()
+                    .getOtherStop(currentStopId).getId();
+
+            System.out.printf("otherStopId: %s \n", otherStopId);
+
+            currentStopId = otherStopId;
+        }
+
+        // Pop the stack to replay the path forward.
+        // because currentStopId = pDepId here (see above)
+        System.out.printf("dep stop: %s\n", currentStopId);
+        while (!finalPath.isEmpty()) {
+            BestKnownEntry entry = finalPath.pop();
+            currentStopId = entry.getMovement().getOtherStop(currentStopId).getId();
+            System.out.printf("next stop: %s\n", currentStopId);
+        }
+    }
+
+    /**
      * Connections must be sorted by their departure time.
      */
     public void solve(String pDepName, String pArrName, int tDep) {
@@ -175,30 +210,7 @@ public class Solver {
         System.out.printf("pArr: %s, sec = %d (%s)\n", stopIdToStop.get(pArrIdFastest).getName(), tArrFastest,
                 TimeConversion.fromSeconds(tArrFastest));
 
-        // reconstruct the solution from pArr to one of pDep
-        // TODO: path isn't a good name because (could be confused with footpath)
-        Stack<BestKnownEntry> finalPath = new Stack<>();
-        String currentStopId = pArrIdFastest;
-        while (!pDepIds.contains(currentStopId)) {
-            BestKnownEntry currentEntry = bestKnown.get(currentStopId);
-            finalPath.push(currentEntry);
-
-            String otherStopId = currentEntry.getMovement()
-                    .getOtherStop(currentStopId).getId();
-
-            System.out.printf("otherStopId: %s \n", otherStopId);
-
-            currentStopId = otherStopId;
-        }
-
-        // because currentStopId = pDepId here (see above)
-        System.out.printf("dep stop: %s\n", currentStopId);
-        while (!finalPath.isEmpty()) {
-            Movement movement = finalPath.pop().getMovement();
-            currentStopId = movement.getOtherStop(currentStopId).getId();
-            System.out.printf("next stop: %s\n", currentStopId);
-        }
-
+        reconstructSolution(bestKnown, pDepIds, pArrIdFastest);
     }
 
     public List<List<String>> csvToMatrix(String csvPath) throws IOException, CsvValidationException {
