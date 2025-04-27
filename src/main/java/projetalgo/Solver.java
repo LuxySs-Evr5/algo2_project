@@ -107,12 +107,12 @@ public class Solver {
         }
 
         // Pop the stack to replay the path forward.
-        // because currentStopId = pDepId here (see above)
-        System.out.printf("dep stop: %s\n", currentStopId);
+        Stop currentStop = finalPath.peek().getMovement().getPDep();
+        System.out.printf("dep stop: %s\n", currentStop.getName());
         while (!finalPath.isEmpty()) {
             BestKnownEntry entry = finalPath.pop();
-            currentStopId = entry.getMovement().getPArr().getId();
-            System.out.printf("next stop: %s\n", currentStopId);
+            currentStop = entry.getMovement().getPArr();
+            System.out.printf("next stop: %s\n", currentStop.getName());
         }
     }
 
@@ -276,8 +276,6 @@ public class Solver {
 
         // Step 2: create Connections by trip
         connections = new ArrayList<>();
-        int connectionId = 0;
-
         for (List<StopTimeEntry> entries : tripIdToStopTimes.values()) {
             entries.sort(Comparator.comparingInt(e -> e.stopSequence)); // sort by stop_sequence
 
@@ -286,7 +284,7 @@ public class Solver {
                 StopTimeEntry to = entries.get(i + 1);
 
                 Connection connection = new Connection(
-                        connectionId++,
+                        from.tripId,
                         stopIdToStop.get(from.stopId),
                         stopIdToStop.get(to.stopId),
                         from.departureTime,
