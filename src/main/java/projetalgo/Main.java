@@ -39,8 +39,7 @@ public class Main {
             System.out.printf("tDep: %s = %d\n", strTDep, tDep);
 
             solver.solve(pDepId, pArrId, tDep);
-        }
-        catch (IOException | CsvValidationException e) {
+        } catch (IOException | CsvValidationException e) {
             System.err.println("data file not found or invalid csv");
         }
     }

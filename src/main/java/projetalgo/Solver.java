@@ -64,6 +64,22 @@ public class Solver {
         return (entry != null) ? entry.getTArr() : Integer.MAX_VALUE;
     }
 
+    private static String findPArrIdFastest(Map<String, BestKnownEntry> bestKnown, List<String> pArrIds) {
+        int tArrFastest = Integer.MAX_VALUE;
+        String pArrIdFastest = null;
+
+        for (String pArrId : pArrIds) {
+            int tArr = getBestKnownArrivalTime(bestKnown, pArrId);
+
+            if (tArr < tArrFastest) {
+                pArrIdFastest = pArrId;
+                tArrFastest = tArr;
+            }
+        }
+
+        return pArrIdFastest;
+    }
+
     /**
      * Connections must be sorted by their departure time.
      */
@@ -140,22 +156,14 @@ public class Solver {
             }
         }
 
-        int tArrFastest = Integer.MAX_VALUE;
-        String pArrIdFastest = null;
-
-        for (String pArrId : pArrIds) {
-            int tArr = getBestKnownArrivalTime(bestKnown, pArrId);
-
-            if (tArr < tArrFastest) {
-                pArrIdFastest = pArrId;
-                tArrFastest = tArr;
-            }
-        }
-
+        // TODO: call here
+        String pArrIdFastest = findPArrIdFastest(bestKnown, pArrIds);
         if (pArrIdFastest == null) {
             System.out.println("unreachable target");
             return;
         }
+
+        int tArrFastest = bestKnown.get(pArrIdFastest).getTArr();
 
         System.out.printf("pArr: %s, sec = %d (%s)\n", stopIdToStop.get(pArrIdFastest).getName(), tArrFastest,
                 TimeConversion.fromSeconds(tArrFastest));
@@ -164,11 +172,8 @@ public class Solver {
         // TODO: path isn't a good name because (could be confused with footpath)
         Stack<BestKnownEntry> finalPath = new Stack<>();
         String currentStopId = pArrIdFastest;
-        String pDepId = new String();
-        boolean done = false;
-        while (!done) {
+        while (!pDepIds.contains(currentStopId)) {
             BestKnownEntry currentEntry = bestKnown.get(currentStopId);
-
             finalPath.push(currentEntry);
 
             String otherStopId = currentEntry.getMovement()
@@ -176,20 +181,10 @@ public class Solver {
 
             System.out.printf("otherStopId: %s \n", otherStopId);
 
-            if (pDepIds.contains(otherStopId)) {
-                pDepId = otherStopId;
-                break;
-            }
-
             currentStopId = otherStopId;
         }
 
-        if (pDepId.isEmpty()) {
-            return;
-        }
-
-        System.out.println(finalPath);
-        currentStopId = pDepId;
+        // because currentStopId = pDepId here (see above)
         System.out.printf("dep stop: %s\n", currentStopId);
         while (!finalPath.isEmpty()) {
             Movement movement = finalPath.pop().getMovement();
