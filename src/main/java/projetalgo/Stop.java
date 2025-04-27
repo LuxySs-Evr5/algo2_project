@@ -5,8 +5,6 @@ public class Stop {
     private final Coord coord;
     private final String name;
 
-    public static double EARTH_RADIUS = 6371.0; // km
-
     public Stop(String id, String name, Coord coord) {
         this.id = id;
         this.name = name;

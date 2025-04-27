@@ -5,7 +5,6 @@ public class Footpath implements Movement {
     private Stop[] stops;
 
     public static double WALKING_SPEED = 5; // km/s
-    public static double EARTH_RADIUS = 6371.0; // km
 
     public Footpath(int id, Stop stop0, Stop stop1) {
         this.id = id;

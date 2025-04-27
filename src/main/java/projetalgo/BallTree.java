@@ -19,7 +19,7 @@ public class BallTree {
         Stop nearest = findNearest(root, target, null, Double.MAX_VALUE);
         return nearest;
     }
-    
+
     // TODO: keep it or remove it?
     private Stop findNearest(BallTreeNode node, Stop target, Stop best, double bestDist) {
         if (node == null) {
@@ -27,7 +27,8 @@ public class BallTree {
         }
         double centerDist = Coord.distance(target.getCoord(), node.center);
     
-        // if the center of the node is further than the best distance, we can stop
+        // if the closest point of the ball (node) is further than the best known, we can stop
+        // because we know it's too far
         if (centerDist - node.radius > bestDist) {
             return best;
         }
@@ -82,7 +83,8 @@ public class BallTree {
 
         double centerDist = Coord.distance(target.getCoord(), node.center);
 
-        // if the center of the node is further than the radius, we can stop
+        // if the closest point of the ball (node) is further than the radius, we can stop
+        // because we know it's too far
         if (centerDist - node.radius > radiusKm) {
             return;
         }
@@ -101,13 +103,14 @@ public class BallTree {
         // Otherwise we are in an internal node: we check both children if necessary
         if (node.leftChild != null) {
             double leftDist = Coord.distance(target.getCoord(), node.leftChild.center);
+            // Check if the closest point of left child is within the radius
             if (leftDist - node.leftChild.radius <= radiusKm) {
                 findStopsWithinRadius(node.leftChild, target, radiusKm, result);
             }
         }
-        
         if (node.rightChild != null) {
             double rightDist = Coord.distance(target.getCoord(), node.rightChild.center);
+            // Check if the closest point of right child is within the radius
             if (rightDist - node.rightChild.radius <= radiusKm) {
                 findStopsWithinRadius(node.rightChild, target, radiusKm, result);
             }
