@@ -156,6 +156,35 @@ public class Solver {
     }
 
     /**
+     * Returns true if the given connection's arrival time is after the
+     * earliest arrival time to one of pArrIds.
+     *
+     * TODO: check this again
+     *
+     * NOTE: in the paper "Intriguingly Simple and Fast Transit Routing?" by
+     * Julian Dibbelt, Thomas Pajor, Ben Strasser, and Dorothea Wagner,
+     * it is stated:
+     *
+     * "if we are only interested in one-to-one queries, the algorithm may stop as
+     * soon as it scans a connection whose departure time exceeds the target stop’s
+     * earliest arrival time."
+     *
+     * Although this is true, we can actually stop as soon as the connection's
+     * arrival time exceeds the best known arrival time to the destination (which
+     * occurs a tiny bit sooner than checking the departure time).
+     */
+    boolean checkConnectionTArrAfterEarliestTArr(Map<String, BestKnownEntry> bestKnown, Connection c,
+            List<String> pArrIds) {
+        for (String pArrId : pArrIds) {
+            if (c.getTArr() >= getBestKnownArrivalTime(bestKnown, pArrId)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * Connections must be sorted by their departure time.
      */
     public void solve(String pDepName, String pArrName, int tDep) {
@@ -206,6 +235,10 @@ public class Solver {
         }
 
         for (Connection c : filteredConnections) {
+            if (checkConnectionTArrAfterEarliestTArr(bestKnown, c, pArrIds)) {
+                break;
+            }
+
             // τ (pdep(c)) ≤ τdep(c).
             boolean cIsReachable = getBestKnownArrivalTime(bestKnown, c.getPDep().getId()) <= c.getTDep();
 
@@ -298,6 +331,7 @@ public class Solver {
         // if (stop0 != stop1) {
         // Footpath footpath = new Footpath(stop0, stop1);
         //
+        // // TODO: remove magic number 5
         // if (footpath.getDistance() <= 5) {
         // stopIdToFootpaths
         // .computeIfAbsent(stop0.getId(), k -> new ArrayList<>())
