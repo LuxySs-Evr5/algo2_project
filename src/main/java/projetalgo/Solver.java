@@ -20,6 +20,7 @@ public class Solver {
 
     public Solver() {
         this.connections = new ArrayList<>();
+        this.stopIdToStop = new HashMap<>();
         this.stopIdToFootpaths = new HashMap<>();
     }
 
@@ -48,8 +49,7 @@ public class Solver {
      * Returns the list of connections departing at or after our depature time.
      */
     List<Connection> getFilteredConnections(int tDep) {
-        return connections.subList(
-                getEarliestReachableConnectionIdx(tDep),
+        return connections.subList(getEarliestReachableConnectionIdx(tDep),
                 connections.size());
     }
 
@@ -247,91 +247,123 @@ public class Solver {
         printInstructions(finalPath);
     }
 
-    public List<List<String>> csvToMatrix(String csvPath) throws IOException, CsvValidationException {
-        List<List<String>> mat = new ArrayList<>();
+    public void loadData(CsvSet... csvSets) throws IOException, CsvValidationException {
+        stopIdToStop = new HashMap<>();
+        stopIdToFootpaths = new HashMap<>();
+        connections = new ArrayList<>();
 
-        try (CSVReader reader = new CSVReader(new FileReader(csvPath))) {
-            String[] line;
-            while ((line = reader.readNext()) != null) {
-                mat.add(List.of(line));
-            }
+        for (CsvSet csvSet : csvSets) {
+            loadOneCsvSet(csvSet);
         }
-
-        return mat;
     }
 
-    public void loadData(String routesCSV, String stopTimesCSV, String stopsCSV, String tripsCSV)
-            throws IOException, CsvValidationException {
-
+    private void loadOneCsvSet(CsvSet csvSet) throws IOException, CsvValidationException {
         // ------------------- stops.csv -------------------
 
-        List<List<String>> parsedStopsCSV = csvToMatrix(stopsCSV);
-        stopIdToStop = new HashMap<String, Stop>();
+        try (CSVReader reader = new CSVReader(new FileReader(csvSet.stopsCSV))) {
+            String[] headers = reader.readNext(); // Read the header row
+            if (headers == null) {
+                throw new IllegalArgumentException("CSV file is empty or missing headers.");
+            }
 
-        for (int i = 1; i < parsedStopsCSV.size(); i++) {
-            List<String> stopRow = parsedStopsCSV.get(i);
-            String stopId = stopRow.get(0);
-            String stopName = stopRow.get(1);
-            Double lat = Double.parseDouble(stopRow.get(2));
-            Double lon = Double.parseDouble(stopRow.get(3));
-            Coord coord = new Coord(lat, lon);
-            stopIdToStop.put(stopId, new Stop(stopId, stopName, coord));
+            // Map header names to their indices
+            Map<String, Integer> headerMap = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                headerMap.put(headers[i], i);
+            }
+
+            // Verify that required headers are present
+            String[] requiredHeaders = { "stop_id", "stop_name", "stop_lat", "stop_lon" };
+            for (String header : requiredHeaders) {
+                if (!headerMap.containsKey(header)) {
+                    throw new IllegalArgumentException("Missing required header: " + header);
+                }
+            }
+
+            String[] line;
+            while ((line = reader.readNext()) != null) {
+                String stopId = line[headerMap.get("stop_id")];
+                String stopName = line[headerMap.get("stop_name")];
+                Double lat = Double.parseDouble(line[headerMap.get("stop_lat")]);
+                Double lon = Double.parseDouble(line[headerMap.get("stop_lon")]);
+                Coord coord = new Coord(lat, lon);
+                stopIdToStop.put(stopId, new Stop(stopId, stopName, coord));
+            }
         }
-
-        List<Stop> stops = new ArrayList<>(stopIdToStop.values());
 
         // generate all paths
         // TODO: Use Ball Tree here
-        for (int i = 0; i < stops.size(); i++) {
-            for (int j = 0; j < stops.size(); j++) {
-                if (i != j) {
-                    Footpath footpath = new Footpath(stops.get(i), stops.get(j));
-
-                    stopIdToFootpaths
-                            .computeIfAbsent(stops.get(i).getId(), k -> new ArrayList<>())
-                            .add(footpath);
-                }
-            }
-        }
+        // for (Stop stop0 : stopIdToStop.values()) {
+        // for (Stop stop1 : stopIdToStop.values()) {
+        // if (stop0 != stop1) {
+        // Footpath footpath = new Footpath(stop0, stop1);
+        //
+        // if (footpath.getDistance() <= 5) {
+        // stopIdToFootpaths
+        // .computeIfAbsent(stop0.getId(), k -> new ArrayList<>())
+        // .add(footpath);
+        // }
+        //
+        // }
+        // }
+        // }
 
         // ----------------- stop_times.csv -----------------
 
-        List<List<String>> stopTimes = csvToMatrix(stopTimesCSV);
-
-        // Step 1: group by trip_id
-        Map<String, List<StopTimeEntry>> tripIdToStopTimes = new HashMap<>();
-
-        for (int i = 1; i < stopTimes.size(); i++) {
-            List<String> row = stopTimes.get(i);
-            String tripId = row.get(0);
-            int departureTime = TimeConversion.toSeconds(row.get(1));
-            String stopId = row.get(2);
-            int stopSequence = Integer.parseInt(row.get(3));
-
-            StopTimeEntry entry = new StopTimeEntry(tripId, departureTime, stopId, stopSequence);
-
-            tripIdToStopTimes
-                    .computeIfAbsent(tripId, k -> new ArrayList<>())
-                    .add(entry);
-        }
-
-        // Step 2: create Connections by trip
-        connections = new ArrayList<>();
-        for (List<StopTimeEntry> entries : tripIdToStopTimes.values()) {
-            entries.sort(Comparator.comparingInt(e -> e.stopSequence)); // sort by stop_sequence
-
-            for (int i = 0; i < entries.size() - 1; i++) {
-                StopTimeEntry from = entries.get(i);
-                StopTimeEntry to = entries.get(i + 1);
-
-                Connection connection = new Connection(
-                        from.tripId,
-                        stopIdToStop.get(from.stopId),
-                        stopIdToStop.get(to.stopId),
-                        from.departureTime,
-                        to.departureTime);
-                connections.add(connection);
+        try (CSVReader reader = new CSVReader(new FileReader(csvSet.stopTimesCSV))) {
+            String[] headers = reader.readNext(); // Read the header row
+            if (headers == null) {
+                throw new IllegalArgumentException("CSV file is empty or missing headers.");
             }
+
+            // Map header names to their indices
+            Map<String, Integer> headerMap = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                headerMap.put(headers[i], i);
+            }
+
+            // Verify that required headers are present
+            String[] requiredHeaders = { "trip_id", "departure_time", "stop_id", "stop_sequence" };
+            for (String header : requiredHeaders) {
+                if (!headerMap.containsKey(header)) {
+                    throw new IllegalArgumentException("Missing required header: " + header);
+                }
+            }
+
+            // Step 1: group by trip_id
+            Map<String, List<StopTimeEntry>> tripIdToStopTimes = new HashMap<>();
+
+            String[] line;
+            while ((line = reader.readNext()) != null) {
+                String tripId = line[0];
+                int departureTime = TimeConversion.toSeconds(line[1]);
+                String stopId = line[2];
+                int stopSequence = Integer.parseInt(line[3]);
+
+                StopTimeEntry entry = new StopTimeEntry(tripId, departureTime, stopId, stopSequence);
+
+                tripIdToStopTimes
+                        .computeIfAbsent(tripId, k -> new ArrayList<>())
+                        .add(entry);
+            }
+
+            for (List<StopTimeEntry> entries : tripIdToStopTimes.values()) {
+                entries.sort(Comparator.comparingInt(e -> e.stopSequence)); // sort by stop_sequence
+
+                for (int i = 0; i < entries.size() - 1; i++) {
+                    StopTimeEntry from = entries.get(i);
+                    StopTimeEntry to = entries.get(i + 1);
+
+                    Connection connection = new Connection(
+                            from.tripId,
+                            stopIdToStop.get(from.stopId),
+                            stopIdToStop.get(to.stopId),
+                            from.departureTime,
+                            to.departureTime);
+                    connections.add(connection);
+                }
+            }
+
         }
 
         // Final sort by departure time
