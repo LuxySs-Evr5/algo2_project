@@ -44,4 +44,9 @@ public class Coord {
     public static double distance(Coord coord1, Coord coord2) {
         return coord1.distanceTo(coord2);
     }
+
+    @Override
+    public String toString() {
+        return String.format("(%f, %f)", lat, lon);
+    }
 }

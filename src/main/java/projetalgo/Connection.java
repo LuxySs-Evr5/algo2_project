@@ -44,8 +44,9 @@ public class Connection implements Movement {
     }
 
     @Override
-    public String toString() { 
-        return String.format("tripId: %s, (%s -> %s), (%d -> %d)", tripId, pDep, pArr, tDep, tArr);
+    public String toString() {
+        return String.format("tripId: %s, ((%s) -> (%s)), (%s -> %s)", tripId, pDep, pArr,
+                TimeConversion.fromSeconds(tDep), TimeConversion.fromSeconds(tArr));
     }
 
 }
