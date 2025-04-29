@@ -264,7 +264,6 @@ public class Solver {
             }
         }
 
-        // TODO: call here
         String pArrIdEarliest = findPArrIdEarliest(bestKnown, pArrIds);
         if (pArrIdEarliest == null) {
             System.out.println("unreachable target");
