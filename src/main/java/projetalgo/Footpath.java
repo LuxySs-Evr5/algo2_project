@@ -47,7 +47,7 @@ public class Footpath implements Movement {
 
     @Override
     public String toString() {
-        return String.format("(%s <-> %s), %d", pDep, pArr, getTravelTime());
+        return String.format("((%s) <-> (%s)), %d", pDep, pArr, getTravelTime());
     }
 
 }
