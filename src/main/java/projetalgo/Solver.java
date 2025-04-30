@@ -15,13 +15,13 @@ import com.opencsv.exceptions.CsvValidationException;
 public class Solver {
 
     private HashMap<String, Stop> stopIdToStop;
-    private HashMap<String, List<Footpath>> stopIdToFootpaths;
+    private HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths;
     private List<Connection> connections;
 
     public Solver() {
         this.connections = new ArrayList<>();
         this.stopIdToStop = new HashMap<>();
-        this.stopIdToFootpaths = new HashMap<>();
+        this.stopIdToOutgoingFootpaths = new HashMap<>();
     }
 
     /**
@@ -220,9 +220,9 @@ public class Solver {
                 bestKnown.put(keyStopId, new BestKnownEntry(tDep, null));
 
                 // Footpaths initial setup
-                List<Footpath> footpathsFromPDep = stopIdToFootpaths.get(keyStopId);
+                List<Footpath> footpathsFromPDep = stopIdToOutgoingFootpaths.get(keyStopId);
                 if (footpathsFromPDep != null) {
-                    for (Footpath f : stopIdToFootpaths.get(keyStopId)) {
+                    for (Footpath f : stopIdToOutgoingFootpaths.get(keyStopId)) {
                         bestKnown.put(f.getPArr().getId(),
                                 new BestKnownEntry(tDep + f.getTravelTime(), f));
                     }
@@ -248,7 +248,7 @@ public class Solver {
             if (cIsReachable && cIsFaster) {
                 bestKnown.put(c.getPArr().getId(), new BestKnownEntry(c.getTArr(), c));
 
-                List<Footpath> footpathsFromCPArr = stopIdToFootpaths.get(c.getPArr().getId());
+                List<Footpath> footpathsFromCPArr = stopIdToOutgoingFootpaths.get(c.getPArr().getId());
                 if (footpathsFromCPArr != null) {
                     Stop footpathPDep = c.getPArr();
 
@@ -281,7 +281,7 @@ public class Solver {
 
     public void loadData(CsvSet... csvSets) throws IOException, CsvValidationException {
         stopIdToStop = new HashMap<>();
-        stopIdToFootpaths = new HashMap<>();
+        stopIdToOutgoingFootpaths = new HashMap<>();
         connections = new ArrayList<>();
 
         for (CsvSet csvSet : csvSets) {
