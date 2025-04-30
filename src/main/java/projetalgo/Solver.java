@@ -280,6 +280,7 @@ public class Solver {
     }
 
     public void loadData(CsvSet... csvSets) throws IOException, CsvValidationException {
+        // TODO: check that we reinitialize every member
         stopIdToStop = new HashMap<>();
         stopIdToOutgoingFootpaths = new HashMap<>();
         connections = new ArrayList<>();
