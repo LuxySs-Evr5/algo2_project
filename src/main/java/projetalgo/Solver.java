@@ -287,6 +287,25 @@ public class Solver {
         for (CsvSet csvSet : csvSets) {
             loadOneCsvSet(csvSet);
         }
+
+
+        // generate all paths
+        // TODO: Use Ball Tree here
+        // for (Stop stop0 : stopIdToStop.values()) {
+        // for (Stop stop1 : stopIdToStop.values()) {
+        // if (stop0 != stop1) {
+        // Footpath footpath = new Footpath(stop0, stop1);
+        //
+        // // TODO: remove magic number 5
+        // if (footpath.getDistance() <= 5) {
+        // stopIdToFootpaths
+        // .computeIfAbsent(stop0.getId(), k -> new ArrayList<>())
+        // .add(footpath);
+        // }
+        //
+        // }
+        // }
+        // }
     }
 
     private void loadOneCsvSet(CsvSet csvSet) throws IOException, CsvValidationException {
@@ -323,24 +342,6 @@ public class Solver {
             }
         }
 
-        // generate all paths
-        // TODO: Use Ball Tree here
-        // for (Stop stop0 : stopIdToStop.values()) {
-        // for (Stop stop1 : stopIdToStop.values()) {
-        // if (stop0 != stop1) {
-        // Footpath footpath = new Footpath(stop0, stop1);
-        //
-        // // TODO: remove magic number 5
-        // if (footpath.getDistance() <= 5) {
-        // stopIdToFootpaths
-        // .computeIfAbsent(stop0.getId(), k -> new ArrayList<>())
-        // .add(footpath);
-        // }
-        //
-        // }
-        // }
-        // }
-
         // ----------------- stop_times.csv -----------------
 
         try (CSVReader reader = new CSVReader(new FileReader(csvSet.stopTimesCSV))) {
@@ -368,10 +369,10 @@ public class Solver {
 
             String[] line;
             while ((line = reader.readNext()) != null) {
-                String tripId = line[0];
-                int departureTime = TimeConversion.toSeconds(line[1]);
-                String stopId = line[2];
-                int stopSequence = Integer.parseInt(line[3]);
+                String tripId = line[headerMap.get("trip_id")];
+                int departureTime = TimeConversion.toSeconds(line[headerMap.get("departure_time")]);
+                String stopId = line[headerMap.get("stop_id")];
+                int stopSequence = Integer.parseInt(line[headerMap.get("stop_sequence")]);
 
                 StopTimeEntry entry = new StopTimeEntry(tripId, departureTime, stopId, stopSequence);
 
