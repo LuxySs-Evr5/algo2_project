@@ -289,7 +289,6 @@ public class Solver {
             loadOneCsvSet(csvSet);
         }
 
-
         // generate all paths
         // TODO: Use Ball Tree here
         // for (Stop stop0 : stopIdToStop.values()) {
@@ -299,7 +298,7 @@ public class Solver {
         //
         // // TODO: remove magic number 5
         // if (footpath.getDistance() <= 5) {
-        // stopIdToFootpaths
+        // stopIdToOutgoingFootpaths
         // .computeIfAbsent(stop0.getId(), k -> new ArrayList<>())
         // .add(footpath);
         // }
