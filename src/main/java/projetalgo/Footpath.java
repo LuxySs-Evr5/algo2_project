@@ -4,7 +4,7 @@ public class Footpath implements Movement {
     private final Stop pDep; // point de départ
     private final Stop pArr; // point d'arrivée
 
-    public static double WALKING_SPEED = 5; // km/s
+    public static double WALKING_SPEED = 5; // km/h
 
     public Footpath(Stop pDep, Stop pArr) {
         this.pDep = pDep;
