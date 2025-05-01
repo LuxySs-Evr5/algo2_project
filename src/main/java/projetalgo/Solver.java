@@ -248,7 +248,7 @@ public class Solver {
                         Stop footpathPArr = f.getPArr();
 
                         int footpathTArr = getBestKnownArrivalTime(bestKnown, footpathPDep.getId()) + f.getTravelTime();
-                        boolean fpIsFaster = footpathTArr < getBestKnownArrivalTime(bestKnown, footpathPDep.getId());
+                        boolean fpIsFaster = footpathTArr < getBestKnownArrivalTime(bestKnown, footpathPArr.getId());
                         if (fpIsFaster)
                             bestKnown.put(footpathPArr.getId(), new BestKnownEntry(footpathTArr, f));
                     }
