@@ -159,24 +159,16 @@ public class Solver {
      * Returns true if the given connection's arrival time is after the
      * earliest arrival time to one of pArrIds.
      *
-     * TODO: check this again
-     *
      * NOTE: in the paper "Intriguingly Simple and Fast Transit Routing?" by
      * Julian Dibbelt, Thomas Pajor, Ben Strasser, and Dorothea Wagner,
      * it is stated:
-     *
      * "if we are only interested in one-to-one queries, the algorithm may stop as
      * soon as it scans a connection whose departure time exceeds the target stop’s
      * earliest arrival time."
-     *
-     * Although this is true, we can actually stop as soon as the connection's
-     * arrival time exceeds the best known arrival time to the destination (which
-     * occurs a tiny bit sooner than checking the departure time).
      */
-    boolean checkConnectionTArrAfterEarliestTArr(Map<String, BestKnownEntry> bestKnown, Connection c,
-            List<String> pArrIds) {
+    boolean checkConnectionTdepAfterEarliestTArr(Map<String, BestKnownEntry> bestKnown, Connection c, List<String> pArrIds) {
         for (String pArrId : pArrIds) {
-            if (c.getTArr() >= getBestKnownArrivalTime(bestKnown, pArrId)) {
+            if (c.getTDep() >= getBestKnownArrivalTime(bestKnown, pArrId)) {
                 return true;
             }
         }
@@ -235,7 +227,7 @@ public class Solver {
         }
 
         for (Connection c : filteredConnections) {
-            if (checkConnectionTArrAfterEarliestTArr(bestKnown, c, pArrIds)) {
+            if (checkConnectionTdepAfterEarliestTArr(bestKnown, c, pArrIds)) {
                 break;
             }
 
@@ -291,21 +283,21 @@ public class Solver {
 
         // generate all paths
         // TODO: Use Ball Tree here
-        // for (Stop stop0 : stopIdToStop.values()) {
-        // for (Stop stop1 : stopIdToStop.values()) {
-        // if (stop0 != stop1) {
-        // Footpath footpath = new Footpath(stop0, stop1);
-        //
-        // // TODO: remove magic number 5
-        // if (footpath.getDistance() <= 5) {
-        // stopIdToOutgoingFootpaths
-        // .computeIfAbsent(stop0.getId(), k -> new ArrayList<>())
-        // .add(footpath);
-        // }
-        //
-        // }
-        // }
-        // }
+        for (Stop sourceStop : stopIdToStop.values()) {
+            for (Stop arrStop : stopIdToStop.values()) {
+                if (sourceStop != arrStop) {
+                    Footpath footpath = new Footpath(sourceStop, arrStop);
+
+                    // TODO: remove magic number 5
+                    if (footpath.getDistance() <= 0.5) {
+                        stopIdToOutgoingFootpaths
+                                .computeIfAbsent(sourceStop.getId(), k -> new ArrayList<>())
+                                .add(footpath);
+                    }
+
+                }
+            }
+        }
     }
 
     private void loadOneCsvSet(CsvSet csvSet) throws IOException, CsvValidationException {
