@@ -1,0 +1,119 @@
+\documentclass{article}
+\usepackage{graphicx}
+\usepackage{svg}
+\usepackage[a4paper, margin=1in]{geometry}
+\renewcommand{\familydefault}{\sfdefault}
+\setlength{\parindent}{0pt}
+\usepackage[table]{xcolor}
+\usepackage{booktabs}
+\usepackage{epigraph}
+\usepackage{lmodern}
+\usepackage{geometry}
+\usepackage{amsmath}
+\usepackage{listings}
+\usepackage{xcolor}
+\lstset{
+  basicstyle=\ttfamily,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{orange},
+  showstringspaces=false,
+  breaklines=true,
+  frame=single
+}
+
+\begin{document}
+
+\begin{center}
+    {\LARGE\textbf{INFO-F203 - Algorithmique 2 - Rapport}}\\[0.5em]
+    \rule{0.9\textwidth}{1pt}
+\end{center}
+
+\vspace{5pt}
+\begin{center}
+% \rowcolors{3}{green!25}{yellow!50}
+\begin{tabular}{ *3l }    \toprule
+\textbf{Prénom} & \textbf{Nom} & \textbf{Matricule} \\\bottomrule
+Lucas & Verbeiren & 000591223  \\\bottomrule
+Ethan & Van Ruyskensvelde & 000589640  \\\bottomrule
+ %\hline
+\end{tabular}
+\end{center}
+\vspace{5pt}
+
+\tableofcontents
+\newpage
+
+%-------------------------------------------------------------------
+
+\section{Description de la structure de données utilisée}
+Notre programme utilise principalement des \texttt{hashmaps}, des \texttt{listes} et une \texttt{pile} comme structures de données.
+
+\begin{itemize}
+    \item \texttt{HashMap<String, Stop> stopIdToStop}~: permet d’associer l'identifiant d'un stop à l'objet \texttt{Stop}.
+    
+    \item \texttt{HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths}~: pour chaque arrêt, on garde une liste des chemins accessibles à pied.
+    
+    \item \texttt{List<Connection> connections}~: liste des connexions triée par heure de départ.
+    
+    \item \texttt{Map<String, BestKnownEntry> bestKnown}~: permet de suivre le meilleur temps d’arrivée connu pour chaque arrêt, ainsi que le mouvement (trajet ou marche) qui y mène.
+    
+    \item \texttt{Stack<BestKnownEntry>}~: utilisée pour reconstruire le chemin optimal, afin d'afficher les instructions dans l’ordre.
+\end{itemize}
+
+%-------------------------------------------------------------------
+
+\section{Description des algorithmes}
+Notre programme implémente une variante du \texttt{Connection Scan Algorithm (CSA)} :
+
+\begin{enumerate}
+    \item \textbf{Filtrage initial}~: on ne conserve que les arrêts dont l’heure de départ est supérieur à l’heure de départ demandée.
+    
+    \item \textbf{Initialisation}~: les arrêts de départ sont initialisés avec un temps d’arrivée égal à l’heure de départ. Les chemins accessibles à pied depuis ces arrêts sont aussi explorés.
+    
+    \item \textbf{Scan des chemins}~: chaque \texttt{Connection} est traitée par ordre croissant d’heure de départ :
+    \begin{itemize}
+        \item si l’arrêt de départ est atteignable~: $t_{arr}(p_{dep}) \leq t_{dep}(\text{connection})$
+        \item et si la connexion permet d’arriver plus tôt~: $t_{arr}(\text{connection}) < t_{arr}(p_{arr})$
+        \item alors on met à jour le \texttt{bestKnown} de l’arrêt d’arrivée, et on ajoute les \texttt{footpaths} sortants depuis cet arrêt.
+    \end{itemize}
+    
+    \item \textbf{Arrêt anticipé}~: on peut arrêter le scan si toutes les connexions restantes partent après l’heure d’arrivée minimale connue vers un des arrêts d’arrivée.
+    
+    \item \textbf{Reconstruction}~: le chemin optimal est reconstruit , depuis l’arrêt d’arrivée le plus rapide.
+\end{enumerate}
+
+%-------------------------------------------------------------------
+
+\section{Principales classes et méthodes utilisées dans le programme java}
+
+\begin{itemize}
+    \item \textbf{Solver}~: classe principale contenant la logique de calcul du plus court chemin. Elle contient les méthodes
+    \begin{itemize}
+        \item \texttt{solve()}~: cœur de l’algorithme, calcule le plus court chemin à partir des données.
+    
+        \item \texttt{reconstructSolution()} et \texttt{printInstructions()}~: reconstruisent le chemin optimal et affichent les instructions de trajet.
+    
+        \item \texttt{loadData()} et \texttt{loadOneCsvSet()}~: chargent les différentes données des horaires et arrêts.
+    \end{itemize}
+
+    \item \textbf{Connection}~: classe représentant un trajet direct entre deux arrêts, avec une heure de départ et d'arrivée ainsi que le point de départ et d'arrivée du trajet.
+
+    \item \textbf{Footpath}~: représente un déplacement à pied entre deux arrêts proches avec le point de départ et d'arrivée.
+
+    \item \textbf{Stop}~: représente un arrêt. Cette classe contient l’identifiant de l'arrêt, son nom et ses coordonnées géographiques.
+
+    \item \textbf{Coord}~: représente des coordonnées géographiques et permet de calculer les distances à l’aide de la formule de \texttt{Haversine} pour la méthode \texttt{distanceTo()} qui détermine la distance entre deux \texttt{Coord}.
+
+    \item \textbf{BestKnownEntry}~: associe à un arrêt le meilleur temps d’arrivée connu ainsi que l’action (trajet ou marche) permettant d’y parvenir.
+
+    \item \textbf{Main}~: initialise un \texttt{Solver}, charge les différentes données grâce à la méthode \texttt{CsvSet()} et les passe au \texttt{Solver}, et essaie de trouver un plus court chemin entre deux arrêts à une heure de départ donnée.
+\end{itemize}
+
+%-------------------------------------------------------------------
+
+\section{Description des algorithmes et méthodes utilisées pour la variante du problème}
+
+%-------------------------------------------------------------------
+
+\end{document}
