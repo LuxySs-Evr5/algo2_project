@@ -11,3 +11,6 @@ build
 
 # Ignore jetbrains idea settings
 .idea
+
+# Ignore .jar files
+algo2_project.jar

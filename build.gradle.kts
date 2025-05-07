@@ -49,7 +49,16 @@ application {
     mainClass = "projetalgo.Main"
 }
 
-tasks.named<Test>("test") {
-    // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
+tasks.jar {
+    destinationDirectory.set(layout.projectDirectory) // root of the project
+    archiveFileName.set("algo2_project.jar")
+    manifest {
+        attributes["Main-Class"] = "projetalgo.Main"
+    }
+    from({
+        configurations.runtimeClasspath.get()
+            .filter { it.name.endsWith("jar") }
+            .map { zipTree(it) }
+    })
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
