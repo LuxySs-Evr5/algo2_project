@@ -14,13 +14,11 @@ public class BallTree {
         return root;
     }
 
-    // TODO: keep it or remove it?
     public Stop findNearest(Stop target) {
         Stop nearest = findNearest(root, target, null, Double.MAX_VALUE);
         return nearest;
     }
 
-    // TODO: keep it or remove it?
     private Stop findNearest(BallTreeNode node, Stop target, Stop best, double bestDist) {
         if (node == null) {
             return best;

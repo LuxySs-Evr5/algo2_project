@@ -282,19 +282,18 @@ public class Solver {
         }
 
         // generate all paths
-        // TODO: Use Ball Tree here
+        BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
+        double maxDistanceKm = 0.5;
         for (Stop sourceStop : stopIdToStop.values()) {
-            for (Stop arrStop : stopIdToStop.values()) {
-                if (sourceStop != arrStop) {
+            List<Stop> nearbyStops = ballTree.findStopsWithinRadius(sourceStop, maxDistanceKm);
+
+            for (Stop arrStop : nearbyStops) {
+                if (!sourceStop.equals(arrStop)) {
                     Footpath footpath = new Footpath(sourceStop, arrStop);
 
-                    // TODO: remove magic number 5
-                    if (footpath.getDistance() <= 0.5) {
-                        stopIdToOutgoingFootpaths
-                                .computeIfAbsent(sourceStop.getId(), k -> new ArrayList<>())
-                                .add(footpath);
-                    }
-
+                    stopIdToOutgoingFootpaths
+                        .computeIfAbsent(sourceStop.getId(), k -> new ArrayList<>())
+                        .add(footpath);
                 }
             }
         }
