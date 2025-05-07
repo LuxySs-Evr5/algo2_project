@@ -3,16 +3,23 @@ package projetalgo;
 public class TimeConversion {
 
     public static int toSeconds(String time) {
-        String[] parts = time.split(":");
-        if (parts.length != 3) {
-            throw new IllegalArgumentException("Invalid time format, expected HH:MM:SS");
+        try {
+            String[] parts = time.split(":");
+            if (parts.length != 3) {
+                System.err.println("Invalid time format, expected HH:MM:SS");
+                return -1;
+            }
+
+            int hours = Integer.parseInt(parts[0]);
+            int minutes = Integer.parseInt(parts[1]);
+            int seconds = Integer.parseInt(parts[2]);
+
+            return hours * 3600 + minutes * 60 + seconds;
+
+        } catch (NumberFormatException e) {
+            System.err.println("Error: " + e.getMessage());
+            return -1;
         }
-
-        int hours = Integer.parseInt(parts[0]);
-        int minutes = Integer.parseInt(parts[1]);
-        int seconds = Integer.parseInt(parts[2]);
-
-        return hours * 3600 + minutes * 60 + seconds;
     }
 
     public static String fromSeconds(int totalSeconds) {
