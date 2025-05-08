@@ -17,9 +17,9 @@ public class ProfileFunction<T extends CriteriaTracker> {
     }
 
     /**
-     * Returns the Movement that matches firt with the given CriteriaTracker and
-     * depart at/after the given tDep.
-     * (Scanning by increasing tDep).
+     * Returns the Movement instances that matches first with the given
+     * CriteriaTracker and depart at/after the given tDep. (Scanning by
+     * increasing depature time).
      */
     public Movement getFirstMatch(int tDep, CriteriaTracker criteriaTracker) {
         for (Pair<Integer, Map<T, Pair<Integer, Movement>>> entry : entries.subList(getFirstReachableEntry(tDep),
@@ -35,14 +35,37 @@ public class ProfileFunction<T extends CriteriaTracker> {
         return null;
     }
 
-    // TODO: make this use a binary search ?
-    // not ure it's such a good idea since mot of the time we add at the front (or
-    // near the front) of the list,
-    // so scanning the whole list could be worse than linearly scanning from the
-    // start
+    /**
+     * Returns the index of the first entry whose departure time is greater
+     * than or equal to tDep, entries.size() if no such entry.
+     *
+     * NOTE: This could be done with a binary search, but in practice it would
+     * probably slow down the algorithm as we are always inserting near the
+     * front of the entries array. (Because entries are sorted by increasing
+     * departure time and we are scanning connections by decreasing departure
+     * time.) The only reason why it is not always exactly in the first bag is
+     * because of interstop footpaths:
+     *
+     * let X, Y, Z be three stops. let c be a connection leaving Y at t1. let d
+     * be a connection leaving Z at t2. let f be a footpath from Y to Z that can
+     * be travelled in fTravelTime.
+     *
+     * Assume t1 is before t2, therefore c is scanned first. Since f is an
+     * incoming footpath of Y, the profile function of Z (f's departure stop)
+     * will be updated (pushing new partial journeys leaving at time t1 -
+     * fTravelTime).
+     *
+     * The next connection to be scanned is d, Z's profile will be updated
+     * (again): adding partial journeys taking connection d (at t2).
+     *
+     * If t2 > t1 - fTravelTime, the journeys added in the previous step won't
+     * be added at the front of Z's profile entries but right after the bag that
+     * stores the journeys previously added when scanning f (near the front).
+     */
     private int getFirstReachableEntry(int tDep) {
         int firstReachableEntryIdx = 0;
-        while (firstReachableEntryIdx < entries.size() && entries.get(firstReachableEntryIdx).getKey() < tDep) {
+        while (firstReachableEntryIdx < entries.size() &&
+                entries.get(firstReachableEntryIdx).getKey() < tDep) {
             firstReachableEntryIdx++;
         }
 
@@ -50,6 +73,8 @@ public class ProfileFunction<T extends CriteriaTracker> {
     }
 
     /**
+     * Insert new partial journeys departing at tdep.
+     *
      * @param tDep               is the departureTime
      * @param newPartialJourneys a map that associates each T to a
      *                           Pair<arrivalTime, Movement> where T is a
@@ -199,6 +224,14 @@ public class ProfileFunction<T extends CriteriaTracker> {
         }
     }
 
+    /**
+     * Evaluates the profile function at a given time.
+     *
+     * For a given departure time tDep, scans all entries leaving at or after tDep.
+     * For each CriteriaTracker, keeps the movement with the best (earliest) arrival
+     * time. Returns a map from CriteriaTracker to its best (arrivalTime, movement)
+     * pair.
+     */
     public Map<T, Pair<Integer, Movement>> evaluateAt(int tDep) {
         Map<T, Pair<Integer, Movement>> ret = new HashMap<>();
 
