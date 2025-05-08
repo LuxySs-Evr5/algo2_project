@@ -355,22 +355,19 @@ public class MultiCritSolver {
             loadOneCsvSet(csvSet);
         }
 
-        // generate all paths
-        // TODO: Use Ball Tree here
+        BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
+        double maxDistanceKm = Integer.MAX_VALUE;
         for (Stop sourceStop : stopIdToStop.values()) {
-            for (Stop destStop : stopIdToStop.values()) {
-                if (sourceStop != destStop) {
-                    Footpath footpath = new Footpath(sourceStop, destStop);
 
-                    // TODO: remove magic number 5
-                    // if (footpath.getDistance() <= 5) {
+            List<Stop> nearbyStops = ballTree.findStopsWithinRadius(sourceStop, maxDistanceKm);
+
+            for (Stop arrStop : nearbyStops) {
+                if (!sourceStop.equals(arrStop)) {
+                    Footpath footpath = new Footpath(sourceStop, arrStop);
+
                     stopIdToIncomingFootpaths
-                            .computeIfAbsent(destStop.getId(), k -> new ArrayList<>())
+                            .computeIfAbsent(arrStop.getId(), k -> new ArrayList<>())
                             .add(footpath);
-
-                    stopIdToOutgoingFootpaths.computeIfAbsent(sourceStop.getId(), k -> new ArrayList<>())
-                            .add(footpath);
-                    // }
                 }
             }
         }
