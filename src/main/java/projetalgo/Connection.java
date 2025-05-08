@@ -39,7 +39,7 @@ public class Connection implements Movement {
 
     @Override
     public String toString() { 
-        return String.format("tripId: %d, (%s -> %s), (%d -> %d)", tripId, pDep, pArr, tDep, tArr);
+        return String.format("tripId: %s, (%s -> %s), (%d -> %d)", tripId, pDep, pArr, tDep, tArr);
     }
 
 }
