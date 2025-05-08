@@ -125,8 +125,8 @@ public class ProfileFunction<T extends CriteriaTracker> {
                 boolean dominated = false;
 
                 // iterate over all the things that depart at/after tdep
-                for (int i = firstReachableEntryIdx; i < entries.size(); i++) {
-                    Pair<Integer, Map<T, Pair<Integer, Movement>>> currentEntry = entries.get(i);
+                for (Pair<Integer, Map<T, Pair<Integer, Movement>>> currentEntry : entries
+                        .subList(firstReachableEntryIdx, entries.size())) {
 
                     // iterate over their <key, values>
                     for (Map.Entry<T, Pair<Integer, Movement>> partialJourney : currentEntry.getValue().entrySet()) {
@@ -168,7 +168,7 @@ public class ProfileFunction<T extends CriteriaTracker> {
                         Map<T, Pair<Integer, Movement>> newMap = new HashMap<T, Pair<Integer, Movement>>(
                                 Map.of(newPartialJourneyCriteria, newPartialJourney.getValue()));
 
-                        // add the new map in entries
+                        // add the new entry with tdep and map in entries
                         entries.add(firstReachableEntryIdx,
                                 new Pair<Integer, Map<T, Pair<Integer, Movement>>>(tDep, newMap));
                     }
@@ -191,19 +191,19 @@ public class ProfileFunction<T extends CriteriaTracker> {
             T addedNewPartialJourneyCriteria = addedNewPartialJourney.getKey();
             int addedNewPartialJourneyTArr = addedNewPartialJourney.getValue().getKey();
 
-            // for each partial journey in the bags that leave before/at tdep
+            // for each bag entry whose departure time is before/at tdep
             for (Pair<Integer, Map<T, Pair<Integer, Movement>>> currentEntry : entries.subList(0,
-                    firstReachableEntryIdx)) {
+                    firstReachableEntryIdx + 1)) { // TODO: check the +1
 
                 List<T> partialJourneysNowDominated = new ArrayList<T>();
 
-                // for each journey in that bag
+                // for each partial journey in that entry
                 for (Map.Entry<T, Pair<Integer, Movement>> partialJourney : currentEntry.getValue().entrySet()) {
 
                     T partialJourneyCriteria = partialJourney.getKey();
                     int partialJourneyTArr = partialJourney.getValue().getKey();
 
-                    // a partial journey (that leaves at/before tdep) is now dominated by one of
+                    // the partial journey being scanned is now dominated by at least one of
                     // addedNewPartialJourneys
                     if ((addedNewPartialJourneyCriteria.dominates(partialJourneyCriteria) &&
                             addedNewPartialJourneyTArr <= partialJourneyTArr) ||
