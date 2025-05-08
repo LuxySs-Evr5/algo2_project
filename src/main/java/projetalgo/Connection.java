@@ -2,10 +2,10 @@ package projetalgo;
 
 public class Connection implements Movement {
     private final String tripId;
-    private final Stop pDep; // point de départ
-    private final Stop pArr; // point d'arrivée
-    private final int tDep;// temps de départ
-    private final int tArr;// temps d'arrivée
+    private final Stop pDep; // departure point
+    private final Stop pArr; // arrival point
+    private final int tDep;  // departure time
+    private final int tArr;  // arrival time
 
     public Connection(String tripId, Stop pDep, Stop pArr, int tDep, int tArr) {
         this.tripId = tripId;

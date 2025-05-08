@@ -18,7 +18,15 @@ public class Main {
     public static final String ANSI_UNDERLINE = "\u001B[4m";
     public static final String ANSI_RED = "\u001B[31m";
 
-    private static String getInput(LineReader reader, String textToShow) {
+    /**
+     * @brief Get the input from the user.
+     * @param solver the solver object to check if the stop exists (if stop is true)
+     * @param reader the line reader object to read the input
+     * @param textToShow the text to show to the user when asking for input
+     * @param isStopName if true, the input must be a stop name, otherwise it's a time
+     * @return the input from the user
+     */
+    private static String getInput(Solver solver, LineReader reader, String textToShow, boolean isStopName) {
         try {
             while (true) {
                 String input = reader.readLine(textToShow).stripTrailing().toLowerCase();
@@ -27,12 +35,17 @@ public class Main {
                     System.out.println("Exiting the program ...");
                     System.exit(0);
                 }
-    
-                if (!input.isEmpty()) {
+
+                if (input.isEmpty()) {
+                    textToShow = "Invalid input. " + textToShow;
+                    continue;
+                } else if (!isStopName) {
+                    return input;
+                } else if (solver.stopExists(input)) {
                     return input;
                 }
     
-                textToShow = "Invalid input. " + textToShow;
+                textToShow = "The " + input + " stop was not found in the data. " + textToShow;
             }
         } catch (UserInterruptException e) {
             System.out.println("\nProgram interrupted by user.");
@@ -80,9 +93,9 @@ public class Main {
             while (true) {
                 System.out.println(ANSI_BOLD + "\n=== Create a New Trip ===" + ANSI_RESET);
 
-                String pDepName = getInput(reader, "Enter the departure stop: ");
-                String pArrName = getInput(reader, "Enter the arrival stop: ");
-                String strTDep = getInput(reader, "Enter the departure time: ");
+                String pDepName = getInput(solver, reader, "Enter the departure stop: ", true);
+                String pArrName = getInput(solver, reader, "Enter the arrival stop: ", true);
+                String strTDep = getInput(solver, reader, "Enter the departure time: ", false);
 
                 int tDep = TimeConversion.toSeconds(strTDep);
                 if (tDep == -1) {

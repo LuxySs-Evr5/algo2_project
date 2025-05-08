@@ -1,8 +1,8 @@
 package projetalgo;
 
 public class Footpath implements Movement {
-    private final Stop pDep; // point de départ
-    private final Stop pArr; // point d'arrivée
+    private final Stop pDep; // departure point
+    private final Stop pArr; // arrival point
 
     public static double WALKING_SPEED = 5; // km/h
 

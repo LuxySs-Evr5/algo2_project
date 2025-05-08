@@ -24,6 +24,15 @@ public class Solver {
         this.stopIdToOutgoingFootpaths = new HashMap<>();
     }
 
+    boolean stopExists(String name) {
+        for (Stop stop : stopIdToStop.values()) {
+            if (stop.getName().equalsIgnoreCase(name)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Returns the index of the first connection departing at or after our departure
      * time.
@@ -123,9 +132,10 @@ public class Solver {
 
             if (movement instanceof Footpath) {
                 if (currentTripId != null) {
-                    System.out.println("Take trip " + currentTripId + " from " +
-                            tripStartStop.getName() + " to "
-                            + previousStop.getName());
+                    if (tripStartStop != null && previousStop != null) {
+                        System.out.println("Take trip " + currentTripId + " from " +
+                            tripStartStop.getName() + " to " + previousStop.getName());
+                    }
                     currentTripId = null;
                     tripStartStop = null;
                 }
@@ -136,9 +146,10 @@ public class Solver {
                     currentTripId = tripId;
                     tripStartStop = pDep;
                 } else if (!tripId.equals(currentTripId)) {
-                    System.out.println("Take trip " + currentTripId + " from " +
-                            tripStartStop.getName() + " to "
-                            + previousStop.getName());
+                    if (tripStartStop != null && previousStop != null) {
+                        System.out.println("Take trip " + currentTripId + " from " +
+                            tripStartStop.getName() + " to " + previousStop.getName());
+                    }
                     currentTripId = tripId;
                     tripStartStop = pDep;
                 }
@@ -149,9 +160,10 @@ public class Solver {
         }
 
         if (currentTripId != null) {
-            System.out.println("Take trip " + currentTripId + " from " +
-                    tripStartStop.getName() + " to "
-                    + previousStop.getName());
+            if (tripStartStop != null && previousStop != null) {
+                System.out.println("Take trip " + currentTripId + " from " +
+                    tripStartStop.getName() + " to " + previousStop.getName());
+            }            
         }
     }
 
@@ -222,7 +234,7 @@ public class Solver {
             }
         }
 
-        if (pArrIds.size() == 0) { // no pArrId not found
+        if (pArrIds.isEmpty()) { // no pArrId not found
             System.out.println("invalid destination");
         }
 
@@ -326,9 +338,7 @@ public class Solver {
             while ((line = reader.readNext()) != null) {
                 String stopId = line[headerMap.get("stop_id")];
                 String stopName = line[headerMap.get("stop_name")].toLowerCase();
-                Double lat = Double.parseDouble(line[headerMap.get("stop_lat")]);
-                Double lon = Double.parseDouble(line[headerMap.get("stop_lon")]);
-                Coord coord = new Coord(lat, lon);
+                Coord coord = new Coord(Double.parseDouble(line[headerMap.get("stop_lat")]), Double.parseDouble(line[headerMap.get("stop_lon")]));
                 stopIdToStop.put(stopId, new Stop(stopId, stopName, coord));
             }
         }
