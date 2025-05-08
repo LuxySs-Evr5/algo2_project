@@ -73,17 +73,16 @@ public class ProfileFunction<T extends CriteriaTracker> {
     }
 
     /**
-     * Insert new partial journeys departing at tdep.
+     * Inserts new partial journeys departing at tDep.
      *
-     * @param tDep               is the departureTime
-     * @param newPartialJourneys a map that associates each T to a
-     *                           Pair<arrivalTime, Movement> where T is a
-     *                           CriteriaTracker that keeps track of the stats for
-     *                           each criteria we are interested in for the partial
-     *                           journey.
+     * @param tDep               departure time (in seconds)
+     * @param newPartialJourneys a map from each CriteriaTracker (T) to a Pair of
+     *                           (arrivalTime, movement), where arrival time is the
+     *                           arrival time at the destination and movement is the
+     *                           next connection/footpath to take if following
+     *                           that partial journey.
      */
-    public void insert(int tDep, Map<T, Pair<Integer, Movement>> newPartialJourneys) { // NOTE: newPartialJourneys is
-                                                                                       // article
+    public void insert(int tDep, Map<T, Pair<Integer, Movement>> newPartialJourneys) {
         // find the index from which all the entries keys are >=tDep
         int firstReachableEntryIdx = getFirstReachableEntry(tDep);
 
