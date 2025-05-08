@@ -324,7 +324,7 @@ public class Solver {
 
             String[] line;
             while ((line = reader.readNext()) != null) {
-                String stopId = line[headerMap.get("stop_id")].toLowerCase();
+                String stopId = line[headerMap.get("stop_id")];
                 String stopName = line[headerMap.get("stop_name")].toLowerCase();
                 Double lat = Double.parseDouble(line[headerMap.get("stop_lat")]);
                 Double lon = Double.parseDouble(line[headerMap.get("stop_lon")]);
@@ -360,9 +360,9 @@ public class Solver {
 
             String[] line;
             while ((line = reader.readNext()) != null) {
-                String tripId = line[headerMap.get("trip_id")].toLowerCase();
+                String tripId = line[headerMap.get("trip_id")];
                 int departureTime = TimeConversion.toSeconds(line[headerMap.get("departure_time")]);
-                String stopId = line[headerMap.get("stop_id")].toLowerCase();
+                String stopId = line[headerMap.get("stop_id")];
                 int stopSequence = Integer.parseInt(line[headerMap.get("stop_sequence")]);
 
                 StopTimeEntry entry = new StopTimeEntry(tripId, departureTime, stopId, stopSequence);
