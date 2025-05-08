@@ -9,7 +9,7 @@ public class BallTreeNode {
     public BallTreeNode rightChild;
     public List<Stop> stops; // leaves of the tree
 
-    public BallTreeNode(List<Stop> stops) {
+    public BallTreeNode(final List<Stop> stops) {
         build(stops);
     }
 

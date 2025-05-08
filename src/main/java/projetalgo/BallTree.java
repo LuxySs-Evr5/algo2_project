@@ -6,7 +6,7 @@ import java.util.List;
 public class BallTree {
     private final BallTreeNode root;
 
-    public BallTree(List<Stop> stops) {
+    public BallTree(final List<Stop> stops) {
         root = new BallTreeNode(stops);
     }
 
@@ -14,7 +14,7 @@ public class BallTree {
         return root;
     }
 
-    public Stop findNearest(Stop target) {
+    public Stop findNearest(final Stop target) {
         Stop nearest = findNearest(root, target, null, Double.MAX_VALUE);
         return nearest;
     }
@@ -68,7 +68,7 @@ public class BallTree {
         return best;
     }
 
-    public List<Stop> findStopsWithinRadius(Stop target, double radiusKm) {
+    public List<Stop> findStopsWithinRadius(final Stop target, final double radiusKm) {
         List<Stop> result = new ArrayList<>();
         findStopsWithinRadius(root, target, radiusKm, result);
         return result;

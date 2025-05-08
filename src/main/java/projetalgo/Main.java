@@ -26,10 +26,11 @@ public class Main {
      * @param isStopName if true, the input must be a stop name, otherwise it's a time
      * @return the input from the user
      */
-    private static String getInput(Solver solver, LineReader reader, String textToShow, boolean isStopName) {
+    private static String getInput(Solver solver, LineReader reader, final String textToShow, final boolean isStopName) {
+        String instruction = textToShow;
         try {
             while (true) {
-                String input = reader.readLine(textToShow).stripTrailing().toLowerCase();
+                String input = reader.readLine(instruction).stripTrailing().toLowerCase();
     
                 if (input.equals("q") || input.equals("quit")) {
                     System.out.println("Exiting the program ...");
@@ -37,7 +38,7 @@ public class Main {
                 }
 
                 if (input.isEmpty()) {
-                    textToShow = "Invalid input. " + textToShow;
+                    instruction = "Invalid input. " + textToShow;
                     continue;
                 } else if (!isStopName) {
                     return input;
@@ -45,7 +46,7 @@ public class Main {
                     return input;
                 }
     
-                textToShow = "The " + input + " stop was not found in the data. " + textToShow;
+                instruction = "The " + input + " stop was not found in the data. " + textToShow;
             }
         } catch (UserInterruptException e) {
             System.out.println("\nProgram interrupted by user.");

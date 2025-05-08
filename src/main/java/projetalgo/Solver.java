@@ -24,6 +24,9 @@ public class Solver {
         this.stopIdToOutgoingFootpaths = new HashMap<>();
     }
 
+    /**
+     * Returns true if the stop with the given name exists in the data.
+     */
     boolean stopExists(String name) {
         for (Stop stop : stopIdToStop.values()) {
             if (stop.getName().equalsIgnoreCase(name)) {
