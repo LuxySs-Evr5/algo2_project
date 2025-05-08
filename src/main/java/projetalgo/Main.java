@@ -9,6 +9,7 @@ public class Main {
     public static final String ANSI_RESET = "\u001B[0m";
     public static final String ANSI_BOLD = "\u001B[1m";
     public static final String ANSI_UNDERLINE = "\u001B[4m";
+    public static final String ANSI_RED = "\u001B[31m";
 
     public static void main(String[] args) {
         Solver solver = new Solver();
@@ -49,13 +50,13 @@ public class Main {
                 System.out.println(ANSI_BOLD + "\n=== Create a New Trip ===" + ANSI_RESET);
 
                 System.out.print("Enter the departure stop: ");
-                String pDepName = System.console().readLine().stripTrailing();
+                String pDepName = System.console().readLine().stripTrailing().toLowerCase();
                 if (pDepName.equals("q") || pDepName.equals("quit")) {
                     break;
                 }
                 while (pDepName.length() == 0) {
                     System.out.print("Please enter a valid departure stop: ");
-                    pDepName = System.console().readLine().stripTrailing();
+                    pDepName = System.console().readLine().stripTrailing().toLowerCase();
                     if (pDepName.equals("q") || pDepName.equals("quit")) {
                         quit = true;
                     }
@@ -65,13 +66,13 @@ public class Main {
                 }
 
                 System.out.print("Enter the arrival stop: ");
-                String pArrName = System.console().readLine().stripTrailing();
+                String pArrName = System.console().readLine().stripTrailing().toLowerCase();
                 if (pArrName.equals("q") || pArrName.equals("quit")) {
                     break;
                 }
                 while (pArrName.length() == 0) {
                     System.out.print("Please enter a valid arrival stop: ");
-                    pArrName = System.console().readLine().stripTrailing();
+                    pArrName = System.console().readLine().stripTrailing().toLowerCase();
                     if (pArrName.equals("q") || pArrName.equals("quit")) {
                         quit = true;
                     }
@@ -81,13 +82,13 @@ public class Main {
                 }
 
                 System.out.print("Enter the departure time: ");
-                String strTDep = System.console().readLine().stripTrailing();
+                String strTDep = System.console().readLine().stripTrailing().toLowerCase();
                 if (strTDep.equals("q") || strTDep.equals("quit")) {
                     break;
                 }
                 while (strTDep.length() == 0) {
                     System.out.print("Please enter a valid departure time: ");
-                    strTDep = System.console().readLine().stripTrailing();
+                    strTDep = System.console().readLine().stripTrailing().toLowerCase();
                     if (strTDep.equals("q") || strTDep.equals("quit")) {
                         quit = true;
                     }
@@ -103,7 +104,14 @@ public class Main {
                     continue;
                 }
 
-                System.out.println(ANSI_BOLD + ANSI_UNDERLINE + "\nThe shortest path is:" + ANSI_RESET);
+                System.out.println(
+                    ANSI_BOLD + "\nThe shortest path for " +
+                    ANSI_RED + ANSI_UNDERLINE + pDepName + ANSI_RESET + ANSI_BOLD +
+                    " to " + ANSI_RED + ANSI_UNDERLINE + pArrName + ANSI_RESET + ANSI_BOLD +
+                    " at " + ANSI_RED + ANSI_UNDERLINE + strTDep + ANSI_RESET + ANSI_BOLD +
+                    " is:" + ANSI_RESET
+                );
+
                 solver.solve(pDepName, pArrName, tDep);
             }
         } catch (IOException | CsvValidationException e) {
