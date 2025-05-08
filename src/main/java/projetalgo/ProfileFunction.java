@@ -86,8 +86,8 @@ public class ProfileFunction<T extends CriteriaTracker> {
         // find the index from which all the entries keys are >=tDep
         int firstReachableEntryIdx = getFirstReachableEntry(tDep);
 
-        // keep track of which partial journeys get added so we can then remove the ones
-        // that are dominated by those
+        // track which new partial journeys were added, so we can later remove any
+        // existing ones that are now dominated.
         List<Pair<T, Pair<Integer, Movement>>> addedNewPartialJourneys = new ArrayList<>();
 
         // 2 cases:
@@ -108,9 +108,9 @@ public class ProfileFunction<T extends CriteriaTracker> {
                         .add(new Pair<>(newPartialJourneyEntry.getKey(), newPartialJourneyEntry.getValue()));
             }
 
-            // 2. there is already a pair<departureTime, map> such that departureTime >=
-            // tDep
-        } else {
+        } // 2. there is already a pair<departureTime, map> such that departureTime >=
+          // tDep
+        else {
 
             // iterate over the new partial journeys that we want to insert
             for (Map.Entry<T, Pair<Integer, Movement>> newPartialJourney : newPartialJourneys.entrySet()) {
