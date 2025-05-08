@@ -27,7 +27,7 @@ public class Solver {
     /**
      * Returns true if the stop with the given name exists in the data.
      */
-    boolean stopExists(String name) {
+    boolean stopExists(final String name) {
         for (Stop stop : stopIdToStop.values()) {
             if (stop.getName().equalsIgnoreCase(name)) {
                 return true;
@@ -36,6 +36,19 @@ public class Solver {
         return false;
     }
 
+    /**
+     * Returns string representation of the duration in minutes and seconds.
+     */
+    private String formatDuration(final int seconds) {
+        int minutes = seconds / 60;
+        int remainingSeconds = seconds % 60;
+        if (minutes > 0) {
+            return minutes + " min" + (remainingSeconds > 0 ? " " + remainingSeconds + " sec" : "");
+        } else {
+            return remainingSeconds + " sec";
+        }
+    }
+    
     /**
      * Returns the index of the first connection departing at or after our departure
      * time.
@@ -126,6 +139,7 @@ public class Solver {
         String currentTripId = null;
         Stop tripStartStop = null;
         Stop previousStop = null;
+        int departureTime = -1;
 
         while (!finalPath.isEmpty()) {
             BestKnownEntry entry = finalPath.pop();
@@ -133,28 +147,35 @@ public class Solver {
             Stop pDep = movement.getPDep();
             Stop pArr = movement.getPArr();
 
-            if (movement instanceof Footpath) {
+            if (movement instanceof Footpath footpath) {
                 if (currentTripId != null) {
                     if (tripStartStop != null && previousStop != null) {
+                        String depTimeStr = TimeConversion.fromSeconds(departureTime);
                         System.out.println("Take trip " + currentTripId + " from " +
-                            tripStartStop.getName() + " to " + previousStop.getName());
+                            tripStartStop.getName() + " at " + depTimeStr+ " to " + previousStop.getName());
                     }
                     currentTripId = null;
                     tripStartStop = null;
+                    departureTime = -1;
                 }
-                System.out.println("Walk from " + pDep.getName() + " to " + pArr.getName());
+                int travelTime = footpath.getTravelTime();
+                String duration = formatDuration(travelTime);
+                System.out.println("Walk " + duration + " from " + pDep.getName() + " to " + pArr.getName());
             } else if (movement instanceof Connection connection) {
                 String tripId = connection.getTripId();
                 if (currentTripId == null) {
                     currentTripId = tripId;
                     tripStartStop = pDep;
+                    departureTime = connection.getTDep();
                 } else if (!tripId.equals(currentTripId)) {
                     if (tripStartStop != null && previousStop != null) {
+                        String depTimeStr = TimeConversion.fromSeconds(departureTime);
                         System.out.println("Take trip " + currentTripId + " from " +
-                            tripStartStop.getName() + " to " + previousStop.getName());
+                            tripStartStop.getName() + " at " + depTimeStr+ " to " + previousStop.getName());
                     }
                     currentTripId = tripId;
                     tripStartStop = pDep;
+                    departureTime = connection.getTDep();
                 }
                 // Same trip -> continue
             }
@@ -164,8 +185,9 @@ public class Solver {
 
         if (currentTripId != null) {
             if (tripStartStop != null && previousStop != null) {
+                String depTimeStr = TimeConversion.fromSeconds(departureTime);
                 System.out.println("Take trip " + currentTripId + " from " +
-                    tripStartStop.getName() + " to " + previousStop.getName());
+                    tripStartStop.getName() + " at " + depTimeStr+ " to " + previousStop.getName());
             }            
         }
     }
@@ -279,11 +301,10 @@ public class Solver {
 
         int tArrEarliest = bestKnown.get(pArrIdEarliest).getTArr();
 
-        System.out.printf("pArr: %s, sec = %d (%s)\n", stopIdToStop.get(pArrIdEarliest).getName(), tArrEarliest,
-                TimeConversion.fromSeconds(tArrEarliest));
-
         Stack<BestKnownEntry> finalPath = reconstructSolution(bestKnown, pDepIds, pArrIdEarliest);
         printInstructions(finalPath);
+
+        System.out.println(AinsiCode.BOLD + AinsiCode.RED + "You will arrive at " + stopIdToStop.get(pArrIdEarliest).getName() + " at " + TimeConversion.fromSeconds(tArrEarliest) + AinsiCode.RESET);
     }
 
     public void loadData(CsvSet... csvSets) throws IOException, CsvValidationException {

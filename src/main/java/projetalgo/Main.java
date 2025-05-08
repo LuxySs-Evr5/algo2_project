@@ -13,11 +13,6 @@ import com.opencsv.exceptions.CsvValidationException;
 
 public class Main {
 
-    public static final String ANSI_RESET = "\u001B[0m";
-    public static final String ANSI_BOLD = "\u001B[1m";
-    public static final String ANSI_UNDERLINE = "\u001B[4m";
-    public static final String ANSI_RED = "\u001B[31m";
-
     /**
      * @brief Get the input from the user.
      * @param solver the solver object to check if the stop exists (if stop is true)
@@ -92,7 +87,7 @@ public class Main {
             // -------------- While the user won't quit --------------
 
             while (true) {
-                System.out.println(ANSI_BOLD + "\n=== Create a New Trip ===" + ANSI_RESET);
+                System.out.println(AinsiCode.BOLD + "\n=== Create a New Trip ===" + AinsiCode.RESET);
 
                 String pDepName = getInput(solver, reader, "Enter the departure stop: ", true);
                 String pArrName = getInput(solver, reader, "Enter the arrival stop: ", true);
@@ -106,11 +101,11 @@ public class Main {
                 // -------------- Solve the shortest path --------------
 
                 System.out.println(
-                    ANSI_BOLD + "\nThe shortest path for " +
-                    ANSI_RED + ANSI_UNDERLINE + pDepName + ANSI_RESET + ANSI_BOLD +
-                    " to " + ANSI_RED + ANSI_UNDERLINE + pArrName + ANSI_RESET + ANSI_BOLD +
-                    " at " + ANSI_RED + ANSI_UNDERLINE + strTDep + ANSI_RESET + ANSI_BOLD +
-                    " is:" + ANSI_RESET
+                    AinsiCode.BOLD + "\nThe shortest path for " +
+                    AinsiCode.RED + AinsiCode.UNDERLINE + pDepName + AinsiCode.RESET + AinsiCode.BOLD +
+                    " to " + AinsiCode.RED + AinsiCode.UNDERLINE + pArrName + AinsiCode.RESET + AinsiCode.BOLD +
+                    " at " + AinsiCode.RED + AinsiCode.UNDERLINE + strTDep + AinsiCode.RESET + AinsiCode.BOLD +
+                    " is:" + AinsiCode.RESET
                 );
 
                 solver.solve(pDepName, pArrName, tDep);
