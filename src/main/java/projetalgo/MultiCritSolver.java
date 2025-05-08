@@ -330,7 +330,7 @@ public class MultiCritSolver {
         }
 
         BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
-        double maxDistanceKm = Integer.MAX_VALUE;
+        double maxDistanceKm = Integer.MAX_VALUE; // TODO: replace by the actual value
         for (Stop sourceStop : stopIdToStop.values()) {
 
             List<Stop> nearbyStops = ballTree.findStopsWithinRadius(sourceStop, maxDistanceKm);
