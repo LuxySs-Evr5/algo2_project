@@ -25,7 +25,10 @@ public class Footpath implements Movement {
     public int getTravelTime() {
         double distanceInKm = getDistance();
         double speedInKmPerSecond = WALKING_SPEED / 3600.0; // km/h -> km/s
-        return (int) Math.round(distanceInKm / speedInKmPerSecond);
+
+        // Avoid travelTime = 0 second as this can make the algorithm take additional
+        // footpaths that aren't necessary to get to an arrival stop.
+        return Math.max(1, (int) Math.round(distanceInKm / speedInKmPerSecond));
     }
 
     @Override
