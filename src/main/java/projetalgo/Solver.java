@@ -137,6 +137,7 @@ public class Solver {
 
     public void printInstructions(Stack<BestKnownEntry> finalPath) {
         String currentTripId = null;
+        RouteInfo currentRouteInfo = null;
         Stop tripStartStop = null;
         Stop previousStop = null;
         int departureTime = -1;
@@ -149,12 +150,13 @@ public class Solver {
 
             if (movement instanceof Footpath footpath) {
                 if (currentTripId != null) {
-                    if (tripStartStop != null && previousStop != null) {
+                    if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
                         String depTimeStr = TimeConversion.fromSeconds(departureTime);
-                        System.out.println("Take trip " + currentTripId + " from " +
-                            tripStartStop.getName() + " at " + depTimeStr+ " to " + previousStop.getName());
+                        System.out.println("Take " + currentRouteInfo.toString() + " from " 
+                            + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
                     }
                     currentTripId = null;
+                    currentRouteInfo = null;
                     tripStartStop = null;
                     departureTime = -1;
                 }
@@ -163,17 +165,20 @@ public class Solver {
                 System.out.println("Walk " + duration + " from " + pDep.getName() + " to " + pArr.getName());
             } else if (movement instanceof Connection connection) {
                 String tripId = connection.getTripId();
+                RouteInfo routeInfo = connection.gRouteInfo();
                 if (currentTripId == null) {
                     currentTripId = tripId;
+                    currentRouteInfo = routeInfo;
                     tripStartStop = pDep;
                     departureTime = connection.getTDep();
                 } else if (!tripId.equals(currentTripId)) {
-                    if (tripStartStop != null && previousStop != null) {
+                    if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
                         String depTimeStr = TimeConversion.fromSeconds(departureTime);
-                        System.out.println("Take trip " + currentTripId + " from " +
-                            tripStartStop.getName() + " at " + depTimeStr+ " to " + previousStop.getName());
+                        System.out.println("Take " + currentRouteInfo.toString() + " from " 
+                            + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
                     }
                     currentTripId = tripId;
+                    currentRouteInfo = routeInfo;
                     tripStartStop = pDep;
                     departureTime = connection.getTDep();
                 }
@@ -184,10 +189,10 @@ public class Solver {
         }
 
         if (currentTripId != null) {
-            if (tripStartStop != null && previousStop != null) {
+            if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
                 String depTimeStr = TimeConversion.fromSeconds(departureTime);
-                System.out.println("Take trip " + currentTripId + " from " +
-                    tripStartStop.getName() + " at " + depTimeStr+ " to " + previousStop.getName());
+                System.out.println("Take " + currentRouteInfo.toString() + " from " 
+                    + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
             }            
         }
     }
@@ -367,6 +372,81 @@ public class Solver {
             }
         }
 
+        // ------------------- trips.csv -------------------
+
+        final Map<String, String> tripIdToRouteId = new HashMap<>();
+
+        try (CSVReader reader = new CSVReader(new FileReader(csvSet.tripsCSV))) {
+            String[] headers = reader.readNext();
+            if (headers == null) {
+                throw new IllegalArgumentException("trips.csv is empty or missing headers.");
+            }
+
+            // Map header names to their indices
+            Map<String, Integer> headerMap = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                headerMap.put(headers[i], i);
+            }
+
+            if (!headerMap.containsKey("trip_id") || !headerMap.containsKey("route_id")) {
+                throw new IllegalArgumentException("Missing trip_id or route_id in trips.csv");
+            }
+
+            // Verify that required headers are present
+            String[] requiredHeaders = { "trip_id", "route_id" };
+            for (String header : requiredHeaders) {
+                if (!headerMap.containsKey(header)) {
+                    throw new IllegalArgumentException("Missing required header: " + header);
+                }
+            }
+
+            String[] line;
+            while ((line = reader.readNext()) != null) {
+                String tripId = line[headerMap.get("trip_id")];
+                String routeId = line[headerMap.get("route_id")];
+                tripIdToRouteId.put(tripId, routeId);
+            }
+        }
+
+        // ------------------- routes.csv -------------------
+
+        final Map<String, RouteInfo> routeIdToRouteName = new HashMap<>();
+
+        try (CSVReader reader = new CSVReader(new FileReader(csvSet.routesCSV))) {
+            String[] headers = reader.readNext();
+            if (headers == null) {
+                throw new IllegalArgumentException("routes.csv is empty or missing headers.");
+            }
+
+            Map<String, Integer> headerMap = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                headerMap.put(headers[i], i);
+            }
+
+            if (!headerMap.containsKey("route_id") || !headerMap.containsKey("route_short_name")) {
+                throw new IllegalArgumentException("Missing route_id or route_short_name in routes.csv");
+            }
+
+            // Verify that required headers are present
+            String[] requiredHeaders = { "route_id", "route_short_name", "route_long_name", "route_type" };
+            for (String header : requiredHeaders) {
+                if (!headerMap.containsKey(header)) {
+                    throw new IllegalArgumentException("Missing required header: " + header);
+                }
+            }
+
+            String[] line;
+            while ((line = reader.readNext()) != null) {
+                String routeId = line[headerMap.get("route_id")];
+                String lineId = line[headerMap.get("route_short_name")];
+                String lineName = line[headerMap.get("route_long_name")];
+                String transportType = line[headerMap.get("route_type")];
+
+                RouteInfo routeInfo = new RouteInfo(lineId, lineName, transportType);
+                routeIdToRouteName.put(routeId, routeInfo);
+            }
+        }
+
         // ----------------- stop_times.csv -----------------
 
         try (CSVReader reader = new CSVReader(new FileReader(csvSet.stopTimesCSV))) {
@@ -413,8 +493,15 @@ public class Solver {
                     StopTimeEntry from = entries.get(i);
                     StopTimeEntry to = entries.get(i + 1);
 
+                    RouteInfo routeInfo = routeIdToRouteName.get(tripIdToRouteId.get(from.tripId));
+                    if (routeInfo == null) {
+                        System.err.println("Missing route info for trip_id: " + from.tripId);
+                        continue;
+                    }
+
                     Connection connection = new Connection(
                             from.tripId,
+                            routeInfo,
                             stopIdToStop.get(from.stopId),
                             stopIdToStop.get(to.stopId),
                             from.departureTime,
