@@ -134,11 +134,12 @@ public class ProfileFunction<T extends CriteriaTracker> {
                         T partialJourneyCriteria = partialJourney.getKey();
                         int partialJourneyTArr = partialJourney.getValue().getKey();
 
-                        // check dominated with the arrival time included
-                        if ((partialJourneyCriteria.dominates(newPartialJourneyCriteria)
-                                && partialJourneyTArr <= newPartialJourneyTArr) ||
-                                (partialJourneyCriteria.equals(newPartialJourneyCriteria)
-                                        && partialJourneyTArr < newPartialJourneyTArr)) {
+                        // Check whether we already have a journey that has better criteria- or
+                        // identical criteria tracker but arrives at the same time or before the
+                        // newPartialJourney.
+                        if ((partialJourneyCriteria.dominates(newPartialJourneyCriteria) ||
+                                partialJourneyCriteria.equals(newPartialJourneyCriteria)) &&
+                                partialJourneyTArr <= newPartialJourneyTArr) {
                             dominated = true;
                         }
 
