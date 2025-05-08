@@ -29,12 +29,9 @@ dependencies {
 
     implementation("com.opencsv:opencsv:5.10")
 
+    implementation("org.jline:jline:3.23.0")
+
     implementation(libs.guava)
-
-    // Use JUnit Jupiter for testing.
-    testImplementation(libs.junit.jupiter)
-
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 // Apply a specific Java toolchain to ease working on different environments.

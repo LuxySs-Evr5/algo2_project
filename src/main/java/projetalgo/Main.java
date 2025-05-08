@@ -2,7 +2,14 @@ package projetalgo;
 
 import java.io.IOException;
 
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.reader.UserInterruptException;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+
 import com.opencsv.exceptions.CsvValidationException;
+
 
 public class Main {
 
@@ -11,9 +18,35 @@ public class Main {
     public static final String ANSI_UNDERLINE = "\u001B[4m";
     public static final String ANSI_RED = "\u001B[31m";
 
+    private static String getInput(LineReader reader, String textToShow) {
+        try {
+            while (true) {
+                String input = reader.readLine(textToShow).stripTrailing().toLowerCase();
+    
+                if (input.equals("q") || input.equals("quit")) {
+                    System.out.println("Exiting the program ...");
+                    System.exit(0);
+                }
+    
+                if (!input.isEmpty()) {
+                    return input;
+                }
+    
+                textToShow = "Invalid input. " + textToShow;
+            }
+        } catch (UserInterruptException e) {
+            System.out.println("\nProgram interrupted by user.");
+            System.exit(0);
+        }
+        return "";
+    }    
+
     public static void main(String[] args) {
         Solver solver = new Solver();
         try {
+            Terminal terminal = TerminalBuilder.terminal();
+            LineReader reader = LineReaderBuilder.builder().terminal(terminal).build();
+
             // -------------- Load the GTFS data --------------
 
             System.out.println("Loading the data of the GTFS files. Please wait ...");
@@ -45,64 +78,18 @@ public class Main {
             // -------------- While the user won't quit --------------
 
             while (true) {
-                boolean quit = false;
-
                 System.out.println(ANSI_BOLD + "\n=== Create a New Trip ===" + ANSI_RESET);
 
-                System.out.print("Enter the departure stop: ");
-                String pDepName = System.console().readLine().stripTrailing().toLowerCase();
-                if (pDepName.equals("q") || pDepName.equals("quit")) {
-                    break;
-                }
-                while (pDepName.length() == 0) {
-                    System.out.print("Please enter a valid departure stop: ");
-                    pDepName = System.console().readLine().stripTrailing().toLowerCase();
-                    if (pDepName.equals("q") || pDepName.equals("quit")) {
-                        quit = true;
-                    }
-                }
-                if (quit) {
-                    break;
-                }
-
-                System.out.print("Enter the arrival stop: ");
-                String pArrName = System.console().readLine().stripTrailing().toLowerCase();
-                if (pArrName.equals("q") || pArrName.equals("quit")) {
-                    break;
-                }
-                while (pArrName.length() == 0) {
-                    System.out.print("Please enter a valid arrival stop: ");
-                    pArrName = System.console().readLine().stripTrailing().toLowerCase();
-                    if (pArrName.equals("q") || pArrName.equals("quit")) {
-                        quit = true;
-                    }
-                }
-                if (quit) {
-                    break;
-                }
-
-                System.out.print("Enter the departure time: ");
-                String strTDep = System.console().readLine().stripTrailing().toLowerCase();
-                if (strTDep.equals("q") || strTDep.equals("quit")) {
-                    break;
-                }
-                while (strTDep.length() == 0) {
-                    System.out.print("Please enter a valid departure time: ");
-                    strTDep = System.console().readLine().stripTrailing().toLowerCase();
-                    if (strTDep.equals("q") || strTDep.equals("quit")) {
-                        quit = true;
-                    }
-                }
-                if (quit) {
-                    break;
-                }
-
-                // -------------- Solve the shortest path --------------
+                String pDepName = getInput(reader, "Enter the departure stop: ");
+                String pArrName = getInput(reader, "Enter the arrival stop: ");
+                String strTDep = getInput(reader, "Enter the departure time: ");
 
                 int tDep = TimeConversion.toSeconds(strTDep);
                 if (tDep == -1) {
                     continue;
                 }
+
+                // -------------- Solve the shortest path --------------
 
                 System.out.println(
                     ANSI_BOLD + "\nThe shortest path for " +
