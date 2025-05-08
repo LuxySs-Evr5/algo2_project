@@ -184,35 +184,23 @@ public class MultiCritSolver {
 
         // ### init data structure
 
+        // NOTE: We don't initalize the default values for all stops/trips with
+        // infinities as this is not necessary because the absence of a key in the
+        // hashmap already represents the default value.
+
         // for all footpaths f with farr stop = target do D[x] ← fdur;
         stopIdToIncomingFootpaths.getOrDefault(pArrId, new ArrayList<>()).forEach(footpath -> {
             W.put(footpath.getPDep().getId(), footpath);
         });
 
-        // TODO: adjust this text for the multicriterion:
         // for all stops x do S[x] ← {(∞, ∞)}
         stopIdToStop.forEach((stopId, stop) -> {
-            // init Fp
-            ProfileFunction<FootpathsCountCriteriaTracker> profileFunc = new ProfileFunction<FootpathsCountCriteriaTracker>();
-
-            // initialize the map to put in the profile function
-            // FootpathsCountCriteriaTracker maxTransfersCountKey = new
-            // FootpathsCountCriteriaTracker(Integer.MAX_VALUE);
-            // Pair<Integer, Movement> maxTransfersCountValue = new Pair<Integer,
-            // Movement>(Integer.MAX_VALUE, null);
-            // profileFunc.insert(Integer.MAX_VALUE, new
-            // HashMap<>(Map.of(maxTransfersCountKey, maxTransfersCountValue)));
-
-            // add Fp to F
-            F.put(stopId, profileFunc);
+            F.put(stopId, new ProfileFunction<FootpathsCountCriteriaTracker>());
         });
 
         // for all trips x do T [x] ← ∞;
         tripIdToRoute.forEach((tripId, route) -> {
-            Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> infinityMap = new HashMap<>();
-            // infinityMap.put(new FootpathsCountCriteriaTracker(Integer.MAX_VALUE),
-            // new Pair<Integer, Movement>(Integer.MAX_VALUE, null));
-            C.put(tripId, infinityMap);
+            C.put(tripId, new HashMap<FootpathsCountCriteriaTracker, Pair<Integer, Movement>>());
         });
 
         // ### Actual algorithm
@@ -327,20 +315,6 @@ public class MultiCritSolver {
         FootpathsCountCriteriaTracker footpathsCountCriteriaTracker = promptJourney(F, pDepId, tDep);
         System.out.println("printing journey");
         diplayJourney(F, pDepId, pArrId, tDep, footpathsCountCriteriaTracker);
-
-        // C.forEach((tripId, entry) -> System.out.printf("%s, %s\n", tripId, entry));
-
-        // DEBUG profile functions
-        // for (String stopId : List.of("A", "B", "C", "D")) {
-        // System.out.printf("__STOP_%s__\n", stopId);
-        // F.get(stopId);
-        // }
-
-        // TODO: should we do this ?
-        // for (Footpath f : stopIdToIncomingFootpaths.getOrDefault(pArrId, new
-        // ArrayList<>())) {
-        // W.put(f.getPDep().getId(), Integer.MAX_VALUE);
-        // }
     }
 
     public void loadData(CsvSet... csvSets) throws IOException, CsvValidationException {
