@@ -47,6 +47,8 @@
 
 %-------------------------------------------------------------------
 
+%TODO: mentionner le fait qu'on a considéré que le temps de changement entre deux trips est 0s
+
 \section{Introduction}
 
 % TODO: par sûr du "au sens pareto"
@@ -61,12 +63,23 @@ pouvant combiner différents modes de transport en commun. Celles-ci prennent
 algorithmes sont des variantes du Connection Scan Algorithm (CSA)
 \cite{ConnectionScanAlgorithmLong:2017}. Dans un premier temps, nous détaillons
 le fonctionnement et notre implémentation du CSA basique qui optimise seulement
-le temps d'arrivée. Dans un second temps, nous présentons le pCSA-P, capable de
-prendre en compte d'autres critères et qui optimise ceux-ci au sens pareto.
+le temps d'arrivée. Dans un second temps, nous présentons notre second
+algorithme, une version légèrement modifiée du mcpCSA (où mc signifie
+"multicritère" et p "profil") présenté dans
+\cite{ConnectionScanAlgorithmLong:2017}. Ce dernier peut prendre en
+considération d'autres critères et optimise ceux-ci au sens pareto.
 
 %-------------------------------------------------------------------
 
-\section{Description de la structure de données utilisée}
+\section{CSA Basique}
+
+Le CSA basique permet de résoudre le problème suivant:
+
+Étant donné l'horaire des véhicules, un arrêt de départ $s$, un arrêt d'arrivée
+$t$, et un temps de départ $\tau$, renvoyer les différents segments du trajets
+arrivant le plus tôt possible en $t$ en partant de $s$ en $\tau$.
+
+\subsection{Description de la structure de données utilisée}
 Notre programme utilise principalement des \texttt{hashmaps}, des \texttt{listes} et une \texttt{pile} comme structures de données.
 
 \begin{itemize}
@@ -83,7 +96,7 @@ Notre programme utilise principalement des \texttt{hashmaps}, des \texttt{listes
 
 %-------------------------------------------------------------------
 
-\section{Description des algorithmes}
+\subsection{Description de l'algorithme}
 Notre programme implémente une variante du \texttt{Connection Scan Algorithm (CSA)} :
 
 \begin{enumerate}
@@ -133,6 +146,8 @@ Notre programme implémente une variante du \texttt{Connection Scan Algorithm (C
 %-------------------------------------------------------------------
 
 \section{Description des algorithmes et méthodes utilisées pour la variante du problème}
+
+% Explication de "dominer", de "optimisation Pareto"
 
 %-------------------------------------------------------------------
 
