@@ -213,7 +213,7 @@ public class MultiCritSolver {
 
             ProfileFunction<FootpathsCountCriteriaTracker> sCPArr = S.get(c.getPArr().getId());
 
-            // Tau1
+            // τ1
             if (c.getPArr().getId().equals(pArrId)) { // no need to walk if we arrive directly at pArrId
                 updateTauC(tauC, new FootpathsCountCriteriaTracker(0), new Pair<Integer, Movement>(c.getTArr(), c));
             } else {
@@ -221,7 +221,7 @@ public class MultiCritSolver {
                 if (finalFootpath != null) {
                     int tArrWithfootpath = c.getTArr() + finalFootpath.getTravelTime();
 
-                    tauC = Map.of(new FootpathsCountCriteriaTracker(1),
+                    updateTauC(tauC, new FootpathsCountCriteriaTracker(1),
                             new Pair<Integer, Movement>(tArrWithfootpath, c));
 
                     int foopathTDep = c.getTArr();
@@ -253,41 +253,48 @@ public class MultiCritSolver {
 
             T.put(c.getTripId(), tauC);
 
-            S.get(c.getPDep().getId()).insert(c.getTDep(), tauC);
+            boolean atLeastOneNotDominated = S.get(c.getPDep().getId()).insert(c.getTDep(), tauC);
 
-            // TODO: avoid doing this if all tauC was dominated
-            Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> sCPDepEvaluatedAtCTDep = S
-                    .get(c.getPDep().getId())
-                    .evaluateAt(c.getTDep());
-            for (Footpath f : stopIdToIncomingFootpaths.getOrDefault(c.getPDep().getId(), EMPTY_FOOTPATH_LIST)) {
-                int fTDep = c.getTDep() - f.getTravelTime();
-                if (fTDep > tDep) {
+            // Propagate into incoming footpaths only if at least one entry from tauC was
+            // inserted actually inserted (not dominated) in c.pDep.
+            // (A partial journey being dominated in c.pDep implies it is also dominated in
+            // incoming footpaths of c.pDep).
+            if (atLeastOneNotDominated) {
+                // in c.PDep as they would also be dominated in incomin footpaths.
+                Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> sCPDepEvaluatedAtCTDep = S
+                        .get(c.getPDep().getId())
+                        .evaluateAt(c.getTDep());
 
-                    // TODO: Choose between this and code below (does the same, but
-                    // functional/imperative)
-                    //
-                    // Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> map = new
-                    // HashMap<>();
-                    // for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry
-                    // : sCPDepEvaluatedAtCTDep
-                    // .entrySet()) {
-                    //
-                    // int tArr = entry.getValue().getKey();
-                    //
-                    // // one more footpath -> +1
-                    // map.put(new FootpathsCountCriteriaTracker(entry.getKey().getFootpathsCount()
-                    // + 1),
-                    // new Pair<Integer, Movement>(tArr, f));
-                    // }
+                for (Footpath f : stopIdToIncomingFootpaths.getOrDefault(c.getPDep().getId(), EMPTY_FOOTPATH_LIST)) {
+                    int fTDep = c.getTDep() - f.getTravelTime();
+                    if (fTDep > tDep) {
 
-                    Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> map = sCPDepEvaluatedAtCTDep.entrySet()
-                            .stream()
-                            .collect(Collectors.toMap(
-                                    e -> new FootpathsCountCriteriaTracker(e.getKey().getFootpathsCount() + 1),
-                                    e -> new Pair<>(e.getValue().getKey(), f)));
+                        // TODO: Choose between this and code below (does the same, but
+                        // functional/imperative)
+                        //
+                        // Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> map = new
+                        // HashMap<>();
+                        // for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry
+                        // : sCPDepEvaluatedAtCTDep
+                        // .entrySet()) {
+                        //
+                        // int tArr = entry.getValue().getKey();
+                        //
+                        // // one more footpath -> +1
+                        // map.put(new FootpathsCountCriteriaTracker(entry.getKey().getFootpathsCount()
+                        // + 1),
+                        // new Pair<Integer, Movement>(tArr, f));
+                        // }
 
-                    S.get(f.getPDep().getId()).insert(fTDep, map);
-                } else {
+                        Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> map = sCPDepEvaluatedAtCTDep
+                                .entrySet()
+                                .stream()
+                                .collect(Collectors.toMap(
+                                        e -> new FootpathsCountCriteriaTracker(e.getKey().getFootpathsCount() + 1),
+                                        e -> new Pair<>(e.getValue().getKey(), f)));
+
+                        S.get(f.getPDep().getId()).insert(fTDep, map);
+                    }
                 }
             }
         }
@@ -311,7 +318,7 @@ public class MultiCritSolver {
         }
 
         BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
-        double maxDistanceKm = 0.5; // TODO: replace by the actual value
+        double maxDistanceKm = Integer.MAX_VALUE; // TODO: replace by the actual value
         for (Stop sourceStop : stopIdToStop.values()) {
 
             List<Stop> nearbyStops = ballTree.findStopsWithinRadius(sourceStop, maxDistanceKm);
