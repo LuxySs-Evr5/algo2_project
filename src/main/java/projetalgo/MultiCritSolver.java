@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
@@ -146,29 +147,21 @@ public class MultiCritSolver {
         return options.get(choice);
     }
 
-    private static Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> mergeMaps(
-            List<Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>>> maps) {
-        Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> ret = new HashMap<>();
+    private void updateTauC(Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tauC,
+            FootpathsCountCriteriaTracker criteriaTracker, Pair<Integer, Movement> tArrMovement) {
 
-        // TODO: try to remove code duplication with ProfileFunction evaluateAt
-        for (Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> map : maps) {
-            for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry : map.entrySet()) {
-                Pair<Integer, Movement> pairCurrentlyAtKey = ret.get(entry.getKey());
-                if (pairCurrentlyAtKey == null) {
-                    ret.put(entry.getKey(), entry.getValue());
-                } else { // there is already sth for that CriteriaTracker -> update only if it improves
-                         // TArr
-                    int entryTArr = entry.getValue().getKey();
-                    int pairCurrentlyAtKeyTArr = pairCurrentlyAtKey.getKey();
+        Pair<Integer, Movement> pairCurrentlyAtKey = tauC.get(criteriaTracker);
+        if (pairCurrentlyAtKey == null) {
+            tauC.put(criteriaTracker, tArrMovement);
+        } else { // there is already sth for that CriteriaTracker -> update only if it improves
+                 // TArr
+            int entryTArr = tArrMovement.getKey();
+            int pairCurrentlyAtKeyTArr = pairCurrentlyAtKey.getKey();
 
-                    if (entryTArr < pairCurrentlyAtKeyTArr) {
-                        ret.put(entry.getKey(), entry.getValue());
-                    }
-                }
+            if (entryTArr < pairCurrentlyAtKeyTArr) {
+                tauC.put(criteriaTracker, tArrMovement);
             }
         }
-
-        return ret;
     }
 
     /**
@@ -215,18 +208,20 @@ public class MultiCritSolver {
                 continue;
             }
 
+            // τc ← min{τ1, τ2, τ3};
+            Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tauC = new HashMap<>();
+
             ProfileFunction<FootpathsCountCriteriaTracker> sCPArr = S.get(c.getPArr().getId());
 
-            Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tau1 = new HashMap<>();
-
+            // Tau1
             if (c.getPArr().getId().equals(pArrId)) { // no need to walk if we arrive directly at pArrId
-                tau1 = Map.of(new FootpathsCountCriteriaTracker(0), new Pair<Integer, Movement>(c.getTArr(), c));
+                updateTauC(tauC, new FootpathsCountCriteriaTracker(0), new Pair<Integer, Movement>(c.getTArr(), c));
             } else {
                 Footpath finalFootpath = D.get(c.getPArr().getId());
                 if (finalFootpath != null) {
                     int tArrWithfootpath = c.getTArr() + finalFootpath.getTravelTime();
 
-                    tau1 = Map.of(new FootpathsCountCriteriaTracker(1),
+                    tauC = Map.of(new FootpathsCountCriteriaTracker(1),
                             new Pair<Integer, Movement>(tArrWithfootpath, c));
 
                     int foopathTDep = c.getTArr();
@@ -239,49 +234,57 @@ public class MultiCritSolver {
             }
 
             // τ2 ← T [ctrip];
-            Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tau2 = new HashMap<>();
             for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry : T.get(c.getTripId())
                     .entrySet()) {
                 int tArr = entry.getValue().getKey();
-                tau2.put(entry.getKey(), new Pair<>(tArr, c)); // update the movement
+                updateTauC(tauC, entry.getKey(), new Pair<>(tArr, c));
             }
 
             // τ3 ← evaluate S[carr stop] at carr time;
             // TODO: consider a potential change of vehicle ?
-            Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tau3 = new HashMap<>();
             for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry : sCPArr
                     .evaluateAt(c.getTArr()).entrySet()) {
                 int tArr = entry.getValue().getKey();
-                // TODO: fix logic for footpathsCount
                 int footpathsCount = entry.getKey().getFootpathsCount();
                 FootpathsCountCriteriaTracker footpathsCountCriteriaTracker = new FootpathsCountCriteriaTracker(
                         footpathsCount);
-                tau3.put(footpathsCountCriteriaTracker, new Pair<>(tArr, c)); // update the movement
+                updateTauC(tauC, footpathsCountCriteriaTracker, new Pair<>(tArr, c));
             }
-
-            // τc ← min{τ1, τ2, τ3};
-            Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tauC = mergeMaps(List.of(tau1, tau2, tau3));
 
             T.put(c.getTripId(), tauC);
 
             S.get(c.getPDep().getId()).insert(c.getTDep(), tauC);
 
+            // TODO: avoid doing this if all tauC was dominated
+            Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> sCPDepEvaluatedAtCTDep = S
+                    .get(c.getPDep().getId())
+                    .evaluateAt(c.getTDep());
             for (Footpath f : stopIdToIncomingFootpaths.getOrDefault(c.getPDep().getId(), EMPTY_FOOTPATH_LIST)) {
                 int fTDep = c.getTDep() - f.getTravelTime();
                 if (fTDep > tDep) {
 
-                    Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> map = new HashMap<>();
-                    for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry : S
-                            .get(c.getPDep().getId())
-                            .evaluateAt(c.getTDep()).entrySet()) {
+                    // TODO: Choose between this and code below (does the same, but
+                    // functional/imperative)
+                    //
+                    // Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> map = new
+                    // HashMap<>();
+                    // for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry
+                    // : sCPDepEvaluatedAtCTDep
+                    // .entrySet()) {
+                    //
+                    // int tArr = entry.getValue().getKey();
+                    //
+                    // // one more footpath -> +1
+                    // map.put(new FootpathsCountCriteriaTracker(entry.getKey().getFootpathsCount()
+                    // + 1),
+                    // new Pair<Integer, Movement>(tArr, f));
+                    // }
 
-                        int tArr = entry.getValue().getKey();
-
-                        // one more footpath -> +1
-                        map.put(new FootpathsCountCriteriaTracker(entry.getKey().getFootpathsCount() + 1),
-                                new Pair<Integer, Movement>(tArr, f));
-
-                    }
+                    Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> map = sCPDepEvaluatedAtCTDep.entrySet()
+                            .stream()
+                            .collect(Collectors.toMap(
+                                    e -> new FootpathsCountCriteriaTracker(e.getKey().getFootpathsCount() + 1),
+                                    e -> new Pair<>(e.getValue().getKey(), f)));
 
                     S.get(f.getPDep().getId()).insert(fTDep, map);
                 } else {
