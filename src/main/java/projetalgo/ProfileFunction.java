@@ -71,8 +71,11 @@ public class ProfileFunction<T extends CriteriaTracker> {
      *                           arrival time at the destination and movement is the
      *                           next connection/footpath to take if following
      *                           that partial journey.
+     *
+     * @return True if at least one newPartialJourneys has been inserted (meaning it
+     *         wasn't dominated); false otherwise.
      */
-    public void insert(int tDep, Map<T, Pair<Integer, Movement>> newPartialJourneys) {
+    public boolean insert(int tDep, Map<T, Pair<Integer, Movement>> newPartialJourneys) {
         // 1. find the index of the last entry (from the back) whose key is <= tDep
         int firstReachableEntryIdx = getFirstReachableEntry(tDep);
 
@@ -177,6 +180,8 @@ public class ProfileFunction<T extends CriteriaTracker> {
                 }
             }
         }
+
+        return newPartialJourneys.size() > 0;
     }
 
     /**
