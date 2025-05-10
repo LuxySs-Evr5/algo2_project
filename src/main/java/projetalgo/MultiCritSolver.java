@@ -215,6 +215,8 @@ public class MultiCritSolver {
                 continue;
             }
 
+            ProfileFunction<FootpathsCountCriteriaTracker> sCPArr = S.get(c.getPArr().getId());
+
             Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tau1 = new HashMap<>();
 
             if (c.getPArr().getId().equals(pArrId)) { // no need to walk if we arrive directly at pArrId
@@ -230,7 +232,7 @@ public class MultiCritSolver {
                     int foopathTDep = c.getTArr();
 
                     // insert the footpath in c.parr
-                    S.get(c.getPArr().getId()).insert(foopathTDep,
+                    sCPArr.insert(foopathTDep,
                             new HashMap<>(Map.of(new FootpathsCountCriteriaTracker(1),
                                     new Pair<Integer, Movement>(tArrWithfootpath, finalFootpath))));
                 }
@@ -247,13 +249,12 @@ public class MultiCritSolver {
             // τ3 ← evaluate S[carr stop] at carr time;
             // TODO: consider a potential change of vehicle ?
             Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tau3 = new HashMap<>();
-            for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry : S.get(c.getPArr().getId())
-                    .evaluateAt(c.getTArr())
-                    .entrySet()) {
+            for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry : sCPArr
+                    .evaluateAt(c.getTArr()).entrySet()) {
                 int tArr = entry.getValue().getKey();
                 // TODO: fix logic for footpathsCount
                 int footpathsCount = entry.getKey().getFootpathsCount();
-                FootpathsCountCriteriaTracker footpathsCountCriteriaTracker= new FootpathsCountCriteriaTracker(
+                FootpathsCountCriteriaTracker footpathsCountCriteriaTracker = new FootpathsCountCriteriaTracker(
                         footpathsCount);
                 tau3.put(footpathsCountCriteriaTracker, new Pair<>(tArr, c)); // update the movement
             }
