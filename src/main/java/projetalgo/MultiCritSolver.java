@@ -24,6 +24,8 @@ public class MultiCritSolver {
     private HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths;
     private List<Connection> connections;
 
+    private static final List<Footpath> EMPTY_FOOTPATH_LIST = List.of();
+
     public MultiCritSolver() {
         this.connections = new ArrayList<>();
         this.stopIdToStop = new HashMap<>();
@@ -210,21 +212,16 @@ public class MultiCritSolver {
                 // avoid stupid loops, e.g. if our dest is D and the algorithm scans a
                 // connection from S to D, without this "continue", it will consider the journey
                 // that takes the connection and then walks back to D.
-                System.out.println("continuing");
                 continue;
             }
 
-            System.out.println("------------------------------------------------------------------------");
-            System.out.printf("scanning %s\n", c);
             Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tau1 = new HashMap<>();
 
             if (c.getPArr().getId().equals(pArrId)) { // no need to walk if we arrive directly at pArrId
-                System.out.println("arrives at target directly");
                 tau1 = Map.of(new FootpathsCountCriteriaTracker(0), new Pair<Integer, Movement>(c.getTArr(), c));
             } else {
                 Footpath finalFootpath = D.get(c.getPArr().getId());
                 if (finalFootpath != null) {
-                    System.out.println("arrives at target with a final footpath");
                     int tArrWithfootpath = c.getTArr() + finalFootpath.getTravelTime();
 
                     tau1 = Map.of(new FootpathsCountCriteriaTracker(1),
@@ -232,20 +229,12 @@ public class MultiCritSolver {
 
                     int foopathTDep = c.getTArr();
 
-                    System.out.println("inserting final footpath in C.parr");
-
-                    System.out.printf("C.parr 's profile before: %s\n", S.get(c.getPArr().getId()));
-
                     // insert the footpath in c.parr
                     S.get(c.getPArr().getId()).insert(foopathTDep,
                             new HashMap<>(Map.of(new FootpathsCountCriteriaTracker(1),
                                     new Pair<Integer, Movement>(tArrWithfootpath, finalFootpath))));
-
-                    System.out.printf("C.parr 's profile after: %s\n", S.get(c.getPArr().getId()));
                 }
             }
-
-            System.out.printf("tau1: %s\n", tau1);
 
             // τ2 ← T [ctrip];
             Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tau2 = new HashMap<>();
@@ -255,8 +244,6 @@ public class MultiCritSolver {
                 tau2.put(entry.getKey(), new Pair<>(tArr, c)); // update the movement
             }
 
-            System.out.printf("tau2: %s\n", tau2);
-
             // τ3 ← evaluate S[carr stop] at carr time;
             // TODO: consider a potential change of vehicle ?
             Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tau3 = new HashMap<>();
@@ -264,28 +251,21 @@ public class MultiCritSolver {
                     .evaluateAt(c.getTArr())
                     .entrySet()) {
                 int tArr = entry.getValue().getKey();
-                int transfersCount = entry.getKey().getFootpathsCount();
-                FootpathsCountCriteriaTracker transfersCountCriteriaTracker = new FootpathsCountCriteriaTracker(
-                        transfersCount);
-                tau3.put(transfersCountCriteriaTracker, new Pair<>(tArr, c)); // update the movement
+                // TODO: fix logic for footpathsCount
+                int footpathsCount = entry.getKey().getFootpathsCount();
+                FootpathsCountCriteriaTracker footpathsCountCriteriaTracker= new FootpathsCountCriteriaTracker(
+                        footpathsCount);
+                tau3.put(footpathsCountCriteriaTracker, new Pair<>(tArr, c)); // update the movement
             }
-
-            System.out.printf("tau3: %s\n", tau3);
 
             // τc ← min{τ1, τ2, τ3};
             Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tauC = mergeMaps(List.of(tau1, tau2, tau3));
 
-            System.out.printf("tauC: %s\n", tauC);
-
             T.put(c.getTripId(), tauC);
-
-            System.out.printf("profile func before updating : %s\n", S.get(c.getPDep().getId()));
 
             S.get(c.getPDep().getId()).insert(c.getTDep(), tauC);
 
-            System.out.printf("profile func after updating : %s\n", S.get(c.getPDep().getId()));
-
-            for (Footpath f : stopIdToIncomingFootpaths.getOrDefault(c.getPDep().getId(), new ArrayList<>())) {
+            for (Footpath f : stopIdToIncomingFootpaths.getOrDefault(c.getPDep().getId(), EMPTY_FOOTPATH_LIST)) {
                 int fTDep = c.getTDep() - f.getTravelTime();
                 if (fTDep > tDep) {
 
@@ -304,11 +284,8 @@ public class MultiCritSolver {
 
                     S.get(f.getPDep().getId()).insert(fTDep, map);
                 } else {
-                    System.out.printf("footpath skipped, fTDep=%s\n", TimeConversion.fromSeconds(fTDep));
                 }
             }
-
-            System.out.println();
         }
 
         System.out.println("prompting journey");
@@ -330,7 +307,7 @@ public class MultiCritSolver {
         }
 
         BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
-        double maxDistanceKm = Integer.MAX_VALUE; // TODO: replace by the actual value
+        double maxDistanceKm = 0.5; // TODO: replace by the actual value
         for (Stop sourceStop : stopIdToStop.values()) {
 
             List<Stop> nearbyStops = ballTree.findStopsWithinRadius(sourceStop, maxDistanceKm);

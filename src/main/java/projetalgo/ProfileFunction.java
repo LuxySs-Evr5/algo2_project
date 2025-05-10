@@ -2,6 +2,7 @@ package projetalgo;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,15 @@ public class ProfileFunction<T extends CriteriaTracker> {
 
     public ProfileFunction() {
         this.entries = new ArrayList<>();
+    }
+
+    // TODO: remove this
+    public void displayTDeps() {
+        for (Pair<Integer, Map<T, Pair<Integer, Movement>>> entry : entries) {
+            System.out.printf("%s ", TimeConversion.fromSeconds(entry.getKey()));
+        }
+
+        System.out.println();
     }
 
     /**
@@ -63,143 +73,108 @@ public class ProfileFunction<T extends CriteriaTracker> {
      *                           that partial journey.
      */
     public void insert(int tDep, Map<T, Pair<Integer, Movement>> newPartialJourneys) {
-        // find the index from which all the entries keys are >=tDep
+        // 1. find the index of the last entry (from the back) whose key is <= tDep
         int firstReachableEntryIdx = getFirstReachableEntry(tDep);
 
-        // track which new partial journeys were added, so we can later remove any
-        // existing ones that are now dominated.
-        List<Pair<T, Pair<Integer, Movement>>> addedNewPartialJourneys = new ArrayList<>();
+        // 2. filter dominated journeys in newPartialJourneys
+        Iterator<Map.Entry<T, Pair<Integer, Movement>>> outerIt = newPartialJourneys.entrySet().iterator();
 
-        // 2 cases:
+        while (outerIt.hasNext()) {
+            Map.Entry<T, Pair<Integer, Movement>> entryCandidate = outerIt.next();
+            T critCand = entryCandidate.getKey();
+            int tArrCand = entryCandidate.getValue().getKey();
 
-        // 1. there isn't any pair<departureTime, map> such that departureTime >= tDep
-        // yet -> we simply add our new entry at the end
-        if (firstReachableEntryIdx == entries.size()) {
+            boolean dominated = false;
 
-            // add the new new partial journeys to entries
-            entries.add(new Pair<Integer, Map<T, Pair<Integer, Movement>>>(tDep,
-                    newPartialJourneys));
+            // 1) check domination by any old journey
+            for (int i = 0; i <= firstReachableEntryIdx && !dominated; i++) {
+                for (Map.Entry<T, Pair<Integer, Movement>> entryOld : entries.get(i).getValue().entrySet()) {
+                    T critOld = entryOld.getKey();
+                    int tArrOld = entryOld.getValue().getKey();
 
-            // add the new partial journeys to the tracker so we can then remove the partial
-            // journeys that leave at/before tdep and are dominated by the new partial
-            // journeys
-            for (Map.Entry<T, Pair<Integer, Movement>> newPartialJourneyEntry : newPartialJourneys.entrySet()) {
-                addedNewPartialJourneys
-                        .add(new Pair<>(newPartialJourneyEntry.getKey(), newPartialJourneyEntry.getValue()));
+                    if ((critOld.dominates(critCand) || critOld.equals(critCand))
+                            && tArrOld <= tArrCand) {
+                        dominated = true;
+                        break;
+                    }
+                }
+            }
+            if (dominated) {
+                outerIt.remove();
+                continue;
             }
 
-        } // 2. there is already a pair<departureTime, map> such that departureTime >=
-          // tDep
-        else {
-
-            // iterate over the new partial journeys that we want to insert
-            for (Map.Entry<T, Pair<Integer, Movement>> newPartialJourney : newPartialJourneys.entrySet()) {
-
-                // the first entry whose departure time is >= tDep
-                Pair<Integer, Map<T, Pair<Integer, Movement>>> firstReachableEntry = entries
-                        .get(firstReachableEntryIdx);
-
-                T newPartialJourneyCriteria = newPartialJourney.getKey();
-                int newPartialJourneyTArr = newPartialJourney.getValue().getKey();
-
-                boolean dominated = false;
-
-                // iterate over all the things that depart at/after tdep
-                for (Pair<Integer, Map<T, Pair<Integer, Movement>>> currentEntry : entries
-                        .subList(firstReachableEntryIdx, entries.size())) {
-
-                    // iterate over their <key, values>
-                    for (Map.Entry<T, Pair<Integer, Movement>> partialJourney : currentEntry.getValue().entrySet()) {
-
-                        T partialJourneyCriteria = partialJourney.getKey();
-                        int partialJourneyTArr = partialJourney.getValue().getKey();
-
-                        // Check whether we already have a journey that has better criteria- or
-                        // identical criteria tracker but arrives at the same time or before the
-                        // newPartialJourney.
-                        if ((partialJourneyCriteria.dominates(newPartialJourneyCriteria) ||
-                                partialJourneyCriteria.equals(newPartialJourneyCriteria)) &&
-                                partialJourneyTArr <= newPartialJourneyTArr) {
-                            dominated = true;
-                        }
-
-                    }
-
+            // 2) check domination by any other new journey
+            for (Map.Entry<T, Pair<Integer, Movement>> entryOther : newPartialJourneys.entrySet()) {
+                if (entryOther == entryCandidate) {
+                    continue;
                 }
 
-                if (!dominated) {
-                    System.out.println("not dominated");
+                T critOther = entryOther.getKey();
+                int tArrOther = entryOther.getValue().getKey();
 
-                    // add the newPartialJourney
-
-                    // 2 cases:
-
-                    // 1: There alread exists a pair with tdep
-                    if (tDep == firstReachableEntry.getKey()) {
-                        System.out.printf("pair with tdep=%d already exists\n", tDep);
-
-                        Map<T, Pair<Integer, Movement>> map = entries.get(firstReachableEntryIdx).getValue();
-                        map.put(newPartialJourneyCriteria, newPartialJourney.getValue());
-                    }
-                    // 2: There isn't any pair with tdep yet
-                    else if (tDep < firstReachableEntry.getKey()) {
-                        System.out.printf("no pair with tdep=%d yet\n", tDep);
-
-                        // create a new hashmap with the new partial journey
-                        Map<T, Pair<Integer, Movement>> newMap = new HashMap<T, Pair<Integer, Movement>>(
-                                Map.of(newPartialJourneyCriteria, newPartialJourney.getValue()));
-
-                        // add the new entry with tdep and map in entries
-                        entries.add(firstReachableEntryIdx,
-                                new Pair<Integer, Map<T, Pair<Integer, Movement>>>(tDep, newMap));
-                    }
-
-                    // add the new partial journeys to the tracker so we can then remove the partial
-                    // journeys that leave at/before tdep and are dominated by the new partial
-                    // journeys
-                    addedNewPartialJourneys.add(new Pair<T, Pair<Integer, Movement>>(newPartialJourneyCriteria,
-                            newPartialJourney.getValue()));
-
-                } else {
-                    System.out.println("dominated");
+                if ((critOther.dominates(critCand) || critOther.equals(critCand))
+                        && tArrOther <= tArrCand) {
+                    dominated = true;
+                    break;
                 }
+            }
+            if (dominated) {
+                outerIt.remove();
             }
         }
 
-        // for each newly added partial journey
-        for (Pair<T, Pair<Integer, Movement>> addedNewPartialJourney : addedNewPartialJourneys) {
+        // 3. insert remaining non-dominated newPartialJourneys
+        Integer insertionIdx = null;
+        boolean createNewBag;
+        if (firstReachableEntryIdx == -1) {
+            // create a new bag with tdep at the index 0
+            insertionIdx = 0;
+            createNewBag = true;
+        } else {
+            if (entries.get(firstReachableEntryIdx).getKey() == tDep) {
+                insertionIdx = firstReachableEntryIdx;
+                createNewBag = false;
+            } else {
+                insertionIdx = firstReachableEntryIdx + 1;
+                createNewBag = true;
+            }
+        }
 
-            T addedNewPartialJourneyCriteria = addedNewPartialJourney.getKey();
-            int addedNewPartialJourneyTArr = addedNewPartialJourney.getValue().getKey();
+        if (createNewBag) {
+            // create a new map at insertionIdx with remaining newPartialJourneys entries
+            entries.add(insertionIdx,
+                    new Pair<Integer, Map<T, Pair<Integer, Movement>>>(tDep, newPartialJourneys));
+        } else {
+            // add remaining newPartialJourneys entries to the map at insertionIdx
+            entries.get(insertionIdx).getValue().putAll(newPartialJourneys);
+        }
 
-            // for each bag entry whose departure time is before/at tdep
-            for (Pair<Integer, Map<T, Pair<Integer, Movement>>> currentEntry : entries.subList(0,
-                    firstReachableEntryIdx + 1)) { // TODO: check the +1
+        // 4. remove partialJourneys that leave at/after tDep and that are now dominated
+        // by the remaining newPartialJourneys
+        for (int i = insertionIdx; i < entries.size(); i++) {
+            Pair<Integer, Map<T, Pair<Integer, Movement>>> entry = entries.get(i);
 
-                List<T> partialJourneysNowDominated = new ArrayList<T>();
+            Map<T, Pair<Integer, Movement>> existingJourneys = entry.getValue();
+            Iterator<Map.Entry<T, Pair<Integer, Movement>>> it = existingJourneys.entrySet().iterator();
 
-                // for each partial journey in that entry
-                for (Map.Entry<T, Pair<Integer, Movement>> partialJourney : currentEntry.getValue().entrySet()) {
+            while (it.hasNext()) {
+                Map.Entry<T, Pair<Integer, Movement>> oldEntry = it.next();
+                T oldCriteria = oldEntry.getKey();
+                int oldTArr = oldEntry.getValue().getKey();
 
-                    T partialJourneyCriteria = partialJourney.getKey();
-                    int partialJourneyTArr = partialJourney.getValue().getKey();
+                // check if this old journey is now dominated by any new one
+                for (Map.Entry<T, Pair<Integer, Movement>> newEntry : newPartialJourneys.entrySet()) {
+                    T newCriteria = newEntry.getKey();
+                    int newTArr = newEntry.getValue().getKey();
 
-                    // the partial journey being scanned is now dominated by at least one of
-                    // addedNewPartialJourneys
-                    if ((addedNewPartialJourneyCriteria.dominates(partialJourneyCriteria) &&
-                            addedNewPartialJourneyTArr <= partialJourneyTArr) ||
-                            (addedNewPartialJourneyCriteria.equals(partialJourneyCriteria) &&
-                                    addedNewPartialJourneyTArr < partialJourneyTArr)) {
-                        System.out.printf("setting %s to remove because dominated by%s\n", partialJourney,
-                                addedNewPartialJourney);
-
-                        partialJourneysNowDominated.add(partialJourneyCriteria);
+                    if ((newCriteria.dominates(oldCriteria) && newTArr <= oldTArr)
+                            || (newCriteria.equals(oldCriteria) &&
+                                    newTArr < oldTArr)) {
+                        it.remove();
+                        break;
                     }
                 }
-
-                partialJourneysNowDominated
-                        .forEach((dominatedJourneyKey) -> entries.get(firstReachableEntryIdx).getValue()
-                                .remove(dominatedJourneyKey));
             }
         }
     }
@@ -215,10 +190,11 @@ public class ProfileFunction<T extends CriteriaTracker> {
     public Map<T, Pair<Integer, Movement>> evaluateAt(int tDep) {
         Map<T, Pair<Integer, Movement>> ret = new HashMap<>();
 
-        for (int i = getFirstReachableEntry(tDep); i < entries.size(); i++) {
+        // all the entries that leave at/after tdep
+        for (int i = 0; i <= getFirstReachableEntry(tDep); i++) {
             for (Map.Entry<T, Pair<Integer, Movement>> entry : entries.get(i).getValue().entrySet()) {
-                // put at entry.getKey() (T) -> min(T, pair that has the best tarr)
-
+                // if multiple times the same T, put at that T key the pair<arrivalTime,
+                // Movement> that has the earliest arrivalTime
                 Pair<Integer, Movement> pairCurrentlyAtKey = ret.get(entry.getKey());
                 if (pairCurrentlyAtKey == null) {
                     ret.put(entry.getKey(), entry.getValue());
@@ -242,7 +218,9 @@ public class ProfileFunction<T extends CriteriaTracker> {
         StringBuilder sb = new StringBuilder();
         sb.append("ProfileFunction:\n");
 
-        for (Pair<Integer, Map<T, Pair<Integer, Movement>>> entry : entries) {
+        for (int i = entries.size() - 1; i >= 0; i--) {
+            Pair<Integer, Map<T, Pair<Integer, Movement>>> entry = entries.get(i);
+
             int departureTime = entry.getKey();
             Map<T, Pair<Integer, Movement>> criteriaMap = entry.getValue();
 
