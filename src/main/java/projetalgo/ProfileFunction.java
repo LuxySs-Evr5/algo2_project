@@ -9,7 +9,7 @@ import javafx.util.Pair;
 
 public class ProfileFunction<T extends CriteriaTracker> {
     // List<Pair<depatureTime, Map<CriteriaTracker --> Pair<arrivalTime,
-    // movement>>>>, sorted by depatureTime
+    // movement>>>>, sorted by decreasing depatureTime
     private List<Pair<Integer, Map<T, Pair<Integer, Movement>>>> entries;
 
     public ProfileFunction() {
@@ -17,15 +17,18 @@ public class ProfileFunction<T extends CriteriaTracker> {
     }
 
     /**
-     * Returns the Movement instances that matches first with the given
-     * CriteriaTracker and depart at/after the given tDep. (Scanning by
-     * increasing depature time).
+     * TODO
      */
     public Movement getFirstMatch(int tDep, CriteriaTracker criteriaTracker) {
-        for (Pair<Integer, Map<T, Pair<Integer, Movement>>> entry : entries.subList(getFirstReachableEntry(tDep),
-                entries.size())) {
-            Map<T, Pair<Integer, Movement>> map = entry.getValue();
+        int firstReachableEntryIdx = getFirstReachableEntry(tDep);
 
+        // no entry can be reached
+        if (firstReachableEntryIdx == -1) {
+            return null;
+        }
+
+        for (int i = getFirstReachableEntry(tDep); i >= 0; i--) {
+            Map<T, Pair<Integer, Movement>> map = entries.get(i).getValue();
             if (map.containsKey(criteriaTracker)) {
                 Movement movement = map.get(criteriaTracker).getValue();
                 return movement;
@@ -36,40 +39,17 @@ public class ProfileFunction<T extends CriteriaTracker> {
     }
 
     /**
-     * Returns the index of the first entry whose departure time is greater
-     * than or equal to tDep, entries.size() if no such entry.
-     *
-     * NOTE: This could be done with a binary search, but in practice it would
-     * probably slow down the algorithm as we are always inserting near the
-     * front of the entries array. (Because entries are sorted by increasing
-     * departure time and we are scanning connections by decreasing departure
-     * time.) The only reason why it is not always exactly in the first bag is
-     * because of interstop footpaths:
-     *
-     * let X, Y, Z be three stops. let c be a connection leaving Y at t1. let d
-     * be a connection leaving Z at t2. let f be a footpath from Y to Z that can
-     * be travelled in fTravelTime.
-     *
-     * Assume t1 is before t2, therefore c is scanned first. Since f is an
-     * incoming footpath of Y, the profile function of Z (f's departure stop)
-     * will be updated (pushing new partial journeys leaving at time t1 -
-     * fTravelTime).
-     *
-     * The next connection to be scanned is d, Z's profile will be updated
-     * (again): adding partial journeys taking connection d (at t2).
-     *
-     * If t2 > t1 - fTravelTime, the journeys added in the previous step won't
-     * be added at the front of Z's profile entries but right after the bag that
-     * stores the journeys previously added when scanning f (near the front).
+     * TODO
      */
     private int getFirstReachableEntry(int tDep) {
-        int firstReachableEntryIdx = 0;
-        while (firstReachableEntryIdx < entries.size() &&
-                entries.get(firstReachableEntryIdx).getKey() < tDep) {
-            firstReachableEntryIdx++;
+        for (int i = entries.size() - 1; i >= 0; i--) {
+            if (entries.get(i).getKey() >= tDep) {
+                return i;
+            }
         }
 
-        return firstReachableEntryIdx;
+        // TODO: handle the -1 case when calling this function
+        return -1; // no reachable entry found
     }
 
     /**
