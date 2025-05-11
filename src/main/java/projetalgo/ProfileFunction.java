@@ -128,7 +128,7 @@ public class ProfileFunction<T extends CriteriaTracker> {
         }
 
         // 3. insert remaining non-dominated newPartialJourneys
-        Integer insertionIdx = null;
+        int insertionIdx;
         boolean createNewBag;
         if (firstReachableEntryIdx == -1) {
             // create a new bag with tdep at the index 0
