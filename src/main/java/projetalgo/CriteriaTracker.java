@@ -2,12 +2,23 @@ package projetalgo;
 
 public interface CriteriaTracker {
 
-    public boolean dominates(CriteriaTracker criteriaTracker);
+    boolean dominates(CriteriaTracker criteriaTracker);
+
+
+    default int getFootpathsCount() {
+        return 0;
+    }
+
+    default void setFootpathsCount(int footpathsCount) {}
+
+    default int decFootpathsCount() {
+        return 0;
+    }
 
     /**
      * This method mut be implemented using the attribute values instead of the address.
      */
     @Override
-    public boolean equals(Object obj);
+    boolean equals(Object obj);
 
 }

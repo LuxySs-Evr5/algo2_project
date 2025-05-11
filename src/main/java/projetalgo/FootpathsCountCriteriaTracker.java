@@ -3,14 +3,21 @@ package projetalgo;
 public class FootpathsCountCriteriaTracker implements CriteriaTracker {
     private int footpathsCount;
 
-    FootpathsCountCriteriaTracker(int footpathsCount) {
-        this.footpathsCount = footpathsCount;
+    FootpathsCountCriteriaTracker() {
+        this.footpathsCount = 0;
     }
 
+    @Override
     public int getFootpathsCount() {
         return footpathsCount;
     }
 
+    @Override
+    public void setFootpathsCount(int footpathsCount) {
+        this.footpathsCount = footpathsCount;
+    }
+
+    @Override
     public int decFootpathsCount() {
         return footpathsCount--;
     }
