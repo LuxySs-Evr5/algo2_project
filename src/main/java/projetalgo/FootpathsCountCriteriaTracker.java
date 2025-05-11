@@ -18,8 +18,8 @@ public class FootpathsCountCriteriaTracker implements CriteriaTracker {
     }
 
     @Override
-    public int decFootpathsCount() {
-        return footpathsCount--;
+    public void decFootpathsCount() {
+        footpathsCount--;
     }
 
     @Override
