@@ -208,6 +208,8 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         // ### Actual algorithm
 
         for (Connection c : connections.subList(getEarliestReachableConnectionIdx(tDep), connections.size())) {
+            System.out.printf("__________________scanning %s__________________\n", c);
+
             if (c.getPDep().getId().equals(pArrId)) {
                 // avoid stupid loops, e.g. if our dest is D and the algorithm scans a
                 // connection from S to D, without this "continue", it will consider the journey
@@ -239,7 +241,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
                     T finalFootpathNewTracker = factory.get();
                     finalFootpathNewTracker.setFootpathsCount(1);
-                    finalFootpathNewTracker.setFootpathsCount(0);
+                    finalFootpathNewTracker.setTransfersCount(0);
 
                     // insert the footpath in c.parr
                     sCPArr.insert(foopathTDep,
@@ -276,6 +278,8 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
                 updateTauC(tauC, newTracker, new Pair<>(tArr, c));
             }
+
+            System.out.printf("tauC: %s\n", tauC);
 
             T.put(c.getTripId(), tauC);
 
@@ -328,6 +332,11 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                     }
                 }
             }
+
+            stopIdToStop.forEach((stopId, stop) -> {
+                System.out.printf("%s profile: %s\n", stopId, S.get(stopId));
+            });
+
         }
 
         System.out.println("prompting journey");
