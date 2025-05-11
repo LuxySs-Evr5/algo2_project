@@ -58,23 +58,22 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         return i;
     }
 
-    private void diplayJourney(Map<String, ProfileFunction<FootpathsCountCriteriaTracker>> F, String pDepId,
-            String pArrId, int tDep,
-            FootpathsCountCriteriaTracker footpathsCountCriteriaTracker) {
+    private void diplayJourney(Map<String, ProfileFunction<T>> F, String pDepId, String pArrId, int tDep,
+            T criteriaTracker) {
 
         int currentTDep = tDep;
         String currentStopId = pDepId;
-        FootpathsCountCriteriaTracker currentFootpathsCountCriteriaTracker = footpathsCountCriteriaTracker;
+        T currentCriteriaTracker = criteriaTracker;
 
         while (!currentStopId.equals(pArrId)) {
             System.out.printf("currentStopId: %s\n", currentStopId);
 
-            Movement movement = F.get(currentStopId).getFirstMatch(currentTDep, currentFootpathsCountCriteriaTracker);
+            Movement movement = F.get(currentStopId).getFirstMatch(currentTDep, currentCriteriaTracker);
             System.out.printf("taking %s\n", movement);
 
             currentStopId = movement.getPArr().getId();
             if (movement instanceof Footpath footpath) {
-                footpathsCountCriteriaTracker.decFootpathsCount();
+                currentCriteriaTracker.decFootpathsCount();
                 currentTDep += footpath.getTravelTime();
             } else if (movement instanceof Connection connection) {
                 currentTDep = connection.getTArr();
@@ -82,11 +81,8 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         }
     }
 
-    FootpathsCountCriteriaTracker promptJourney(
-            Map<String, ProfileFunction<FootpathsCountCriteriaTracker>> F,
-            String pDepId,
-            int tDep) {
-        Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> results = F.get(pDepId).evaluateAt(tDep);
+    T promptJourney(Map<String, ProfileFunction<T>> F, String pDepId, int tDep) {
+        Map<T, Pair<Integer, Movement>> results = F.get(pDepId).evaluateAt(tDep);
 
         // find journeys dominated by other journeys that we can take
         // NOTE: Until now, there could be journeys that were dominated by other
@@ -95,13 +91,13 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         // the ones leaving earlier.
         // But since now, we know that we can catch those leaving at tdep, we can remove
         // all the journeys dominated by other journeys leaving at/after tdep.
-        ArrayList<FootpathsCountCriteriaTracker> dominatedResults = new ArrayList<>();
-        for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry0 : results.entrySet()) {
-            for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry1 : results.entrySet()) {
+        ArrayList<T> dominatedResults = new ArrayList<>();
+        for (Map.Entry<T, Pair<Integer, Movement>> entry0 : results.entrySet()) {
+            for (Map.Entry<T, Pair<Integer, Movement>> entry1 : results.entrySet()) {
 
-                FootpathsCountCriteriaTracker entry0Criteria = entry0.getKey();
+                T entry0Criteria = entry0.getKey();
                 int entry0TArr = entry0.getValue().getKey();
-                FootpathsCountCriteriaTracker entry1Criteria = entry1.getKey();
+                T entry1Criteria = entry1.getKey();
                 int entry1TArr = entry1.getValue().getKey();
 
                 if ((entry0Criteria.dominates(entry1Criteria)
@@ -117,11 +113,11 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         // alternatives
         dominatedResults.forEach((dominatedJourneyCriteria) -> results.remove(dominatedJourneyCriteria));
 
-        List<FootpathsCountCriteriaTracker> options = new ArrayList<>(results.keySet());
+        List<T> options = new ArrayList<>(results.keySet());
 
         System.out.println("Possible journeys:");
         for (int i = 0; i < options.size(); i++) {
-            FootpathsCountCriteriaTracker tracker = options.get(i);
+            T tracker = options.get(i);
             int tArr = results.get(tracker).getKey();
             System.out.printf(" [%d] arrives at %s\n", i,
                     TimeConversion.fromSeconds(tArr));
@@ -149,8 +145,8 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         return options.get(choice);
     }
 
-    private void updateTauC(Map<T, Pair<Integer, Movement>> tauC,
-            T criteriaTracker, Pair<Integer, Movement> tArrMovement) {
+    private void updateTauC(Map<T, Pair<Integer, Movement>> tauC, T criteriaTracker,
+            Pair<Integer, Movement> tArrMovement) {
 
         Pair<Integer, Movement> pairCurrentlyAtKey = tauC.get(criteriaTracker);
         if (pairCurrentlyAtKey == null) {
@@ -301,9 +297,9 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                                 .stream()
                                 .collect(Collectors.toMap(
                                         e -> {
-                                            T newT = factory.get();
-                                            newT.setFootpathsCount(e.getKey().getFootpathsCount() + 1);
-                                            return newT;
+                                            T newTracker = factory.get();
+                                            newTracker.setFootpathsCount(e.getKey().getFootpathsCount() + 1);
+                                            return newTracker;
                                         },
                                         e -> new Pair<>(e.getValue().getKey(), f)));
 
@@ -314,7 +310,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         }
 
         System.out.println("prompting journey");
-        FootpathsCountCriteriaTracker footpathsCountCriteriaTracker = promptJourney(S, pDepId, tDep);
+        T footpathsCountCriteriaTracker = promptJourney(S, pDepId, tDep);
         System.out.println("printing journey");
         diplayJourney(S, pDepId, pArrId, tDep, footpathsCountCriteriaTracker);
     }
