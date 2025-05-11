@@ -17,7 +17,7 @@ import com.opencsv.exceptions.CsvValidationException;
 import javafx.util.Pair;
 import projetalgo.Route.RouteType;
 
-public class MultiCritSolver {
+public class MultiCritSolver<T extends CriteriaTracker> {
 
     private HashMap<String, Stop> stopIdToStop;
     private HashMap<String, Route> tripIdToRoute;
@@ -147,8 +147,8 @@ public class MultiCritSolver {
         return options.get(choice);
     }
 
-    private void updateTauC(Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tauC,
-            FootpathsCountCriteriaTracker criteriaTracker, Pair<Integer, Movement> tArrMovement) {
+    private void updateTauC(Map<T, Pair<Integer, Movement>> tauC,
+            T criteriaTracker, Pair<Integer, Movement> tArrMovement) {
 
         Pair<Integer, Movement> pairCurrentlyAtKey = tauC.get(criteriaTracker);
         if (pairCurrentlyAtKey == null) {
@@ -169,10 +169,10 @@ public class MultiCritSolver {
      */
     public void solve(String pDepId, String pArrId, int tDep) {
         // stopId -> ProfileFunction
-        Map<String, ProfileFunction<FootpathsCountCriteriaTracker>> S = new HashMap<>();
+        Map<String, ProfileFunction<T>> S = new HashMap<>();
 
         // tripId -> Map<CriteriaTracker -> tArr for this journey>
-        Map<String, Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>>> T = new HashMap<>();
+        Map<String, Map<T, Pair<Integer, Movement>>> T = new HashMap<>();
 
         // stopId -> footpath to dest
         Map<String, Footpath> D = new HashMap<>();
@@ -190,12 +190,12 @@ public class MultiCritSolver {
 
         // for all stops x do S[x] ← {(∞, ∞)}
         stopIdToStop.forEach((stopId, stop) -> {
-            S.put(stopId, new ProfileFunction<FootpathsCountCriteriaTracker>());
+            S.put(stopId, new ProfileFunction<T>());
         });
 
         // for all trips x do T [x] ← ∞;
         tripIdToRoute.forEach((tripId, route) -> {
-            T.put(tripId, new HashMap<FootpathsCountCriteriaTracker, Pair<Integer, Movement>>());
+            T.put(tripId, new HashMap<T, Pair<Integer, Movement>>());
         });
 
         // ### Actual algorithm
@@ -209,13 +209,13 @@ public class MultiCritSolver {
             }
 
             // τc ← min{τ1, τ2, τ3};
-            Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> tauC = new HashMap<>();
+            Map<T, Pair<Integer, Movement>> tauC = new HashMap<>();
 
-            ProfileFunction<FootpathsCountCriteriaTracker> sCPArr = S.get(c.getPArr().getId());
+            ProfileFunction<T> sCPArr = S.get(c.getPArr().getId());
 
             // τ1
             if (c.getPArr().getId().equals(pArrId)) { // no need to walk if we arrive directly at pArrId
-                updateTauC(tauC, new FootpathsCountCriteriaTracker(0), new Pair<Integer, Movement>(c.getTArr(), c));
+                updateTauC(tauC, new T(), new Pair<Integer, Movement>(c.getTArr(), c));
             } else {
                 Footpath finalFootpath = D.get(c.getPArr().getId());
                 if (finalFootpath != null) {
