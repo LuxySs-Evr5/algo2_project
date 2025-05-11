@@ -3,12 +3,23 @@ package projetalgo;
 public class TransfersCountCriteriaTracker implements CriteriaTracker {
     private int transfersCount;
 
-    TransfersCountCriteriaTracker(int transfersCount) {
+    TransfersCountCriteriaTracker() {
+        this.transfersCount = 0;
+    }
+
+    @Override
+    public int getTransfersCount() {
+        return transfersCount;
+    }
+
+    @Override
+    public void setTransfersCount(int transfersCount) {
         this.transfersCount = transfersCount;
     }
 
-    public int getTransfersCount() {
-        return transfersCount;
+    @Override
+    public void decFootpathsCount() {
+        transfersCount--;
     }
 
     @Override
@@ -23,15 +34,17 @@ public class TransfersCountCriteriaTracker implements CriteriaTracker {
 
     }
 
-    @Override 
+    @Override
     public String toString() {
         return String.format("transfersCount: %d", transfersCount);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof TransfersCountCriteriaTracker other)) return false;
+        if (this == obj)
+            return true;
+        if (!(obj instanceof TransfersCountCriteriaTracker other))
+            return false;
         return this.transfersCount == other.transfersCount;
     }
 
@@ -40,7 +53,5 @@ public class TransfersCountCriteriaTracker implements CriteriaTracker {
     public int hashCode() {
         return Integer.hashCode(transfersCount);
     }
-
-
 
 }

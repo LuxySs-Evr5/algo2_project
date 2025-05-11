@@ -33,15 +33,17 @@ public class FootpathsCountCriteriaTracker implements CriteriaTracker {
         }
     }
 
-    @Override 
+    @Override
     public String toString() {
         return String.format("footpathsCount: %d", footpathsCount);
     }
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (!(obj instanceof FootpathsCountCriteriaTracker other)) return false;
+        if (this == obj)
+            return true;
+        if (!(obj instanceof FootpathsCountCriteriaTracker other))
+            return false;
         return this.footpathsCount == other.footpathsCount;
     }
 
