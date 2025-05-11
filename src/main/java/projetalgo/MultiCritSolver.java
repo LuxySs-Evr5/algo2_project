@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import com.opencsv.CSVReader;
@@ -18,7 +19,7 @@ import javafx.util.Pair;
 import projetalgo.Route.RouteType;
 
 public class MultiCritSolver<T extends CriteriaTracker> {
-
+    private final Supplier<T> factory;
     private HashMap<String, Stop> stopIdToStop;
     private HashMap<String, Route> tripIdToRoute;
     private HashMap<String, List<Footpath>> stopIdToIncomingFootpaths;
@@ -27,7 +28,8 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
     private static final List<Footpath> EMPTY_FOOTPATH_LIST = List.of();
 
-    public MultiCritSolver() {
+    public MultiCritSolver(Supplier<T> factory) {
+        this.factory = factory;
         this.connections = new ArrayList<>();
         this.stopIdToStop = new HashMap<>();
         this.tripIdToRoute = new HashMap<>();
@@ -215,26 +217,32 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
             // τ1
             if (c.getPArr().getId().equals(pArrId)) { // no need to walk if we arrive directly at pArrId
-                updateTauC(tauC, new T(), new Pair<Integer, Movement>(c.getTArr(), c));
+                T newTracker = factory.get();
+                updateTauC(tauC, newTracker, new Pair<Integer, Movement>(c.getTArr(), c));
             } else {
                 Footpath finalFootpath = D.get(c.getPArr().getId());
                 if (finalFootpath != null) {
                     int tArrWithfootpath = c.getTArr() + finalFootpath.getTravelTime();
 
-                    updateTauC(tauC, new FootpathsCountCriteriaTracker(1),
-                            new Pair<Integer, Movement>(tArrWithfootpath, c));
+                    T newTracker = factory.get();
+                    newTracker.setFootpathsCount(1);
+
+                    updateTauC(tauC, newTracker, new Pair<Integer, Movement>(tArrWithfootpath, c));
 
                     int foopathTDep = c.getTArr();
 
+                    T finalFootpathNewTracker = factory.get();
+                    finalFootpathNewTracker.setFootpathsCount(1);
+
                     // insert the footpath in c.parr
                     sCPArr.insert(foopathTDep,
-                            new HashMap<>(Map.of(new FootpathsCountCriteriaTracker(1),
+                            new HashMap<>(Map.of(finalFootpathNewTracker,
                                     new Pair<Integer, Movement>(tArrWithfootpath, finalFootpath))));
                 }
             }
 
             // τ2 ← T [ctrip];
-            for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry : T.get(c.getTripId())
+            for (Map.Entry<T, Pair<Integer, Movement>> entry : T.get(c.getTripId())
                     .entrySet()) {
                 int tArr = entry.getValue().getKey();
                 updateTauC(tauC, entry.getKey(), new Pair<>(tArr, c));
@@ -242,13 +250,15 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
             // τ3 ← evaluate S[carr stop] at carr time;
             // TODO: consider a potential change of vehicle ?
-            for (Map.Entry<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> entry : sCPArr
+            for (Map.Entry<T, Pair<Integer, Movement>> entry : sCPArr
                     .evaluateAt(c.getTArr()).entrySet()) {
                 int tArr = entry.getValue().getKey();
                 int footpathsCount = entry.getKey().getFootpathsCount();
-                FootpathsCountCriteriaTracker footpathsCountCriteriaTracker = new FootpathsCountCriteriaTracker(
-                        footpathsCount);
-                updateTauC(tauC, footpathsCountCriteriaTracker, new Pair<>(tArr, c));
+
+                T newTracker = factory.get();
+                newTracker.setFootpathsCount(footpathsCount);
+
+                updateTauC(tauC, newTracker, new Pair<>(tArr, c));
             }
 
             T.put(c.getTripId(), tauC);
@@ -261,7 +271,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             // incoming footpaths of c.pDep).
             if (atLeastOneNotDominated) {
                 // in c.PDep as they would also be dominated in incomin footpaths.
-                Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> sCPDepEvaluatedAtCTDep = S
+                Map<T, Pair<Integer, Movement>> sCPDepEvaluatedAtCTDep = S
                         .get(c.getPDep().getId())
                         .evaluateAt(c.getTDep());
 
@@ -286,11 +296,15 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                         // new Pair<Integer, Movement>(tArr, f));
                         // }
 
-                        Map<FootpathsCountCriteriaTracker, Pair<Integer, Movement>> map = sCPDepEvaluatedAtCTDep
+                        Map<T, Pair<Integer, Movement>> map = sCPDepEvaluatedAtCTDep
                                 .entrySet()
                                 .stream()
                                 .collect(Collectors.toMap(
-                                        e -> new FootpathsCountCriteriaTracker(e.getKey().getFootpathsCount() + 1),
+                                        e -> {
+                                            T newT = factory.get();
+                                            newT.setFootpathsCount(e.getKey().getFootpathsCount() + 1);
+                                            return newT;
+                                        },
                                         e -> new Pair<>(e.getValue().getKey(), f)));
 
                         S.get(f.getPDep().getId()).insert(fTDep, map);
