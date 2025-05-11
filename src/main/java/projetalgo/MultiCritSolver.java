@@ -72,6 +72,9 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             System.out.printf("taking %s\n", movement);
 
             currentStopId = movement.getPArr().getId();
+
+            // TODO: decTransfersCount if needed
+
             if (movement instanceof Footpath footpath) {
                 currentCriteriaTracker.decFootpathsCount();
                 currentTDep += footpath.getTravelTime();
