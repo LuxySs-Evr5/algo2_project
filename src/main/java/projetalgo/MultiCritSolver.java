@@ -61,25 +61,31 @@ public class MultiCritSolver<T extends CriteriaTracker> {
     private void diplayJourney(Map<String, ProfileFunction<T>> F, String pDepId, String pArrId, int tDep,
             T criteriaTracker) {
 
-        int currentTDep = tDep;
-        String currentStopId = pDepId;
-        T currentCriteriaTracker = criteriaTracker;
+        String stopId = pDepId;
+        String prevTripId = null;
 
-        while (!currentStopId.equals(pArrId)) {
-            System.out.printf("currentStopId: %s\n", currentStopId);
-
-            Movement movement = F.get(currentStopId).getFirstMatch(currentTDep, currentCriteriaTracker);
+        while (!stopId.equals(pArrId)) {
+            Movement movement = F.get(stopId).getFirstMatch(tDep, criteriaTracker);
             System.out.printf("taking %s\n", movement);
 
-            currentStopId = movement.getPArr().getId();
-
-            // TODO: decTransfersCount if needed
+            stopId = movement.getPArr().getId();
 
             if (movement instanceof Footpath footpath) {
-                currentCriteriaTracker.decFootpathsCount();
-                currentTDep += footpath.getTravelTime();
+                criteriaTracker.decFootpathsCount();
+                criteriaTracker.decTransfersCount();
+
+                tDep += footpath.getTravelTime();
+
+                prevTripId = null; // means footpath
             } else if (movement instanceof Connection connection) {
-                currentTDep = connection.getTArr();
+                tDep = connection.getTArr();
+
+                // previously was on a footpath or changed trip
+                if (prevTripId == null || !connection.getTripId().equals(prevTripId)) {
+                    criteriaTracker.decTransfersCount();
+                }
+
+                prevTripId = connection.getTripId();
             }
         }
     }
@@ -225,6 +231,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
                     T newTracker = factory.get();
                     newTracker.setFootpathsCount(1);
+                    newTracker.setTransfersCount(1);
 
                     updateTauC(tauC, newTracker, new Pair<Integer, Movement>(tArrWithfootpath, c));
 
@@ -232,6 +239,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
                     T finalFootpathNewTracker = factory.get();
                     finalFootpathNewTracker.setFootpathsCount(1);
+                    finalFootpathNewTracker.setFootpathsCount(0);
 
                     // insert the footpath in c.parr
                     sCPArr.insert(foopathTDep,
@@ -244,7 +252,14 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             for (Map.Entry<T, Pair<Integer, Movement>> entry : T.get(c.getTripId())
                     .entrySet()) {
                 int tArr = entry.getValue().getKey();
-                updateTauC(tauC, entry.getKey(), new Pair<>(tArr, c));
+
+                int footpathsCount = entry.getKey().getFootpathsCount();
+                int transfersCount = entry.getKey().getTransfersCount();
+                T newTracker = factory.get();
+                newTracker.setFootpathsCount(footpathsCount);
+                newTracker.setFootpathsCount(transfersCount);
+
+                updateTauC(tauC, newTracker, new Pair<>(tArr, c));
             }
 
             // τ3 ← evaluate S[carr stop] at carr time;
@@ -252,10 +267,12 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             for (Map.Entry<T, Pair<Integer, Movement>> entry : sCPArr
                     .evaluateAt(c.getTArr()).entrySet()) {
                 int tArr = entry.getValue().getKey();
-                int footpathsCount = entry.getKey().getFootpathsCount();
 
+                int footpathsCount = entry.getKey().getFootpathsCount();
+                int transfersCount = entry.getKey().getTransfersCount() + 1;
                 T newTracker = factory.get();
                 newTracker.setFootpathsCount(footpathsCount);
+                newTracker.setTransfersCount(transfersCount);
 
                 updateTauC(tauC, newTracker, new Pair<>(tArr, c));
             }
@@ -302,6 +319,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                                         e -> {
                                             T newTracker = factory.get();
                                             newTracker.setFootpathsCount(e.getKey().getFootpathsCount() + 1);
+                                            newTracker.setTransfersCount(e.getKey().getTransfersCount() + 1);
                                             return newTracker;
                                         },
                                         e -> new Pair<>(e.getValue().getKey(), f)));
@@ -339,6 +357,8 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             for (Stop arrStop : nearbyStops) {
                 if (!sourceStop.equals(arrStop)) {
                     Footpath footpath = new Footpath(sourceStop, arrStop);
+
+                    System.out.printf("adding footpath: %s distance: \n", footpath, footpath.getDistance());
 
                     stopIdToIncomingFootpaths
                             .computeIfAbsent(arrStop.getId(), k -> new ArrayList<>())
