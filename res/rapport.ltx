@@ -12,6 +12,7 @@
 \usepackage{amsmath}
 \usepackage{listings}
 \usepackage{xcolor}
+\usepackage{url}
 \usepackage{hyperref}
 \usepackage[linesnumbered,ruled,vlined]{algorithm2e}
 \lstset{
@@ -54,7 +55,7 @@
 
 %TODO: mentionner le fait qu'on a considéré que le temps de changement entre deux trips est 0s
 
-%TODO: parler du fait que nos footpaths sont pas transitivement fermés
+%TODO: parler du fait que nos footpaths sont pas transitivement fermés en pratique en tout cas
 
 \section{Introduction}
 
@@ -310,6 +311,83 @@ l'algorithme \texttt{Connection Scan Algorithm (CSA) basique}.
 	      %TODO: parler de l'éventuelle dernière étape: print le trajet en dépilant
 
 \end{enumerate}
+
+%-------------------------------------------------------------------
+
+\subsection{Preuve d'exactitude}
+
+D'après % \cite{} TODO: citer le cours 
+
+, pour résoudre le problème du plus court chemin (\textit{chemin} au sens
+théorie des graphes, correspondant donc à un \textit{trajet} dans notre cas, à
+ne pas confondre avec les chemins au sens instances de \texttt{Footpath}) dans un graphe dirigé acyclique, nous devons:
+
+\label{item:dagcriteresshortestpath}
+\begin{itemize}
+
+	\item Examiner les sommets dans un ordre topologique,
+
+	\item{} Pour chaque sommet v, on assigne la valeur
+	      $d(v) \leftarrow \min_{e=(u,v) \in \mathcal{E}} \{ d(u) + w(e) \}$
+
+\end{itemize}
+
+% ----- dirigé -----
+
+D'abord, il est évident que notre graphe est dirigé. En effet, sans même tenir
+compte des horaires, l'existence d'une connexion n'implique pas qu'il existe
+une autre connexion effectuant le même trajet dans l'autre sens.\\
+
+% ----- acyclic -----
+
+Ensuite, montrons que ce graphe est acyclique, comme cela est mentionné dans %TODO: \cite{shortArticle} "aperiodic -> acyclic"
+.
+Montrons cela par l'absurde.
+Supposons qu'il existe un cycle formé de mouvements (formé de connexions et/ou chemins à pied) $m_1, m_2, \dots, m_n$ tels que:
+\begin{itemize}
+
+	\item $m_{n_{pArr}} = m_{1_{pArr}}$ : $m_n$ revient au point de départ du cycle.
+
+	\item L'ensemble de ces mouvements forme un chemin valide dans le réseau (chaque connection est atteignable).
+
+	\item Le départ de $m_1$ se fait à l'instant $t$ et l'arrivée de $m_n$ se produit à l'instant $t'$.
+
+\end{itemize}
+
+%TODO: enlever les répétitions de "puisque" à chaque paragraphe
+
+Puisque chaque connection peut être emprunté seulement si celle-ci est
+atteignable, et que chaque movement prend un temps strictement positif, cela
+implique que chaque transition de mouvement augmente strictement le temps. Donc
+$t' > t$, ce qui contredit le fait que $m_1, \dots, m_n$ forme un cycle, car
+certes, $m_n$ revient à l'arrêt de départ de $m_1$, mais du temps s'est écoulé
+entre le moment auquel nous démarrons le cycle et celui auquel nous arrivons du
+cycle. Certaines connexions qui étaient atteignable avant d'emprunter le cycle
+ne sont donc potentiellement plus atteignables. \\
+
+% -----------------------------
+
+Puisque nous avons un graphe dirigé acyclique, il nous suffit de vérifier que
+le CSA respecte bien les deux~\hyperref[item:dagcriteresshortestpath]{critères
+	pour les algorithmes de plus court chemin dans un DAG}:
+
+\begin{itemize}
+
+	\item \textbf{Ordre topologique}~:
+	      \cite{tudelft} Puisque notre graphe est un DAG, il existe forcément au moins un ordre topologique.
+	      Montrons maintenant que parcourir les connexions par ordre de départ
+	      croissant constitue un ordre topologique. Par l'absurde, supposons
+	      qu'il ne s'agisse pas d'un ordre topologique. Cela signifie qu'il
+	      existe un trajet $m_1, \dots, m_i$, et un autre trajet $m_i, \dot,
+		      m_n$ nous permettant de reprendre $m_1$ au même moment que la fois
+	      précédente. Clairement, cela entre directement en contradiction avec
+	      le fait que les durées des mouvements sont strictement positives.
+
+	\item \textbf{Relaxation des arêtes}~:
+	      Le second point est trivial, cela correspond exactement à l'étape de relaxation
+	      des mouvements et de mise-à-jour de \texttt{bestKnown}.
+
+\end{itemize}
 
 
 %-------------------------------------------------------------------
