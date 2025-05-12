@@ -58,34 +58,31 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         return i;
     }
 
-    private void diplayJourney(Map<String, ProfileFunction<T>> F, String pDepId, String pArrId, int tDep,
+    private void diplayJourney(Map<String, ProfileFunction<T>> S, String pDepId, String pArrId, int tDep,
             T criteriaTracker) {
 
         String stopId = pDepId;
-        String prevTripId = null;
+        String tripId = null;
+
+        boolean isFirstMovement = true;
 
         while (!stopId.equals(pArrId)) {
-            Movement movement = F.get(stopId).getFirstMatch(tDep, criteriaTracker);
+            System.out.println("----------------------------------");
+
+            Movement movement = S.get(stopId).getFirstMatch(isFirstMovement, tDep, tripId, criteriaTracker);
+            isFirstMovement = false;
+
             System.out.printf("taking %s\n", movement);
 
             stopId = movement.getPArr().getId();
 
             if (movement instanceof Footpath footpath) {
                 criteriaTracker.decFootpathsCount();
-                criteriaTracker.decTransfersCount();
-
                 tDep += footpath.getTravelTime();
-
-                prevTripId = null; // means footpath
+                tripId = null; // means footpath
             } else if (movement instanceof Connection connection) {
                 tDep = connection.getTArr();
-
-                // previously was on a footpath or changed trip
-                if (prevTripId == null || !connection.getTripId().equals(prevTripId)) {
-                    criteriaTracker.decTransfersCount();
-                }
-
-                prevTripId = connection.getTripId();
+                tripId = connection.getTripId();
             }
         }
     }
@@ -109,7 +106,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                 T entry1Criteria = entry1.getKey();
                 int entry1TArr = entry1.getValue().getKey();
 
-                if ((entry0Criteria.dominates(entry1Criteria)
+                if ((entry0Criteria.dominates(entry1Criteria, false)
                         && entry0TArr <= entry1TArr) ||
                         (entry0Criteria.equals(entry1Criteria)
                                 && entry0TArr < entry1TArr)) {
@@ -296,13 +293,13 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
             // insert a copy of tauC into T[ctrip]
             Map<T, Pair<Integer, Movement>> copyOfTauC = new HashMap<>();
-            tauC.forEach((tracker, pairtArrMovement) -> {
+            tauC.forEach((tracker, pairTArrMovement) -> {
                 T newTracker = factory.get();
                 newTracker.setFootpathsCount(tracker.getFootpathsCount());
                 newTracker.setTransfersCount(tracker.getTransfersCount());
 
-                int tArr = pairtArrMovement.getKey();
-                Movement movement = pairtArrMovement.getValue();
+                int tArr = pairTArrMovement.getKey();
+                Movement movement = pairTArrMovement.getValue();
 
                 copyOfTauC.put(newTracker, new Pair<Integer, Movement>(tArr, movement));
             });

@@ -2,7 +2,7 @@ package projetalgo;
 
 public interface CriteriaTracker {
 
-    boolean dominates(CriteriaTracker criteriaTracker);
+    boolean dominates(CriteriaTracker criteriaTracker, boolean mightTransfer);
 
     /**
      * This method mut be implemented using the attribute values instead of the

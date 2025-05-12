@@ -23,10 +23,10 @@ public class FootpathsCountCriteriaTracker implements CriteriaTracker {
     }
 
     @Override
-    public boolean dominates(CriteriaTracker other) {
+    public boolean dominates(CriteriaTracker criteriaTracker, boolean mightTransfer) {
         // TODO: the type checking is very bad and handled poorly
 
-        if (other instanceof FootpathsCountCriteriaTracker otherCritTracker) {
+        if (criteriaTracker instanceof FootpathsCountCriteriaTracker otherCritTracker) {
             return getFootpathsCount() < otherCritTracker.getFootpathsCount();
         } else {
             throw new IllegalArgumentException("dominates: argument 'other' must be a FootpathsCountCriteriaTracker");

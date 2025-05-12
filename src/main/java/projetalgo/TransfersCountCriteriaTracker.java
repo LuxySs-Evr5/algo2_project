@@ -23,11 +23,12 @@ public class TransfersCountCriteriaTracker implements CriteriaTracker {
     }
 
     @Override
-    public boolean dominates(CriteriaTracker other) {
+    public boolean dominates(CriteriaTracker criteriaTracker, boolean mightTransfer) {
         // TODO: the type checking is very bad and handled poorly
 
-        if (other instanceof TransfersCountCriteriaTracker otherCritTracker) {
-            return getTransfersCount() < otherCritTracker.getTransfersCount();
+        if (criteriaTracker instanceof TransfersCountCriteriaTracker otherCritTracker) {
+            return (mightTransfer) ? getTransfersCount() + 1 < otherCritTracker.getTransfersCount() 
+             : getTransfersCount() < otherCritTracker.getTransfersCount();
         } else {
             throw new IllegalArgumentException("dominates: argument 'other' must be a TransfersCountCriteriaTracker");
         }
