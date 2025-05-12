@@ -13,6 +13,7 @@
 \usepackage{listings}
 \usepackage{xcolor}
 \usepackage{hyperref}
+\usepackage[linesnumbered,ruled,vlined]{algorithm2e}
 \lstset{
   basicstyle=\ttfamily,
   keywordstyle=\color{blue},
@@ -47,7 +48,13 @@
 
 %-------------------------------------------------------------------
 
+
+%TODO: parler du chargement des données
+%TODO: parler du ballTree
+
 %TODO: mentionner le fait qu'on a considéré que le temps de changement entre deux trips est 0s
+
+%TODO: parler du fait que nos footpaths sont pas transitivement fermés
 
 \section{Introduction}
 
@@ -68,53 +75,6 @@ algorithme, une version légèrement modifiée du mcpCSA (où mc signifie
 "multicritère" et p "profil") présenté dans
 \cite{ConnectionScanAlgorithmLong:2017}. Ce dernier peut prendre en
 considération d'autres critères et optimise ceux-ci au sens pareto.
-
-%-------------------------------------------------------------------
-
-\section{CSA Basique}
-
-Le CSA basique permet de résoudre le problème suivant:
-
-Étant donné l'horaire des véhicules, un arrêt de départ $s$, un arrêt d'arrivée
-$t$, et un temps de départ $\tau$, renvoyer les différents segments du trajets
-arrivant le plus tôt possible en $t$ en partant de $s$ en $\tau$.
-
-\subsection{Description de la structure de données utilisée}
-Notre programme utilise principalement des \texttt{hashmaps}, des \texttt{listes} et une \texttt{pile} comme structures de données.
-
-\begin{itemize}
-	\item \texttt{HashMap<String, Stop> stopIdToStop}~: permet d’associer l'identifiant d'un stop à l'objet \texttt{Stop}.
-
-	\item \texttt{HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths}~: pour chaque arrêt, on garde une liste des chemins accessibles à pied.
-
-	\item \texttt{List<Connection> connections}~: liste des connexions triée par heure de départ.
-
-	\item \texttt{Map<String, BestKnownEntry> bestKnown}~: permet de suivre le meilleur temps d’arrivée connu pour chaque arrêt, ainsi que le mouvement (trajet ou marche) qui y mène.
-
-	\item \texttt{Stack<BestKnownEntry>}~: utilisée pour reconstruire le chemin optimal, afin d'afficher les instructions dans l’ordre.
-\end{itemize}
-
-%-------------------------------------------------------------------
-
-\subsection{Description de l'algorithme}
-Notre programme implémente une variante du \texttt{Connection Scan Algorithm (CSA)} :
-
-\begin{enumerate}
-	\item \textbf{Filtrage initial}~: on ne conserve que les arrêts dont l’heure de départ est supérieur à l’heure de départ demandée.
-
-	\item \textbf{Initialisation}~: les arrêts de départ sont initialisés avec un temps d’arrivée égal à l’heure de départ. Les chemins accessibles à pied depuis ces arrêts sont aussi explorés.
-
-	\item \textbf{Scan des chemins}~: chaque \texttt{Connection} est traitée par ordre croissant d’heure de départ :
-	      \begin{itemize}
-		      \item si l’arrêt de départ est atteignable~: $t_{arr}(p_{dep}) \leq t_{dep}(\text{connection})$
-		      \item et si la connexion permet d’arriver plus tôt~: $t_{arr}(\text{connection}) < t_{arr}(p_{arr})$
-		      \item alors on met à jour le \texttt{bestKnown} de l’arrêt d’arrivée, et on ajoute les \texttt{footpaths} sortants depuis cet arrêt.
-	      \end{itemize}
-
-	\item \textbf{Arrêt anticipé}~: on peut arrêter le scan si toutes les connexions restantes partent après l’heure d’arrivée minimale connue vers un des arrêts d’arrivée.
-
-	\item \textbf{Reconstruction}~: le chemin optimal est reconstruit , depuis l’arrêt d’arrivée le plus rapide.
-\end{enumerate}
 
 %-------------------------------------------------------------------
 
@@ -145,9 +105,227 @@ Notre programme implémente une variante du \texttt{Connection Scan Algorithm (C
 
 %-------------------------------------------------------------------
 
+\section{CSA Basique}
+
+Le CSA basique permet de résoudre le problème suivant :
+
+Étant donné l'horaire des véhicules, un arrêt de départ $pDep$, un arrêt d'arrivée
+$pArr$, et un temps de départ $tDep$, renvoyer les différents segments du trajets
+arrivant le plus tôt possible en $pArr$ en partant de $pDep$ en $tDep$.
+
+Notre version du CSA basique accepte des noms d’arrêts, qui ne sont pas
+forcément uniques, au lieu des identifiants uniques. Elle considère tous les
+arrêts correspondant au nom de départ et au nom d’arrivée, supposés proches les
+uns des autres, et calcule le plus court trajet parmi ceux qui partent d’un des
+arrêts de départ possibles et arrivent à un des arrêts d’arrivée possibles.
+
+\subsection{Description de la structure de données utilisée}
+Notre programme utilise principalement des \texttt{hashmaps}, des \texttt{listes} et une \texttt{pile} comme structures de données.
+
+\begin{itemize}
+	\item \texttt{HashMap<String, Stop> stopIdToStop}~: permet d’associer l'identifiant d'un stop à l'objet \texttt{Stop}.
+
+	\item \texttt{HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths}~: pour chaque arrêt, on garde une liste des chemins accessibles à pied.
+
+	\item \texttt{List<Connection> connections}~: liste des connexions triée par heure de départ croissante.
+
+	\item \texttt{Map<String, BestKnownEntry> bestKnown}~: permet de garder à
+	      jour le meilleur temps d’arrivée connu pour chaque arrêt, ainsi que le
+	      denier mouvement (trajet ou marche) qui nous y mène. Pour chaque arrêt,
+	      si son identifiant unique est \texttt{stopId}, alors \texttt{bestKnown}
+	      à l'entrée \texttt{stopId} peut se lire comme "nous parvenons en
+	      \texttt{stopId} à l'instant \texttt{bestKnown.get(stopId).getTArr()} en
+	      empruntant un trajet se terminant par
+	      \texttt{bestKnown.get(stopId).getMovement()}".
+
+	\item \texttt{Stack<BestKnownEntry>}~: utilisée pour reconstruire le chemin optimal, afin d'afficher les instructions dans l’ordre.
+\end{itemize}
+
+%-------------------------------------------------------------------
+
+\subsection{Description de l'algorithme}
+
+Dans cette section, nous définissons les différentes notions cruciales pour
+comprendre l'algorithme, puis nous détaillons le fonctionnement de
+l'algorithme \texttt{Connection Scan Algorithm (CSA) basique}.
+
+%TODO: séparateur pour dire que ca c'est les notions importantes
+
+\begin{itemize}
+
+	\item Une connection est dite \textit{atteignable} si nous sommes en
+	      mesures de nous trouver à son arrêt de départ au moment auquel celle-ci
+	      ne démarre, i.e. $bestKnown_{tArr}(c_{pDep}) \leq c_{tDep}$.
+
+	      %TODO: vérifier que ce truc est nécessaire à définir
+	\item Un mouvement $m1$ est plus rapide qu'un autre mouvement $m2$ si $m1$
+	      et $m2$ ont la même destination et $m1$ atteint celle-ci avant $m2$.
+	      % TODO: expliquer ce qu'est un Movement
+
+	\item Calcul du temps d'arrivé d'une chemin à pied : $f_{tArr} = f_{tDep} +
+		      f_{travelTime}$ où $f_{tDep}$ correspond au meilleur temps connu pour se
+	      rendre au point de départ de $f$, i.e. $f_{pDep}$.
+
+\end{itemize}
+
+
+%TODO: séparateur pour dire que ca c'est l'algo lui-meme
+
+
+\begin{enumerate}
+
+	\item \textbf{Critère de départ}~: \label{item:criteredepart}
+	      \cite{ConnectionScanAlgorithmLong:2017} Aucune connection partant avant
+	      le temps de départ demandé n'est \textit{atteignable}, il est donc
+	      inutile de prendre celles-ci en compte dans la suite de l'algorithme.
+	      La méthode\\ \texttt{getEarliestReachableConnectionIdx} détermine
+	      l'indice de la première connection dont l’heure de départ est supérieur
+	      ou égale à l’heure de départ demandée à l'aide d'une recherche
+	      dichotomique dans \texttt{connections}.
+
+	\item \textbf{Initialisation}~: Pour chaque arrêt de départ, nous
+	      initialisons \texttt{bestKnown} aux entrées correspondantes comme suit:
+
+	      \begin{itemize}
+
+		      \item Le temps d'arrivée \texttt{tArr = tDep} : Nous pouvons nous y rendre
+		            instantanément.
+
+		      \item Le mouvement emprunté \texttt{movement = null} : Aucun mouvement n'est nécessaire pour s'y rendre.
+
+	      \end{itemize}
+
+	      Nous explorons également chaque chemin accessible à pied $f$ partant
+	      de ces arrêts de départ. Si $f$ permet d'atteindre $f_{pArr}$ plus
+	      rapidement que le meilleur temps connu pour atteindre celui-ci, i.e.
+	      $f_{tArr} < bestKnown_{tArr}(f_{pArr})$, alors nous mettons à jour le
+	      temps d'arrivée dans \texttt{bestKnown} à l'entrée $f_{pArr}$
+	      comme-suit:
+
+	      \begin{itemize}
+
+		      \item Le temps d'arrivée \texttt{tArr =} $f_{tArr}$
+
+		      \item Le mouvement emprunté \texttt{movement =} $f$
+
+	      \end{itemize}
+
+	\item \textbf{Scan des connections et chemins}~: Nous traitons les
+	      \texttt{Connection} de \texttt{connections} itérativement, en ne tenant
+	      compte que de celles partant à notre heure de départ ou après, i.e. à
+	      partir de l'indice trouvé a
+	      l'étape~\hyperref[item:criteredepart]{\textbf{Critère de départ}}.
+	      Appelons la connection en cours de traitement $c$. (Pour rappelle, les
+	      connexions sont triées par ordre croissant d’heure de départ, nous les
+	      scannons donc dans ce même ordre) :
+
+	      \begin{itemize}
+
+		      \item si $c$ est \textit{atteignable}~,
+
+		      \item et si $c$ permet d’arriver plus tôt à son arrêt d'arrivée $c_{pDep}$ que le meilleur temps connu pour s'y rendre à cette étape de l'algorithme~: $c_{tArr} < bestKnown_{tArr}(c_{pArr})$
+
+		      \item Alors, nous mettons à jour l'entrée de \texttt{bestKnown}
+		            correspondant à l’arrêt $c_{pArr}$ car nous venons de trouver
+		            un moyen de s'y rendre plus rapidement.
+
+		            Ensuite, pour chaque chemin $f$ sortant de $c_{pArr}$, nous
+		            calculons le temps d'arrivée de ce chemin
+		            $f_{tArr} = c_{tArr} + f_{travelTime}$.
+
+		            Nous vérifions si $f$ nous permet d'atteindre son arrêt
+		            d'arrivée $f_{pArr}$ plus rapidement que le meilleur temps
+		            connu à cette étape de l'algorithme, i.e. $f_{tArr} <
+			            bestKnown_{tArr}(f_{pArr})$
+		            Si c'est le cas, nous mettons à jour bestKnown correspondant à $f_{pArr}$.
+
+		            % TODO: expliquer pourquoi on a le droit de restreindre
+		            % l'update les footpaths à seulement quand on a trouvé une
+		            % meilleur connection (expliqué a la page 8: "Limited
+		            % Walking")
+
+	      \end{itemize}
+
+	\item \textbf{Critère d'arrêt}~: Selon
+	      \cite{ConnectionScanAlgorithmLong:2017}, nous pouvons arrêter
+	      l'itération sur les connections dès que nous scannons une connection
+	      $c$ telle que $c_{tDep} >= bestKnown_{tArr}(pArr)$.
+
+	      Supposons $c$, la première connection telle que $c_{tDep} >=
+		      bestKnown_{tArr}(pArr)$, comme $c_{tDep} < c_{tArr}$, si $c_{tDep} >=
+		      bestKnown_{tArr}(pArr)$, alors par transitivé, nous avons que
+	      $bestKnown_{tArr}(pArr) < c_{tArr}$. $c$ ne peut donc pas permettre
+	      d'améliorer \texttt{bestKnown}.
+
+	      Étant donné que nous scannons les connections par odre croissant, ces inégalité reste vraie pour toutes les connections après $c$.
+
+	      Puisque notre algorithme supporte plusieurs arrêts d'arrivée avec le
+	      même nom, et doit choissir celui auquel nous parvenons le plus
+	      rapidement, nous devons tester cette inégalité pour chaque arrêt dont
+	      le nom correspond au nom de la destination finale. Dès que cette
+	      inégalité n'est plus vraie, nous pouvons arrêter le scan des
+	      connections.
+
+	\item \textbf{Recherche du meilleur arrêt d'arrivée}~: Puisque plusieurs
+	      arrêts peuvent co-exister avec le même nom et que notre algorithme
+	      prend en entrée un \textit{nom d'arrêt} de départ et d'arrivée et non
+	      des identifiants d'arrêts uniques, nous cherchons l'identifiant unique
+	      de l'arrêt d'arrivée auquel nous parvenons le plus rapidement, et ce
+	      via une simple recherche linéaire.
+
+	\item \textbf{Reconstruction}~: Une fois $pArr$ le meilleur arrêt d'arrivée
+	      trouvé, nous reconstruisons, à partir de $pArr$, le trajet final
+	      (chaque mouvement composant celui-ci) partant de $pDep$ en $tDep$ et
+	      arrivant en $pArr$ le plus rapidement. Il s'agit d'un parcours en
+	      postordre car nous le reconstruisons en partant du point d'arrivée.
+	      Pour ce faire, nous utilisons donc une stack appelée
+	      \texttt{finalPath}. Chaque `BestKnownEntry` (le mouvement et son temps
+	      d'arrivée) est empilée sur \texttt{finalPath}. Une autre fonction
+	      dépile ensuite la stack tout en affichant les différents segments du
+	      trajet.
+
+	      Comme pour les arrêts d'arrivée, plusieurs arrêts de départ
+	      pourraient avoir un nom correspondant à celui entré par
+	      l'utilisateur. Le cas de base de notre parcours en postordre est donc
+	      le cas où le stop que nous regardons actuellement est un des
+	      potentiels arrêts de départ.
+
+	      \begin{algorithm}[H]
+		      \DontPrintSemicolon
+		      \SetAlgoLined
+
+		      initialize empty stack $finalPath$ \;
+		      $currentStopId \leftarrow pArrIdEarliest$ \;
+
+		      \While{$currentStopId \notin pDepIds$}{
+			      $currentEntry \leftarrow bestKnown[currentStopId]$ \;
+
+			      empiler $currentEntry$ dans $finalPath$ \;
+			      $currentStopId \leftarrow$ identifiant de l’arrêt de départ du mouvement de $currentEntry$ \;
+		      }
+
+		      \caption{Reconstruction du chemin optimal à partir de \texttt{bestKnown}}
+	      \end{algorithm}
+
+	      %TODO: parler de l'éventuelle dernière étape: print le trajet en dépilant
+
+\end{enumerate}
+
+
+%-------------------------------------------------------------------
+
 \section{Description des algorithmes et méthodes utilisées pour la variante du problème}
 
 % Explication de "dominer", de "optimisation Pareto"
+
+% Expliauer pourquoi on peut pas juste remplacer la fonction de cout de l'algo
+% précédent (le temps d'arrivée) par un nouvelle fonction qui tient compte du
+% temps d'arrivée et de notre second critère.
+
+% Expliquer l'autre algo:
+% - Expliquer les notions de profile etc.
+% - Expliquer pourquoi les final footpaths sont gérés différement des interstop footpaths
+
 
 %-------------------------------------------------------------------
 
