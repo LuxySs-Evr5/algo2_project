@@ -322,6 +322,9 @@ public class Solver {
             loadOneCsvSet(csvSet);
         }
 
+        // Final sort by departure time
+        connections.sort(Comparator.comparingInt(Connection::getTDep));
+
         // generate all paths
         BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
         double maxDistanceKm = 0.5;
@@ -511,9 +514,6 @@ public class Solver {
             }
 
         }
-
-        // Final sort by departure time
-        connections.sort(Comparator.comparingInt(Connection::getTDep));
     }
 
 }
