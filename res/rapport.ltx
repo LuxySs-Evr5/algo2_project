@@ -316,12 +316,11 @@ l'algorithme \texttt{Connection Scan Algorithm (CSA) basique}.
 
 \subsection{Preuve d'exactitude}
 
-D'après % \cite{} TODO: citer le cours 
-
-, pour résoudre le problème du plus court chemin (\textit{chemin} au sens
-théorie des graphes, correspondant donc à un \textit{trajet} dans notre cas, à
-ne pas confondre avec les chemins au sens instances de \texttt{Footpath}) dans un graphe dirigé acyclique, nous devons:
-
+D'après ~\cite{critèresAlgoPlusCourtCheminDAG}, pour résoudre le problème du
+plus court chemin (\textit{chemin} au sens théorie des graphes, correspondant
+donc à un \textit{trajet} dans notre cas, à ne pas confondre avec les chemins
+au sens instances de \texttt{Footpath}) dans un graphe dirigé acyclique, notre
+algorithme doit :
 \label{item:dagcriteresshortestpath}
 \begin{itemize}
 
@@ -340,17 +339,20 @@ une autre connexion effectuant le même trajet dans l'autre sens.\\
 
 % ----- acyclic -----
 
-Ensuite, montrons que ce graphe est acyclique, comme cela est mentionné dans %TODO: \cite{shortArticle} "aperiodic -> acyclic"
-.
-Montrons cela par l'absurde.
-Supposons qu'il existe un cycle formé de mouvements (formé de connexions et/ou chemins à pied) $m_1, m_2, \dots, m_n$ tels que:
+Ensuite, montrons que ce graphe est acyclique, comme cela est mentionné dans
+\cite{ConnectionScanAlgorithmShort}. Par l'absurde, supposons qu'il existe un
+cycle formé de mouvements (formé de connexions et/ou chemins à pied) $m_1, m_2,
+	\dots, m_n$ tels que:
 \begin{itemize}
 
-	\item $m_{n_{pArr}} = m_{1_{pArr}}$ : $m_n$ revient au point de départ du cycle.
+	\item $m_{n_{pArr}} = m_{1_{pArr}}$ : $m_n$ revient au point de départ du
+	      cycle.
 
-	\item L'ensemble de ces mouvements forme un chemin valide dans le réseau (chaque connection est atteignable).
+	\item L'ensemble de ces mouvements forme un chemin valide dans le réseau
+	      (chaque connection est atteignable).
 
-	\item Le départ de $m_1$ se fait à l'instant $t$ et l'arrivée de $m_n$ se produit à l'instant $t'$.
+	\item Le départ de $m_1$ se fait à l'instant $t$ et l'arrivée de $m_n$ se
+	      produit à l'instant $t'$.
 
 \end{itemize}
 
@@ -373,19 +375,19 @@ le CSA respecte bien les deux~\hyperref[item:dagcriteresshortestpath]{critères
 
 \begin{itemize}
 
-	\item \textbf{Ordre topologique}~:
-	      \cite{tudelft} Puisque notre graphe est un DAG, il existe forcément au moins un ordre topologique.
-	      Montrons maintenant que parcourir les connexions par ordre de départ
-	      croissant constitue un ordre topologique. Par l'absurde, supposons
-	      qu'il ne s'agisse pas d'un ordre topologique. Cela signifie qu'il
-	      existe un trajet $m_1, \dots, m_i$, et un autre trajet $m_i, \dot,
-		      m_n$ nous permettant de reprendre $m_1$ au même moment que la fois
-	      précédente. Clairement, cela entre directement en contradiction avec
-	      le fait que les durées des mouvements sont strictement positives.
+	\item \textbf{Ordre topologique}~: \cite{tudelft} Puisque notre graphe est
+	      un DAG, il existe forcément au moins un ordre topologique. Montrons
+	      maintenant que parcourir les connexions par ordre de départ croissant
+	      constitue un ordre topologique. Par l'absurde, supposons qu'il ne
+	      s'agisse pas d'un ordre topologique. Cela signifie qu'il existe un
+	      trajet $m_1, \dots, m_i$, et un autre trajet $m_i, \dot, m_n$ nous
+	      permettant de reprendre $m_1$ au même moment que la fois précédente.
+	      Clairement, cela entre directement en contradiction avec le fait que
+	      les durées des mouvements sont strictement positives.
 
-	\item \textbf{Relaxation des arêtes}~:
-	      Le second point est trivial, cela correspond exactement à l'étape de relaxation
-	      des mouvements et de mise-à-jour de \texttt{bestKnown}.
+	\item \textbf{Relaxation des arêtes}~: Le second point est trivial, cela
+	      correspond exactement à l'étape de relaxation des mouvements et de
+	      mise-à-jour de \texttt{bestKnown}.
 
 \end{itemize}
 
