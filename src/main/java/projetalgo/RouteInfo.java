@@ -3,9 +3,9 @@ package projetalgo;
 public class RouteInfo {
     private final String routeId;
     private final String routeName;
-    private final String transportType;
+    private final TransportType transportType;
 
-    public RouteInfo(String routeId, String routeName, String transportType) {
+    public RouteInfo(String routeId, String routeName, TransportType transportType) {
         this.routeId = routeId;
         this.routeName = routeName;
         this.transportType = transportType;
@@ -19,7 +19,7 @@ public class RouteInfo {
         return routeName;
     }
 
-    public String getTransportType() {
+    public TransportType getTransportType() {
         return transportType;
     }
 

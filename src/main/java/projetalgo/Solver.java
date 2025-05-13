@@ -413,6 +413,7 @@ public class Solver {
 
         // ------------------- routes.csv -------------------
 
+        // TODO: rename this
         final Map<String, RouteInfo> routeIdToRouteName = new HashMap<>();
 
         try (CSVReader reader = new CSVReader(new FileReader(csvSet.routesCSV))) {
@@ -443,7 +444,7 @@ public class Solver {
                 String routeId = line[headerMap.get("route_id")];
                 String lineId = line[headerMap.get("route_short_name")];
                 String lineName = line[headerMap.get("route_long_name")];
-                String transportType = line[headerMap.get("route_type")];
+                TransportType transportType = TransportType.valueOf(line[headerMap.get("route_type")]);
 
                 RouteInfo routeInfo = new RouteInfo(lineId, lineName, transportType);
                 routeIdToRouteName.put(routeId, routeInfo);
