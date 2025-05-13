@@ -467,7 +467,8 @@ de l'algorithme mcpCSA qui peut prendre en compte plusieurs critères et
 optimise ceux-ci au sens pareto.\\
 
 
-Dans le CSA basique, la fonction de coût, utilisée pour comparer deux trajets lors de la mise-à-jour de \texttt{bestKnown}, est définie par :
+Dans le CSA basique, la fonction de coût, utilisée pour comparer deux trajets
+lors de la mise-à-jour de \texttt{bestKnown}, est définie par :
 $$
 	\operatorname{cost} : \mathbb{T} \to \mathbb{T}, \quad t \mapsto t
 $$
@@ -478,8 +479,10 @@ C'est à dire que le cout est directemment le temps d'arrivée.\\
 L'idée intuitive consiste alors à remplacer la fonction de coût par une
 fonction déterminée par l'utilisateur, prenant en paramètre les valeurs pour
 les critères supportés par le programme, e.g. le nombre de mouvements effectués
-en trams : $$ \text{cost} : \mathbb{X}_1 \times \cdots \times \mathbb{X}_n \to
-	\mathbb{C}, \quad (x_1, \ldots, x_n) \mapsto c $$
+en trams :
+$$ \text{cost} : \mathbb{X}_1 \times \cdots \times \mathbb{X}_n \to
+	\mathbb{C}, \quad (x_1, \ldots, x_n) \mapsto c
+$$
 où
 \begin{itemize}
 
@@ -496,13 +499,13 @@ Nous conservons alors dans \texttt{bestKnown}, pour chaque arrêt, les $x_1,
 	\ldots, x_n$ correspondant au trajet menant à cet arrêt et minimisant le coût.
 
 Afin d'effectuer la comparaison entre deux trajets $X, Y$ pour déterminer si
-$X$ a un meilleur cout que $Y$, il de vérifier : $$ \operatorname{cost}(x_1,
-	\dots, x_n) < \operatorname{cost}(y_1, \dots, y_n) $$
+$X$ a un meilleur cout que $Y$, il suffit de vérifier :
+$$
+	\operatorname{cost}(x_1, \dots, x_n) < \operatorname{cost}(y_1, \dots, y_n)
+$$
 
 Malheureusement, cette approche intuitive ne fonctionne pas. Voici un
 contre-exemple :
-
-%TODO: check que les temps sont corrects dans ce graphe
 
 \begin{center}
 	\begin{tikzpicture}[->, >=Stealth, node distance=1cm, thick]
@@ -514,24 +517,28 @@ contre-exemple :
 		\node[circle, draw] (z) at (5.5,2)  {$z$};
 
 		% Edges
-		\draw (x) -- (y) node[midway, xshift=25pt, yshift=6pt] {$t3$};
+		\draw (x) -- (y) node[midway, xshift=25pt, yshift=6pt] {$t2$};
 		\draw (x) -- (y) node[midway, xshift=-27pt, yshift=6pt] {$t1$};
 		\draw (x) -- (y) node[midway, xshift=-3pt, yshift=5pt] {$c1$};
 
-		\draw (w) -- (y) node[midway, xshift=27pt, yshift=11pt] {$t2$};
-		\draw (w) -- (y) node[midway, xshift=-33pt, yshift=-14pt] {$t4$};
+		\draw (w) -- (y) node[midway, xshift=27pt, yshift=11pt] {$t4$};
+		\draw (w) -- (y) node[midway, xshift=-33pt, yshift=-14pt] {$t3$};
 		\draw (w) -- (y) node[midway, xshift=3pt, yshift=-3pt] {$c3$};
 
-		\draw (y) -- (z) node[midway, xshift=-22pt, yshift=6pt] {$t3$};
+		\draw (y) -- (z) node[midway, xshift=-22pt, yshift=6pt] {$t2$};
 		\draw (y) -- (z) node[midway, xshift=0pt, yshift=6pt] {$c2$};
 
 	\end{tikzpicture}
 \end{center}
 
-% TODO: qqch pour expliquer ce qui est quoi dans ce graphe
+% TODO: qqch pour expliquer ce qui est quoi dans ce graphe, expliquer que t1<t2<t3<t4
 
-Notons pour toute connection $c$: $$ \operatorname{cost}(c) =
-	\operatorname{cost}(pDep \rightarrow c_{pDep} + c) $$ Autrement dit, le coût
+Notons pour toute connection $c$:
+$$
+	\operatorname{cost}(c) = \operatorname{cost}(pDep \rightarrow c_{pDep} + c)
+$$
+
+Autrement dit, le coût
 d'une connexion $c$ correspond au coût du trajet composé du meilleur itinéraire
 partant d'un point de départ spécifié par l’utilisateur, atteignant $c_{pDep}$,
 puis empruntant la connexion $c$.\\
@@ -539,12 +546,12 @@ puis empruntant la connexion $c$.\\
 % TODO: fix les temps pour qu'il match le graphe
 Étant donné que $c1_{tDep} < c2_{tDep} < c3_{tdep}$, nous scannons d'abord $c1$.
 % TODO: améliorer cette phrase
-Une fois le scan de $c1$ terminé:
+Une fois le scan de $c1$ terminé :
 $$
 	\texttt{bestKnown}_{cost}(y) \leq \operatorname{cost}(c1)
 $$
 
-Enuite, nous scannons la connection $c2$:
+Il en va de même pour le scan de $c2$ :
 $$
 	\texttt{bestKnown}_{cost}(z) \leq \operatorname{cost}(c2)
 $$
@@ -554,13 +561,16 @@ Supposons que:
 $$
 	\texttt{bestKnown}_{cost}(z) > \operatorname{cost}(c3)
 $$
-Nous remplaçons alors
-% $$
-%       \texttt{bestKnown}_{cost}(z) > \operatorname{cost}(c3)
-% $$
 
+Nous remplaçons alors les $x_1, \dots, \x_n$ (aini que l'instance de
+\texttt{Movement}) dans \texttt{bestKnown} pour l'arrêt $y$.
 
+Cette décision rend notre solution partielle invalide, car en prenant $c3$ qui
+arrive en $y$ à l'instant $t4$, nous ne pouvons plus atteindre $c2$ qui part de
+$y$ en $t2$.
 
+% TODO: expliquer qu'en gros ca s'appelle la "prefix exchangeability" et que ca
+% marche que pour les temps d'arrivée, pas les autres couts + citer la source
 
 % Explication de "dominer", de "optimisation pareto"
 
