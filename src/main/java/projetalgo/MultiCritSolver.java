@@ -270,7 +270,6 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             }
 
             // τ3 ← evaluate S[carr stop] at carr time;
-            // TODO: consider a potential change of vehicle ?
             for (Map.Entry<CriteriaTracker, Pair<Integer, Movement>> entry : sCPArr
                     .evaluateAt(c.getTArr()).entrySet()) {
                 int tArr = entry.getValue().getKey();
