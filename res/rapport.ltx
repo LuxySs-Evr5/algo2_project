@@ -16,6 +16,8 @@
 \usepackage{hyperref}
 \usepackage{amsmath, amssymb, amsfonts}
 \usepackage[linesnumbered,ruled,vlined]{algorithm2e}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, positioning}
 \lstset{
   basicstyle=\ttfamily,
   keywordstyle=\color{blue},
@@ -462,39 +464,101 @@ Dans cette section, nous présentons puis réfutons une idée intuitive selon
 laquelle une simple modification du CSA basique permettrait d’en faire un
 algorithme multicritère. Nous présentons ensuite notre implémentation modifiée
 de l'algorithme mcpCSA qui peut prendre en compte plusieurs critères et
-optimise ceux-ci au sens Pareto.\\
+optimise ceux-ci au sens pareto.\\
 
 
-Dans le CSA basique, la fonction de coût, nous renvoyant les coûts placés dans \texttt{bestKnown}, se définit simplement par :
+Dans le CSA basique, la fonction de coût, utilisée pour comparer deux trajets lors de la mise-à-jour de \texttt{bestKnown}, est définie par :
 $$
 	\operatorname{cost} : \mathbb{T} \to \mathbb{T}, \quad t \mapsto t
 $$
-C'est à dire que le coût est directement le temps d'arrivée.\\
+C'est à dire que le cout est directemment le temps d'arrivée.\\
 
 %TODO: pas convaincu par le C "complexe" ni par le fait qu'on passe de \mathbb{T} à \mathbb{C}
 
 L'idée intuitive consiste alors à remplacer la fonction de coût par une
 fonction déterminée par l'utilisateur, prenant en paramètre les valeurs pour
 les critères supportés par le programme, e.g. le nombre de mouvements effectués
-en trams : $$ \text{cost} : \mathbb{X}_1 \times \cdots \times \mathbb{X}_k \to
-	\mathbb{C}, \quad (x_1, \ldots, x_k) \mapsto c $$ où $x_1, \ldots, x_k$
-représentent des valeurs pour les critères choisis par l'utilisateur, e.g.
-temps d'arrivée, nombre de connexions en tram, nombre de chemins à pied, et $c
-	\in \mathbb{C}$ est le coût global calculé selon la fonction définie par
-l'utilisateur.
+en trams : $$ \text{cost} : \mathbb{X}_1 \times \cdots \times \mathbb{X}_n \to
+	\mathbb{C}, \quad (x_1, \ldots, x_n) \mapsto c $$
+où
+\begin{itemize}
 
-Nous ne stockerions alors plus simplement le temps d'arrivée dans
-\texttt{bestKnown} mais $(x_1, \dots, x_n)$.
+	\item $x_1, \ldots, x_n$ représentent des valeurs pour les critères choisis
+	      par l'utilisateur, e.g. temps d'arrivée, nombre de connections en tram,
+	      nombre de chemins à pied.
+
+	\item $c \in \mathbb{C}$ est le coût global calculé selon la fonction
+	      définie par l'utilisateur.
+
+\end{itemize}
+
+Nous conservons alors dans \texttt{bestKnown}, pour chaque arrêt, les $x_1,
+	\ldots, x_n$ correspondant au trajet menant à cet arrêt et minimisant le coût.
+
 Afin d'effectuer la comparaison entre deux trajets $X, Y$ pour déterminer si
-$X$ a un meilleur coût que $Y$, il faut vérifier :
-$$
-	\operatorname{cost}(x_1, \dots, x_n) < \operatorname{cost}(y_1, \dots, y_n)
-$$
+$X$ a un meilleur cout que $Y$, il de vérifier : $$ \operatorname{cost}(x_1,
+	\dots, x_n) < \operatorname{cost}(y_1, \dots, y_n) $$
 
 Malheureusement, cette approche intuitive ne fonctionne pas. Voici un
 contre-exemple :
 
-% TODO: écrire le contre-exmple avec tikz ou qqch de similaire
+%TODO: check que les temps sont corrects dans ce graphe
+
+\begin{center}
+	\begin{tikzpicture}[->, >=Stealth, node distance=1cm, thick]
+
+		% Nodes
+		\node[circle, draw] (x) at (0,2)  {$x$};
+		\node[circle, draw] (w) at (0,0)  {$w$};
+		\node[circle, draw] (y) at (3,2)  {$y$};
+		\node[circle, draw] (z) at (5.5,2)  {$z$};
+
+		% Edges
+		\draw (x) -- (y) node[midway, xshift=25pt, yshift=6pt] {$t3$};
+		\draw (x) -- (y) node[midway, xshift=-27pt, yshift=6pt] {$t1$};
+		\draw (x) -- (y) node[midway, xshift=-3pt, yshift=5pt] {$c1$};
+
+		\draw (w) -- (y) node[midway, xshift=27pt, yshift=11pt] {$t2$};
+		\draw (w) -- (y) node[midway, xshift=-33pt, yshift=-14pt] {$t4$};
+		\draw (w) -- (y) node[midway, xshift=3pt, yshift=-3pt] {$c3$};
+
+		\draw (y) -- (z) node[midway, xshift=-22pt, yshift=6pt] {$t3$};
+		\draw (y) -- (z) node[midway, xshift=0pt, yshift=6pt] {$c2$};
+
+	\end{tikzpicture}
+\end{center}
+
+% TODO: qqch pour expliquer ce qui est quoi dans ce graphe
+
+Notons pour toute connection $c$: $$ \operatorname{cost}(c) =
+	\operatorname{cost}(pDep \rightarrow c_{pDep} + c) $$ Autrement dit, le coût
+d'une connexion $c$ correspond au coût du trajet composé du meilleur itinéraire
+partant d'un point de départ spécifié par l’utilisateur, atteignant $c_{pDep}$,
+puis empruntant la connexion $c$.\\
+
+% TODO: fix les temps pour qu'il match le graphe
+Étant donné que $c1_{tDep} < c2_{tDep} < c3_{tdep}$, nous scannons d'abord $c1$.
+% TODO: améliorer cette phrase
+Une fois le scan de $c1$ terminé:
+$$
+	\texttt{bestKnown}_{cost}(y) \leq \operatorname{cost}(c1)
+$$
+
+Enuite, nous scannons la connection $c2$:
+$$
+	\texttt{bestKnown}_{cost}(z) \leq \operatorname{cost}(c2)
+$$
+
+Et enfin, nous scannons la connection $c3$.
+Supposons que:
+$$
+	\texttt{bestKnown}_{cost}(z) > \operatorname{cost}(c3)
+$$
+Nous remplaçons alors
+% $$
+%       \texttt{bestKnown}_{cost}(z) > \operatorname{cost}(c3)
+% $$
+
 
 
 
