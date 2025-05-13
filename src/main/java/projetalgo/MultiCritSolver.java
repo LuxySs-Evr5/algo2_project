@@ -58,36 +58,30 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         return i;
     }
 
-    // private void diplayJourney(Map<String, ProfileFunction<T>> S, String pDepId,
-    // String pArrId, int tDep,
-    // T criteriaTracker) {
-    //
-    // String stopId = pDepId;
-    // String tripId = null;
-    //
-    // boolean isFirstMovement = true;
-    //
-    // while (!stopId.equals(pArrId)) {
-    // System.out.println("----------------------------------");
-    //
-    // Movement movement = S.get(stopId).getFirstMatch(isFirstMovement, tDep,
-    // tripId, criteriaTracker);
-    // isFirstMovement = false;
-    //
-    // System.out.printf("taking %s\n", movement);
-    //
-    // stopId = movement.getPArr().getId();
-    //
-    // if (movement instanceof Footpath footpath) {
-    // criteriaTracker.decFootpathsCount();
-    // tDep += footpath.getTravelTime();
-    // tripId = null; // means footpath
-    // } else if (movement instanceof Connection connection) {
-    // tDep = connection.getTArr();
-    // tripId = connection.getTripId();
-    // }
-    // }
-    // }
+    private void displayJourney(Map<String, ProfileFunction<T>> S, String pDepId,
+            String pArrId, int tDep,
+            T criteriaTracker) {
+
+        String stopId = pDepId;
+        String tripId = null;
+
+        while (!stopId.equals(pArrId)) {
+            Movement movement = S.get(stopId).getFirstMatch(tDep, criteriaTracker);
+
+            System.out.printf("taking %s\n", movement);
+
+            stopId = movement.getPArr().getId();
+
+            if (movement instanceof Footpath footpath) {
+                criteriaTracker.decFootpathsCount();
+                tDep += footpath.getTravelTime();
+                tripId = null; // means footpath
+            } else if (movement instanceof Connection connection) {
+                tDep = connection.getTArr();
+                tripId = connection.getTripId();
+            }
+        }
+    }
 
     T promptJourney(Map<String, ProfileFunction<T>> F, String pDepId, int tDep) {
         Map<T, Pair<Integer, Movement>> results = F.get(pDepId).evaluateAt(tDep);
@@ -341,9 +335,9 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         }
 
         System.out.println("prompting journey");
-        T footpathsCountCriteriaTracker = promptJourney(S, pDepId, tDep);
+        T criteriaTracker = promptJourney(S, pDepId, tDep);
         System.out.println("printing journey");
-        // diplayJourney(S, pDepId, pArrId, tDep, footpathsCountCriteriaTracker);
+        displayJourney(S, pDepId, pArrId, tDep, criteriaTracker);
     }
 
     public void loadData(CsvSet... csvSets) throws IOException, CsvValidationException {
