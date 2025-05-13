@@ -76,7 +76,8 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                 tDep = connection.getTArr();
                 tripId = connection.getTripId();
 
-                switch (connection.getTransportType()){
+                // TODO: find a better way of doing this
+                switch (connection.getTransportType()) {
                     case BUS:
                         break;
                     case METRO:
@@ -478,7 +479,8 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                 String routeLongName = line[headerMap.get("route_long_name")];
                 TransportType transportType = TransportType.valueOf(line[headerMap.get("route_type")]);
 
-                RouteInfo routeInfo = new RouteInfo(routeShortName, routeLongName, transportType);
+                RouteInfo routeInfo = new RouteInfo(routeShortName, routeLongName, transportType,
+                        csvSet.transportOperator);
                 routeIdToRouteInfo.put(routeId, routeInfo);
             }
         }
