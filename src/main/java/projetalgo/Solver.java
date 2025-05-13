@@ -413,8 +413,7 @@ public class Solver {
 
         // ------------------- routes.csv -------------------
 
-        // TODO: rename this
-        final Map<String, RouteInfo> routeIdToRouteName = new HashMap<>();
+        final Map<String, RouteInfo> routeIdToRouteInfo = new HashMap<>();
 
         try (CSVReader reader = new CSVReader(new FileReader(csvSet.routesCSV))) {
             String[] headers = reader.readNext();
@@ -442,12 +441,12 @@ public class Solver {
             String[] line;
             while ((line = reader.readNext()) != null) {
                 String routeId = line[headerMap.get("route_id")];
-                String lineId = line[headerMap.get("route_short_name")];
-                String lineName = line[headerMap.get("route_long_name")];
+                String routeShortName = line[headerMap.get("route_short_name")];
+                String routeLongName  = line[headerMap.get("route_long_name")];
                 TransportType transportType = TransportType.valueOf(line[headerMap.get("route_type")]);
 
-                RouteInfo routeInfo = new RouteInfo(lineId, lineName, transportType);
-                routeIdToRouteName.put(routeId, routeInfo);
+                RouteInfo routeInfo = new RouteInfo(routeShortName, routeLongName, transportType);
+                routeIdToRouteInfo.put(routeId, routeInfo);
             }
         }
 
@@ -497,7 +496,7 @@ public class Solver {
                     StopTimeEntry from = entries.get(i);
                     StopTimeEntry to = entries.get(i + 1);
 
-                    RouteInfo routeInfo = routeIdToRouteName.get(tripIdToRouteId.get(from.tripId));
+                    RouteInfo routeInfo = routeIdToRouteInfo.get(tripIdToRouteId.get(from.tripId));
                     if (routeInfo == null) {
                         System.err.println("Missing route info for trip_id: " + from.tripId);
                         continue;
