@@ -41,7 +41,7 @@ public class Main {
                     return input;
                 }
     
-                instruction = "The " + input + " stop was not found in the data. " + textToShow;
+                instruction = "The '" + input + "' stop was not found in the data. " + textToShow;
             }
         } catch (UserInterruptException e) {
             System.out.println("\nProgram interrupted by user.");

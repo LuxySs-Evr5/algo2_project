@@ -437,7 +437,7 @@ public class Solver {
                 String routeLongName  = line[headerMap.get("route_long_name")];
                 TransportType transportType = TransportType.valueOf(line[headerMap.get("route_type")]);
 
-                RouteInfo routeInfo = new RouteInfo(routeShortName, routeLongName, transportType);
+                RouteInfo routeInfo = new RouteInfo(routeShortName, routeLongName, transportType, csvSet.transportOperator);
                 routeIdToRouteInfo.put(routeId, routeInfo);
             }
         }

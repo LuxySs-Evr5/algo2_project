@@ -4,11 +4,13 @@ public class RouteInfo {
     private final String routeId;
     private final String routeName;
     private final TransportType transportType;
+    private final String transportOperator;
 
-    public RouteInfo(String routeId, String routeName, TransportType transportType) {
+    public RouteInfo(String routeId, String routeName, TransportType transportType, String transportOperator) {
         this.routeId = routeId;
         this.routeName = routeName;
         this.transportType = transportType;
+        this.transportOperator = transportOperator;
     }
 
     public String getRouteId() {
@@ -23,8 +25,12 @@ public class RouteInfo {
         return transportType;
     }
 
+    public String getTransportOperator() {
+        return transportOperator;
+    }
+
     @Override
     public String toString() {
-        return transportType + " line " + routeId + " (" + routeName + ")";
+        return transportOperator + " " + transportType + " line " + routeId + " (" + routeName + ")";
     }
 }
