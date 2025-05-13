@@ -148,42 +148,51 @@ public class Solver {
             Stop pDep = movement.getPDep();
             Stop pArr = movement.getPArr();
 
-            if (movement instanceof Footpath footpath) {
-                if (currentTripId != null) {
-                    if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
-                        String depTimeStr = TimeConversion.fromSeconds(departureTime);
-                        System.out.println("Take " + currentRouteInfo.toString() + " from " 
-                            + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
+            switch (movement) {
+                case Footpath footpath -> {
+                    if (currentTripId != null) {
+                        if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
+                            String depTimeStr = TimeConversion.fromSeconds(departureTime);
+                            System.out.println("Take " + currentRouteInfo.toString() + " from " 
+                                + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
+                        }
+                        currentTripId = null;
+                        currentRouteInfo = null;
+                        tripStartStop = null;
+                        departureTime = -1;
                     }
-                    currentTripId = null;
-                    currentRouteInfo = null;
-                    tripStartStop = null;
-                    departureTime = -1;
-                }
-                int travelTime = footpath.getTravelTime();
-                String duration = formatDuration(travelTime);
-                System.out.println("Walk " + duration + " from " + pDep.getName() + " (" + pDep.getTransportOperatorStop() + 
-                    ") to " + pArr.getName() + " (" + pArr.getTransportOperatorStop() + ")");
-            } else if (movement instanceof Connection connection) {
-                String tripId = connection.getTripId();
-                RouteInfo routeInfo = connection.getRouteInfo();
-                if (currentTripId == null) {
-                    currentTripId = tripId;
-                    currentRouteInfo = routeInfo;
-                    tripStartStop = pDep;
-                    departureTime = connection.getTDep();
-                } else if (!tripId.equals(currentTripId)) {
-                    if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
-                        String depTimeStr = TimeConversion.fromSeconds(departureTime);
-                        System.out.println("Take " + currentRouteInfo.toString() + " from " 
-                            + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
+                    int travelTime = footpath.getTravelTime();
+                    String duration = formatDuration(travelTime);
+                    System.out.println("Walk " + duration + " from " + pDep.getName() + " (" + pDep.getTransportOperatorStop() + 
+                        ") to " + pArr.getName() + " (" + pArr.getTransportOperatorStop() + ")");
+                        break;
                     }
-                    currentTripId = tripId;
-                    currentRouteInfo = routeInfo;
-                    tripStartStop = pDep;
-                    departureTime = connection.getTDep();
+
+                case Connection connection -> {
+                    String tripId = connection.getTripId();
+                    RouteInfo routeInfo = connection.getRouteInfo();
+                    if (currentTripId == null) {
+                        currentTripId = tripId;
+                        currentRouteInfo = routeInfo;
+                        tripStartStop = pDep;
+                        departureTime = connection.getTDep();
+                    } else if (!tripId.equals(currentTripId)) {
+                        if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
+                            String depTimeStr = TimeConversion.fromSeconds(departureTime);
+                            System.out.println("Take " + currentRouteInfo.toString() + " from " 
+                                + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
+                        }
+                        currentTripId = tripId;
+                        currentRouteInfo = routeInfo;
+                        tripStartStop = pDep;
+                        departureTime = connection.getTDep();
+                    }
+                    break;
                 }
-                // Same trip -> continue
+            
+                default -> {
+                    // Same trip -> continue
+                }
             }
 
             previousStop = pArr;
