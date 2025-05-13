@@ -7,6 +7,19 @@ public class TramsCountCriteriaTracker implements CriteriaTracker {
         this.tramsCount = 0;
     }
 
+    TramsCountCriteriaTracker(int tramsCount) {
+        this.tramsCount = tramsCount;
+    }
+
+    @Override
+    public CriteriaTracker addMovement(Movement m) {
+        if (m instanceof Connection connection && connection.getTransportType() == TransportType.TRAM) {
+            return new TramsCountCriteriaTracker(getTramsCount() + 1);
+        } 
+
+        return new TramsCountCriteriaTracker(getTramsCount());
+    }
+
     @Override
     public int getTramsCount() {
         return tramsCount;

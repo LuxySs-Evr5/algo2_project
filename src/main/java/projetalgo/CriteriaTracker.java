@@ -11,6 +11,9 @@ public interface CriteriaTracker {
     @Override
     boolean equals(Object obj);
 
+    // TODO: remove the other methods below (maybe just some methods, not all of them) if addMovement() works
+    CriteriaTracker addMovement(Movement m);
+
     // -----------------------------------------------------
     // FootpathsCount
     // -----------------------------------------------------

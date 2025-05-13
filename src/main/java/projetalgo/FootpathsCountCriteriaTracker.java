@@ -7,6 +7,19 @@ public class FootpathsCountCriteriaTracker implements CriteriaTracker {
         this.footpathsCount = 0;
     }
 
+    FootpathsCountCriteriaTracker(int footpathsCount) {
+        this.footpathsCount = footpathsCount;
+    }
+
+    @Override
+    public CriteriaTracker addMovement(Movement m) {
+        if (m instanceof Footpath footpath) {
+            return new FootpathsCountCriteriaTracker(getFootpathsCount() + 1);
+        } 
+
+        return new FootpathsCountCriteriaTracker(getFootpathsCount());
+    }
+
     @Override
     public int getFootpathsCount() {
         return footpathsCount;
