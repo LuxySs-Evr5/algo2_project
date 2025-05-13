@@ -2,7 +2,6 @@ package projetalgo;
 
 import java.io.FileReader;
 import java.io.IOException;
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -16,25 +15,22 @@ import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
 
 import javafx.util.Pair;
-import projetalgo.Route.RouteType;
 
 public class MultiCritSolver<T extends CriteriaTracker> {
     private final Supplier<T> factory;
     private HashMap<String, Stop> stopIdToStop;
-    private HashMap<String, Route> tripIdToRoute;
     private HashMap<String, List<Footpath>> stopIdToIncomingFootpaths;
-    private HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths;
+    private List<String> tripIds;
     private List<Connection> connections;
 
     private static final List<Footpath> EMPTY_FOOTPATH_LIST = List.of();
 
     public MultiCritSolver(Supplier<T> factory) {
         this.factory = factory;
-        this.connections = new ArrayList<>();
         this.stopIdToStop = new HashMap<>();
-        this.tripIdToRoute = new HashMap<>();
+        this.tripIds = new ArrayList<>();
+        this.connections = new ArrayList<>();
         this.stopIdToIncomingFootpaths = new HashMap<>();
-        this.stopIdToOutgoingFootpaths = new HashMap<>();
     }
 
     /**
@@ -194,7 +190,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         });
 
         // for all trips x do T [x] ← ∞;
-        tripIdToRoute.forEach((tripId, route) -> {
+        tripIds.forEach(tripId -> {
             T.put(tripId, new HashMap<T, Pair<Integer, Movement>>());
         });
 
@@ -344,13 +340,15 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         // TODO: check that we reinitialize every member
         this.connections = new ArrayList<>();
         this.stopIdToStop = new HashMap<>();
-        this.tripIdToRoute = new HashMap<>();
+        this.tripIds = new ArrayList<>();
         this.stopIdToIncomingFootpaths = new HashMap<>();
-        this.stopIdToOutgoingFootpaths = new HashMap<>();
 
         for (CsvSet csvSet : csvSets) {
             loadOneCsvSet(csvSet);
         }
+
+        // Final sort by departure time (decreasing)
+        connections.sort(Comparator.comparingInt(Connection::getTDep).reversed());
 
         BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
         double maxDistanceKm = Integer.MAX_VALUE; // TODO: replace by the actual value
@@ -370,6 +368,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                 }
             }
         }
+
     }
 
     private void loadOneCsvSet(CsvSet csvSet) throws IOException, CsvValidationException {
@@ -407,48 +406,15 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             }
         }
 
-        // ------------------- routes.csv ------------------
-        System.out.println("__routes.csv__");
-
-        HashMap<String, Route> routeIdToRoute = new HashMap<>();
-
-        try (CSVReader reader = new CSVReader(new FileReader(csvSet.routesCSV))) {
-            String[] headers = reader.readNext(); // Read the header row
-            if (headers == null) {
-                throw new IllegalArgumentException("CSV file is empty or missing headers.");
-            }
-
-            // Map header names to their indices
-            Map<String, Integer> headerMap = new HashMap<>();
-            for (int i = 0; i < headers.length; i++) {
-                headerMap.put(headers[i], i);
-            }
-
-            // Verify that required headers are present
-            String[] requiredHeaders = { "route_id", "route_short_name", "route_long_name", "route_type" };
-            for (String header : requiredHeaders) {
-                if (!headerMap.containsKey(header)) {
-                    throw new IllegalArgumentException("Missing required header: " + header);
-                }
-            }
-
-            String[] line;
-            while ((line = reader.readNext()) != null) {
-                String routeId = line[headerMap.get("route_id")];
-                String routeShortName = line[headerMap.get("route_short_name")];
-                String routeLongName = line[headerMap.get("route_long_name")];
-                Route.RouteType routeType = RouteType.valueOf(line[headerMap.get("route_type")]);
-                routeIdToRoute.put(routeId, new Route(routeId, routeShortName, routeLongName, routeType));
-            }
-        }
-
         // ----------------- trips.csv ----------------
         System.out.println("__trips.csv__");
 
+        final Map<String, String> tripIdToRouteId = new HashMap<>();
+
         try (CSVReader reader = new CSVReader(new FileReader(csvSet.tripsCSV))) {
-            String[] headers = reader.readNext(); // Read the header row
+            String[] headers = reader.readNext();
             if (headers == null) {
-                throw new IllegalArgumentException("CSV file is empty or missing headers.");
+                throw new IllegalArgumentException("trips.csv is empty or missing headers.");
             }
 
             // Map header names to their indices
@@ -469,8 +435,45 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             while ((line = reader.readNext()) != null) {
                 String tripId = line[headerMap.get("trip_id")];
                 String routeId = line[headerMap.get("route_id")];
-                Route route = routeIdToRoute.get(routeId);
-                tripIdToRoute.put(tripId, route);
+                tripIdToRouteId.put(tripId, routeId);
+            }
+        }
+
+        tripIds = new ArrayList<>(tripIdToRouteId.keySet());
+
+        // ------------------- routes.csv ------------------
+        System.out.println("__routes.csv__");
+
+        final Map<String, RouteInfo> routeIdToRouteInfo = new HashMap<>();
+
+        try (CSVReader reader = new CSVReader(new FileReader(csvSet.routesCSV))) {
+            String[] headers = reader.readNext();
+            if (headers == null) {
+                throw new IllegalArgumentException("routes.csv is empty or missing headers.");
+            }
+
+            Map<String, Integer> headerMap = new HashMap<>();
+            for (int i = 0; i < headers.length; i++) {
+                headerMap.put(headers[i], i);
+            }
+
+            // Verify that required headers are present
+            String[] requiredHeaders = { "route_id", "route_short_name", "route_long_name", "route_type" };
+            for (String header : requiredHeaders) {
+                if (!headerMap.containsKey(header)) {
+                    throw new IllegalArgumentException("Missing required header: " + header);
+                }
+            }
+
+            String[] line;
+            while ((line = reader.readNext()) != null) {
+                String routeId = line[headerMap.get("route_id")];
+                String routeShortName = line[headerMap.get("route_short_name")];
+                String routeLongName = line[headerMap.get("route_long_name")];
+                TransportType transportType = TransportType.valueOf(line[headerMap.get("route_type")]);
+
+                RouteInfo routeInfo = new RouteInfo(routeShortName, routeLongName, transportType);
+                routeIdToRouteInfo.put(routeId, routeInfo);
             }
         }
 
@@ -521,8 +524,15 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                     StopTimeEntry from = entries.get(i);
                     StopTimeEntry to = entries.get(i + 1);
 
+                    RouteInfo routeInfo = routeIdToRouteInfo.get(tripIdToRouteId.get(from.tripId));
+                    if (routeInfo == null) {
+                        System.err.println("Missing route info for trip_id: " + from.tripId);
+                        continue;
+                    }
+
                     Connection connection = new Connection(
                             from.tripId,
+                            routeInfo,
                             stopIdToStop.get(from.stopId),
                             stopIdToStop.get(to.stopId),
                             from.departureTime,
@@ -532,9 +542,6 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             }
 
         }
-
-        // sort by decreasing departure time
-        connections.sort(Comparator.comparingInt(Connection::getTDep).reversed());
     }
 
 }
