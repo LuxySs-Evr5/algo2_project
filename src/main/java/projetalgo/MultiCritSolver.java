@@ -92,8 +92,8 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         }
     }
 
-    CriteriaTracker promptJourney(Map<String, ProfileFunction<CriteriaTracker>> F, String pDepId, int tDep) {
-        Map<CriteriaTracker, Pair<Integer, Movement>> results = F.get(pDepId).evaluateAt(tDep);
+    CriteriaTracker promptJourney(Map<String, ProfileFunction<CriteriaTracker>> S, String pDepId, int tDep) {
+        Map<CriteriaTracker, Pair<Integer, Movement>> results = S.get(pDepId).evaluateAt(tDep);
 
         // find journeys dominated by other journeys that we can take
         // NOTE: Until now, there could be journeys that were dominated by other
@@ -210,8 +210,6 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         // ### Actual algorithm
 
         for (Connection c : connections.subList(getEarliestReachableConnectionIdx(tDep), connections.size())) {
-            System.out.printf("__________________scanning %s__________________\n", c);
-
             if (c.getPDep().getId().equals(pArrId)) {
                 // avoid stupid loops, e.g. if our dest is D and the algorithm scans a
                 // connection from S to D, without this "continue", it will consider the journey
@@ -229,8 +227,6 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                 CriteriaTracker newTracker = factory.get().addMovement(c);
                 int tArr = c.getTArr();
 
-                System.out.printf("newtracker tau1: %s -> tarr: %s\n", newTracker, tArr);
-
                 updateTauC(tauC, newTracker, new Pair<Integer, Movement>(tArr, c));
             } else {
                 Footpath finalFootpath = D.get(c.getPArr().getId());
@@ -238,8 +234,6 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                     int tArrWithfootpath = c.getTArr() + finalFootpath.getTravelTime();
 
                     CriteriaTracker newTracker = factory.get().addMovement(finalFootpath).addMovement(c);
-
-                    System.out.printf("newtracker tau1: %s -> tarr: %s\n", newTracker, tArrWithfootpath);
 
                     updateTauC(tauC, newTracker, new Pair<Integer, Movement>(tArrWithfootpath, c));
 
@@ -258,14 +252,10 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             for (Map.Entry<CriteriaTracker, Pair<Integer, Movement>> entry : T.get(c.getTripId())
                     .entrySet()) {
 
-                System.out.printf("tau2 based on %s\n", entry);
-
                 int tArr = entry.getValue().getKey();
 
                 CriteriaTracker prevTracker = entry.getKey();
                 CriteriaTracker newTracker = prevTracker.addMovement(c);
-
-                System.out.printf("newtracker tau2: %s -> tarr: %s\n", newTracker, tArr);
 
                 updateTauC(tauC, newTracker, new Pair<>(tArr, c));
             }
@@ -275,27 +265,18 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                     .evaluateAt(c.getTArr()).entrySet()) {
                 int tArr = entry.getValue().getKey();
 
-                int footpathsCount = entry.getKey().getFootpathsCount();
-
                 CriteriaTracker prevTracker = entry.getKey();
                 CriteriaTracker newTracker = prevTracker.addMovement(c);
-
-                System.out.printf("newtracker tau3: %s -> tarr: %s\n", newTracker, tArr);
 
                 updateTauC(tauC, newTracker, new Pair<>(tArr, c));
             }
 
-            System.out.printf("inserted tauC in %s: %s\n", c.getTripId(), tauC);
-
             // insert a copy of tauC into T[ctrip]
-            Map<CriteriaTracker, Pair<Integer, Movement>> copyOfTauC = new HashMap<>();
-            tauC.forEach((tracker, pairTArrMovement) -> {
-                int tArr = pairTArrMovement.getKey();
-                CriteriaTracker newTracker = tracker.copy();
-                Movement movement = pairTArrMovement.getValue();
-                copyOfTauC.put(newTracker, new Pair<Integer, Movement>(tArr, movement));
-            });
-            T.put(c.getTripId(), copyOfTauC);
+            T.put(c.getTripId(),
+                    tauC.entrySet().stream()
+                            .collect(Collectors.toMap(
+                                    e -> e.getKey().copy(),
+                                    e -> new Pair<>(e.getValue().getKey(), e.getValue().getValue()))));
 
             boolean atLeastOneNotDominated = S.get(c.getPDep().getId()).insert(c.getTDep(), tauC);
 
@@ -328,13 +309,6 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                     }
                 }
             }
-
-            stopIdToStop.forEach((stopId, stop) -> {
-                System.out.printf("%s profile: %s\n", stopId, S.get(stopId));
-            });
-
-            System.out.printf("T: %s\n", T);
-
         }
 
         System.out.println("prompting journey");
@@ -358,7 +332,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         connections.sort(Comparator.comparingInt(Connection::getTDep).reversed());
 
         BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
-        double maxDistanceKm = Integer.MAX_VALUE; // TODO: replace by the actual value
+        double maxDistanceKm = 0.5; // TODO: replace by the actual value
         for (Stop sourceStop : stopIdToStop.values()) {
 
             List<Stop> nearbyStops = ballTree.findStopsWithinRadius(sourceStop, maxDistanceKm);
@@ -366,8 +340,6 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             for (Stop arrStop : nearbyStops) {
                 if (!sourceStop.equals(arrStop)) {
                     Footpath footpath = new Footpath(sourceStop, arrStop);
-
-                    System.out.printf("adding footpath: %s distance: \n", footpath, footpath.getDistance());
 
                     stopIdToIncomingFootpaths
                             .computeIfAbsent(arrStop.getId(), k -> new ArrayList<>())

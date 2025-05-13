@@ -76,8 +76,6 @@ public class ProfileFunction<T extends CriteriaTracker> {
      *         wasn't dominated); false otherwise.
      */
     public boolean insert(int tDep, Map<T, Pair<Integer, Movement>> newPartialJourneys) {
-        System.out.printf("insert called with %s\n", newPartialJourneys);
-
         // 1. find the index of the last entry (from the back) whose key is <= tDep
         int firstReachableEntryIdx = getFirstReachableEntry(tDep);
 
@@ -101,8 +99,6 @@ public class ProfileFunction<T extends CriteriaTracker> {
 
                     if ((critOld.dominates(critCand) && tArrOld <= tArrCand) || (critOld.equals(critCand)
                             && tArrOld < tArrCand)) {
-
-                        System.out.printf("%s dominates candidate %s\n", entryOld, entryCandidate);
                         dominated = true;
                         break;
                     }
@@ -125,9 +121,6 @@ public class ProfileFunction<T extends CriteriaTracker> {
 
                 if ((critOther.dominates(critCand) && tArrOther <= tArrCand)
                         || (critOther.equals(critCand) && tArrOther < tArrCand)) {
-
-                    System.out.printf("%s dominates (among) %s\n", entryOther, entryCandidate);
-
                     dominated = true;
                     break;
                 }
@@ -155,14 +148,10 @@ public class ProfileFunction<T extends CriteriaTracker> {
         }
 
         if (createNewBag) {
-            System.out.printf("create bag, %s\n", newPartialJourneys);
-
             // create a new map at insertionIdx with remaining newPartialJourneys entries
             entries.add(insertionIdx,
                     new Pair<Integer, Map<T, Pair<Integer, Movement>>>(tDep, newPartialJourneys));
         } else {
-            System.out.printf("bag already exists, %s\n", newPartialJourneys);
-
             // add remaining newPartialJourneys entries to the map at insertionIdx
             entries.get(insertionIdx).getValue().putAll(newPartialJourneys);
         }
@@ -188,9 +177,6 @@ public class ProfileFunction<T extends CriteriaTracker> {
                     if ((newCriteria.dominates(oldCriteria) && newTArr <= oldTArr)
                             || (newCriteria.equals(oldCriteria) &&
                                     newTArr < oldTArr)) {
-
-                        System.out.printf("%s dominates (old) %s\n", newEntry, oldEntry);
-
                         it.remove();
                         break;
                     }
