@@ -14,60 +14,6 @@ public class BallTree {
         return root;
     }
 
-    public Stop findNearest(final Stop target) {
-        Stop nearest = findNearest(root, target, null, Double.MAX_VALUE);
-        return nearest;
-    }
-
-    private Stop findNearest(BallTreeNode node, Stop target, Stop best, double bestDist) {
-        if (node == null) {
-            return best;
-        }
-        double centerDist = Coord.distance(target.getCoord(), node.center);
-    
-        // if the closest point of the ball (node) is further than the best known, we can stop
-        // because we know it's too far
-        if (centerDist - node.radius > bestDist) {
-            return best;
-        }
-    
-        if (node.stops != null) {
-            // it's a leaf node, check all stops
-            for (Stop s : node.stops) {
-                double dist = Coord.distance(target.getCoord(), s.getCoord());
-                if (dist < bestDist) {
-                    bestDist = dist;
-                    best = s;
-                }
-            }
-            return best;
-        }
-    
-        // Otherwise we are in an internal node: deciding which child to explore first
-        double distLeft = Coord.distance(target.getCoord(), node.leftChild.center);
-        double distRight = Coord.distance(target.getCoord(), node.rightChild.center);
-    
-        BallTreeNode first = node.leftChild;
-        BallTreeNode second = node.rightChild;
-    
-        if (distRight < distLeft) {
-            first = node.rightChild;
-            second = node.leftChild;
-        }
-    
-        // Explore the closest one first
-        best = findNearest(first, target, best, bestDist);
-
-        bestDist = Coord.distance(target.getCoord(), best.getCoord());
-    
-        // Maybe the other one is closer
-        if (Coord.distance(target.getCoord(), second.center) - second.radius < bestDist) {
-            best = findNearest(second, target, best, bestDist);
-        }
-    
-        return best;
-    }
-
     public List<Stop> findStopsWithinRadius(final Stop target, final double radiusKm) {
         List<Stop> result = new ArrayList<>();
         findStopsWithinRadius(root, target, radiusKm, result);
