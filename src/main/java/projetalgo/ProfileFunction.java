@@ -29,55 +29,55 @@ public class ProfileFunction<T extends CriteriaTracker> {
     /**
      * TODO
      */
-    public Movement getFirstMatch(boolean isFirstMovement, int tDep, String tripId, CriteriaTracker criteriaTracker) {
-        int firstReachableEntryIdx = getFirstReachableEntry(tDep);
-
-        // no entry can be reached
-        if (firstReachableEntryIdx == -1) {
-            return null;
-        }
-
-        for (int i = getFirstReachableEntry(tDep); i >= 0; i--) {
-            Map<T, Pair<Integer, Movement>> map = entries.get(i).getValue();
-
-            for (Map.Entry<T, Pair<Integer, Movement>> entry : map.entrySet()) {
-                T tracker = entry.getKey();
-                int tArr = entry.getValue().getKey();
-                Movement movement = entry.getValue().getValue();
-
-                boolean isTransfer = (!isFirstMovement) &&
-                        (((tripId == null) || (movement instanceof Footpath)
-                                || (movement instanceof Connection connection
-                                        && !connection.getTripId().equals(tripId))));
-
-                System.out.printf("movement : %s\n", movement);
-                System.out.printf("isTransfer : %b\n", isTransfer);
-
-                if (movement instanceof Connection connection) {
-                    System.out.printf("tripId : %s\n", connection.getTripId());
-                } else {
-                    System.out.printf("tripId : none (footpath)\n");
-                }
-
-                System.out.printf("criteriaTracker.getTransfersCount(): %d\n", criteriaTracker.getTransfersCount());
-                System.out.printf("tracker.getTransfersCount() + ((isTransfer) ? 1 : 0): %d\n",
-                        tracker.getTransfersCount() + ((isTransfer) ? 1 : 0));
-
-                // If the connection we are looking at requires a transfer, make sure we have
-                // the right number of transfers (this is why +1 if transfer)
-                if (criteriaTracker.getTransfersCount() == tracker.getTransfersCount() + ((isTransfer) ? 1 : 0)) {
-                    if (isTransfer) {
-                        criteriaTracker.decTransfersCount();
-                    }
-
-                    return movement;
-                }
-            }
-
-        }
-
-        return null;
-    }
+    // public Movement getFirstMatch(boolean isFirstMovement, int tDep, String tripId, CriteriaTracker criteriaTracker) {
+    //     int firstReachableEntryIdx = getFirstReachableEntry(tDep);
+    //
+    //     // no entry can be reached
+    //     if (firstReachableEntryIdx == -1) {
+    //         return null;
+    //     }
+    //
+    //     for (int i = getFirstReachableEntry(tDep); i >= 0; i--) {
+    //         Map<T, Pair<Integer, Movement>> map = entries.get(i).getValue();
+    //
+    //         for (Map.Entry<T, Pair<Integer, Movement>> entry : map.entrySet()) {
+    //             T tracker = entry.getKey();
+    //             int tArr = entry.getValue().getKey();
+    //             Movement movement = entry.getValue().getValue();
+    //
+    //             boolean isTransfer = (!isFirstMovement) &&
+    //                     (((tripId == null) || (movement instanceof Footpath)
+    //                             || (movement instanceof Connection connection
+    //                                     && !connection.getTripId().equals(tripId))));
+    //
+    //             System.out.printf("movement : %s\n", movement);
+    //             System.out.printf("isTransfer : %b\n", isTransfer);
+    //
+    //             if (movement instanceof Connection connection) {
+    //                 System.out.printf("tripId : %s\n", connection.getTripId());
+    //             } else {
+    //                 System.out.printf("tripId : none (footpath)\n");
+    //             }
+    //
+    //             System.out.printf("criteriaTracker.getTransfersCount(): %d\n", criteriaTracker.getTransfersCount());
+    //             System.out.printf("tracker.getTransfersCount() + ((isTransfer) ? 1 : 0): %d\n",
+    //                     tracker.getTransfersCount() + ((isTransfer) ? 1 : 0));
+    //
+    //             // If the connection we are looking at requires a transfer, make sure we have
+    //             // the right number of transfers (this is why +1 if transfer)
+    //             if (criteriaTracker.getTransfersCount() == tracker.getTransfersCount() + ((isTransfer) ? 1 : 0)) {
+    //                 if (isTransfer) {
+    //                     criteriaTracker.decTransfersCount();
+    //                 }
+    //
+    //                 return movement;
+    //             }
+    //         }
+    //
+    //     }
+    //
+    //     return null;
+    // }
 
     /**
      * TODO
@@ -130,7 +130,7 @@ public class ProfileFunction<T extends CriteriaTracker> {
                     T critOld = entryOld.getKey();
                     int tArrOld = entryOld.getValue().getKey();
 
-                    if ((critOld.dominates(critCand, true) && tArrOld <= tArrCand) || (critOld.equals(critCand)
+                    if ((critOld.dominates(critCand) && tArrOld <= tArrCand) || (critOld.equals(critCand)
                             && tArrOld < tArrCand)) {
 
                         System.out.printf("%s dominates candidate %s\n", entryOld, entryCandidate);
@@ -154,7 +154,7 @@ public class ProfileFunction<T extends CriteriaTracker> {
                 T critOther = entryOther.getKey();
                 int tArrOther = entryOther.getValue().getKey();
 
-                if ((critOther.dominates(critCand, true) && tArrOther <= tArrCand)
+                if ((critOther.dominates(critCand) && tArrOther <= tArrCand)
                         || (critOther.equals(critCand) && tArrOther < tArrCand)) {
 
                     System.out.printf("%s dominates (among) %s\n", entryOther, entryCandidate);
@@ -216,7 +216,7 @@ public class ProfileFunction<T extends CriteriaTracker> {
                     T newCriteria = newEntry.getKey();
                     int newTArr = newEntry.getValue().getKey();
 
-                    if ((newCriteria.dominates(oldCriteria, true) && newTArr <= oldTArr)
+                    if ((newCriteria.dominates(oldCriteria) && newTArr <= oldTArr)
                             || (newCriteria.equals(oldCriteria) &&
                                     newTArr < oldTArr)) {
 
