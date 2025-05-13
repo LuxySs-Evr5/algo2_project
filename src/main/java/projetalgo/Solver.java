@@ -391,10 +391,6 @@ public class Solver {
                 headerMap.put(headers[i], i);
             }
 
-            if (!headerMap.containsKey("trip_id") || !headerMap.containsKey("route_id")) {
-                throw new IllegalArgumentException("Missing trip_id or route_id in trips.csv");
-            }
-
             // Verify that required headers are present
             String[] requiredHeaders = { "trip_id", "route_id" };
             for (String header : requiredHeaders) {
@@ -424,10 +420,6 @@ public class Solver {
             Map<String, Integer> headerMap = new HashMap<>();
             for (int i = 0; i < headers.length; i++) {
                 headerMap.put(headers[i], i);
-            }
-
-            if (!headerMap.containsKey("route_id") || !headerMap.containsKey("route_short_name")) {
-                throw new IllegalArgumentException("Missing route_id or route_short_name in routes.csv");
             }
 
             // Verify that required headers are present
