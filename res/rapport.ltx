@@ -136,13 +136,13 @@ Une fois tous les fichiers lus, les informations sont regroupées en \textbf{con
 	\item le temps de départ et le temps d’arrivée (en secondes).
 \end{itemize}
 
-Toutes les connexions ainsi générées sont ensuite triées par heure de départ croissante, ce qui permet à l’algorithme CSA de fonctionner efficacement lors de la recherche du plus court chemin.
+Une fois toutes les connexions générées à partir des données GTFS des différents opérateurs, il reste à trier toutes les connexions par heure de départ croissante, ce qui permet à l’algorithme CSA de fonctionner correctement lors de la recherche du plus court chemin.
 
 \subsection{Construction des chemins à pied (\texttt{Footpath})}
 
 Avant de pouvoir exécuter l'algorithme du plus court chemin, il est également nécessaire de construire les chemins à pied possibles (\texttt{Footpath}) entre arrêts proches. Pour notre programme, nous avons décidé de limiter la marche à pied à 500 mètres à vol d'oiseau. Ce chemin sera emprunté pour rejoindre un arrêt s'il est plus rapide ou nécessaire pour un changement de ligne.\\
 
-Pour calculer ces \texttt{Footpath}, nous utilisons le \texttt{BallTree}. Celui-ci permet de réaliser des recherches de voisinage très rapides dans un espace à deux dimensions (latitude/longitude). Concrètement :
+Pour calculer ces \texttt{Footpath}, nous utilisons le \texttt{BallTree}. Celui-ci permet de réaliser des recherches de voisinage très rapides dans un espace à plusieurs dimensions (dans notre cas, deux : latitude/longitude). Concrètement, on procède ainsi :
 
 \begin{itemize}
 	\item Tous les arrêts sont insérés dans un \texttt{BallTree}, avec leurs coordonnées GPS.
@@ -150,7 +150,9 @@ Pour calculer ces \texttt{Footpath}, nous utilisons le \texttt{BallTree}. Celui-
 	\item Un \texttt{Footpath} est alors créé entre l’arrêt source et chacun de ses voisins, avec une durée estimée basée sur une vitesse de marche moyenne (ici, 5 km/h).
 \end{itemize}
 
-Ces chemins à pied sont ensuite ajoutés à l’ensemble des connexions disponibles pour l’algorithme, au même titre que les trajets en transport en commun. Cela permet à l’utilisateur de combiner marche et transports publics pour atteindre sa destination le plus rapidement possible.
+Ces chemins à pied sont ensuite ajoutés à l’ensemble des connexions disponibles pour l’algorithme, au même titre que les trajets en transport en commun. Cela permet à l’utilisateur de combiner marche et transports publics pour atteindre sa destination le plus rapidement possible.\\
+
+L'avantage du \texttt{BallTree} réside dans sa complexité de recherche : alors qu’une recherche naïve des voisins aurait une complexité en $\mathcal{O}(n^2)$, celle du \texttt{BallTree} est en $\mathcal{O}(n)$ dans le pire des cas, grâce à sa structure hiérarchique. Cette amélioration permet de rendre l’étape de génération des chemins à pied plus rapide.\\
 
 %-------------------------------------------------------------------
 
@@ -460,14 +462,14 @@ Dans cette section, nous présentons puis réfutons une idée intuitive selon
 laquelle une simple modification du CSA basique permettrait d’en faire un
 algorithme multicritère. Nous présentons ensuite notre implémentation modifiée
 de l'algorithme mcpCSA qui peut prendre en compte plusieurs critères et
-optimise ceux-ci au sens pareto.\\
+optimise ceux-ci au sens Pareto.\\
 
 
-Dans le CSA basique, la fonction de coût, nous renvoyant les couts placés dans \texttt{bestKnown}, se définit simplement par :
+Dans le CSA basique, la fonction de coût, nous renvoyant les coûts placés dans \texttt{bestKnown}, se définit simplement par :
 $$
 	\operatorname{cost} : \mathbb{T} \to \mathbb{T}, \quad t \mapsto t
 $$
-C'est à dire que le cout est directemment le temps d'arrivée.\\
+C'est à dire que le coût est directement le temps d'arrivée.\\
 
 %TODO: pas convaincu par le C "complexe" ni par le fait qu'on passe de \mathbb{T} à \mathbb{C}
 
@@ -477,19 +479,19 @@ les critères supportés par le programme, e.g. le nombre de mouvements effectu�
 en trams : $$ \text{cost} : \mathbb{X}_1 \times \cdots \times \mathbb{X}_k \to
 	\mathbb{C}, \quad (x_1, \ldots, x_k) \mapsto c $$ où $x_1, \ldots, x_k$
 représentent des valeurs pour les critères choisis par l'utilisateur, e.g.
-temps d'arrivée, nombre de connections en tram, nombre de chemins à pied, et $c
+temps d'arrivée, nombre de connexions en tram, nombre de chemins à pied, et $c
 	\in \mathbb{C}$ est le coût global calculé selon la fonction définie par
 l'utilisateur.
 
 Nous ne stockerions alors plus simplement le temps d'arrivée dans
 \texttt{bestKnown} mais $(x_1, \dots, x_n)$.
 Afin d'effectuer la comparaison entre deux trajets $X, Y$ pour déterminer si
-$X$ a un meilleur cout que $Y$, il de vérifier :
+$X$ a un meilleur coût que $Y$, il faut vérifier :
 $$
 	\operatorname{cost}(x_1, \dots, x_n) < \operatorname{cost}(y_1, \dots, y_n)
 $$
 
-Malheureusement, cette approche intuitive ne fonctionne par. Voici un
+Malheureusement, cette approche intuitive ne fonctionne pas. Voici un
 contre-exemple :
 
 % TODO: écrire le contre-exmple avec tikz ou qqch de similaire
