@@ -1,6 +1,6 @@
 package projetalgo;
 
-enum TransportType {
+public enum TransportType {
     BUS,
     METRO,
     TRAM,
