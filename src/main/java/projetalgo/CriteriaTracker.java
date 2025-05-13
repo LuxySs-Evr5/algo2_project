@@ -2,6 +2,8 @@ package projetalgo;
 
 public interface CriteriaTracker {
 
+    CriteriaTracker copy();
+
     boolean dominates(CriteriaTracker criteriaTracker);
 
     /**

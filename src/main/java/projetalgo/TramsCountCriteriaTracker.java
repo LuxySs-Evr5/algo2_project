@@ -12,6 +12,11 @@ public class TramsCountCriteriaTracker implements CriteriaTracker {
     }
 
     @Override
+    public CriteriaTracker copy() {
+        return new TramsCountCriteriaTracker(getTramsCount());
+    }
+
+    @Override
     public CriteriaTracker addMovement(Movement m) {
         if (m instanceof Connection connection && connection.getTransportType() == TransportType.TRAM) {
             return new TramsCountCriteriaTracker(getTramsCount() + 1);

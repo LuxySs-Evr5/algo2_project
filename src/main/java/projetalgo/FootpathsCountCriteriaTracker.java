@@ -12,6 +12,11 @@ public class FootpathsCountCriteriaTracker implements CriteriaTracker {
     }
 
     @Override
+    public CriteriaTracker copy() {
+        return new FootpathsCountCriteriaTracker(getFootpathsCount());
+    }
+
+    @Override
     public CriteriaTracker addMovement(Movement m) {
         if (m instanceof Footpath footpath) {
             return new FootpathsCountCriteriaTracker(getFootpathsCount() + 1);
