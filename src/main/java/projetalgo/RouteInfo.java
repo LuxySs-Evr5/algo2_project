@@ -1,22 +1,22 @@
 package projetalgo;
 
 public class RouteInfo {
-    private final String lineId;
-    private final String lineName;
+    private final String routeId;
+    private final String routeName;
     private final String transportType;
 
-    public RouteInfo(String lineId, String lineName, String transportType) {
-        this.lineId = lineId;
-        this.lineName = lineName;
+    public RouteInfo(String routeId, String routeName, String transportType) {
+        this.routeId = routeId;
+        this.routeName = routeName;
         this.transportType = transportType;
     }
 
-    public String getLineId() {
-        return lineId;
+    public String getRouteId() {
+        return routeId;
     }
 
-    public String getLineName() {
-        return lineName;
+    public String getRouteName() {
+        return routeName;
     }
 
     public String getTransportType() {
@@ -25,6 +25,6 @@ public class RouteInfo {
 
     @Override
     public String toString() {
-        return transportType + " line " + lineId + " (" + lineName + ")";
+        return transportType + " line " + routeId + " (" + routeName + ")";
     }
 }

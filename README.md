@@ -1,13 +1,80 @@
-# Projet d'Algorithmie 2 (2024-2025)
+# Projet d'Algorithmie 2 (2024–2025) — Recherche du plus court chemin multimodal
 
-## Create the jar file
+Ce projet implémente un algorithme CSA (Connection Scan Algorithm) adapté aux réseaux de transport publics belges. Il permet à un utilisateur de déterminer l'itinéraire optimal entre deux arrêts de transport, en tenant compte des horaires de la STIB, SNCB, TEC et De Lijn, ainsi que des connexions à pied entre arrêts proches.
+
+---
+
+## Compilation du projet
+
+Assurez-vous d’avoir Java 17 installé.
+
+Pour compiler et créer le fichier `JAR` :
 
 ```sh
 ./gradlew clean jar
 ```
 
-## Run the program
+Le fichier exécutable sera généré à la racine du projet.
+
+## Exécution
 
 ```sh
 java -jar algo2_project.jar
 ```
+
+Lors de l'exécution, le programme :
+
+1. Charge les fichiers GTFS des quatre opérateurs depuis les dossiers `./GTFS/{SNCB,STIB,TEC,DELIJN}/`.
+
+2. Détermine les connexions à pied entre arrêts proches (500m max).
+
+3. Invite l'utilisateur à saisir :
+
+    - un nom d’arrêt de départ,
+
+    - un nom d’arrêt d’arrivée,
+
+    - une heure de départ (format `hh:mm:ss`).
+
+4. Affiche le chemin le plus rapide calculé en détail avec toutes les connexions.
+
+## Structure des fichiers GTFS
+
+Les sous-dossiers portant le nom des opérauteurs se situant dans `./GTFS/` doivent contenir les 4 fichiers suivants :
+
+- `routes.csv`
+
+- `trips.csv`
+
+- `stop_times.csv`
+
+- `stops.csv`
+
+Exemple de structure :
+
+```sh
+GTFS/
+├── SNCB/
+│   ├── routes.csv
+│   ├── stop_times.csv
+│   ├── stops.csv
+│   └── trips.csv
+├── STIB/
+├── TEC/
+└── DELIJN/
+```
+
+## Interactions utilisateur
+
+L'utilisateur peut entrer `q` ou `quit` à tout moment pour quitter le programme.
+
+Les noms d'arrêts ne sont pas sensibles à la casse. Pour chaque arrêt saisi, le programme va d'abord vérifier si l'arrêt existe dans les données chargées.
+
+Le programme propose un *terminal interactif* : il est possible d’utiliser les flèches haut et bas pour naviguer dans l’historique des commandes, et les flèches gauche et droite pour modifier une ligne en cours de saisie.
+
+## Librairies utilisées
+
+- `Jline` pour les interactions terminal utilisateur
+- `OpenCSV` pour le parsing des fichiers CSV
+- `Util` pour les fonctions de base (List, Map, Stack, etc)
+  
