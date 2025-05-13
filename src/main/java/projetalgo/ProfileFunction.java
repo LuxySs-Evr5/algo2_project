@@ -46,21 +46,22 @@ public class ProfileFunction<T extends CriteriaTracker> {
                 Movement movement = entry.getValue().getValue();
 
                 boolean isTransfer = (!isFirstMovement) &&
-                     (((tripId == null) || (movement instanceof Footpath)
-                        || (movement instanceof Connection connection && !connection.getTripId().equals(tripId))));
+                        (((tripId == null) || (movement instanceof Footpath)
+                                || (movement instanceof Connection connection
+                                        && !connection.getTripId().equals(tripId))));
 
-                System.out.printf("movement : %s\n", movement); 
-                System.out.printf("isTransfer : %b\n", isTransfer); 
+                System.out.printf("movement : %s\n", movement);
+                System.out.printf("isTransfer : %b\n", isTransfer);
 
                 if (movement instanceof Connection connection) {
-                    System.out.printf("tripId : %s\n", connection.getTripId()); 
+                    System.out.printf("tripId : %s\n", connection.getTripId());
                 } else {
-                    System.out.printf("tripId : none (footpath)\n"); 
+                    System.out.printf("tripId : none (footpath)\n");
                 }
 
                 System.out.printf("criteriaTracker.getTransfersCount(): %d\n", criteriaTracker.getTransfersCount());
-                System.out.printf("tracker.getTransfersCount() + ((isTransfer) ? 1 : 0): %d\n", tracker.getTransfersCount() + ((isTransfer) ? 1 : 0));
-
+                System.out.printf("tracker.getTransfersCount() + ((isTransfer) ? 1 : 0): %d\n",
+                        tracker.getTransfersCount() + ((isTransfer) ? 1 : 0));
 
                 // If the connection we are looking at requires a transfer, make sure we have
                 // the right number of transfers (this is why +1 if transfer)
@@ -106,6 +107,8 @@ public class ProfileFunction<T extends CriteriaTracker> {
      *         wasn't dominated); false otherwise.
      */
     public boolean insert(int tDep, Map<T, Pair<Integer, Movement>> newPartialJourneys) {
+        System.out.printf("insert called with %s\n", newPartialJourneys);
+
         // 1. find the index of the last entry (from the back) whose key is <= tDep
         int firstReachableEntryIdx = getFirstReachableEntry(tDep);
 
@@ -119,20 +122,25 @@ public class ProfileFunction<T extends CriteriaTracker> {
 
             boolean dominated = false;
 
+            // TODO: swap 1) and 2) (better performance)
+
             // 1) check domination by any old journey
             for (int i = 0; i <= firstReachableEntryIdx && !dominated; i++) {
                 for (Map.Entry<T, Pair<Integer, Movement>> entryOld : entries.get(i).getValue().entrySet()) {
                     T critOld = entryOld.getKey();
                     int tArrOld = entryOld.getValue().getKey();
 
-                    if ((critOld.dominates(critCand, true) || critOld.equals(critCand))
-                            && tArrOld <= tArrCand) {
+                    if ((critOld.dominates(critCand, true) && tArrOld <= tArrCand) || (critOld.equals(critCand)
+                            && tArrOld < tArrCand)) {
+
+                        System.out.printf("%s dominates candidate %s\n", entryOld, entryCandidate);
                         dominated = true;
                         break;
                     }
                 }
             }
             if (dominated) {
+
                 outerIt.remove();
                 continue;
             }
@@ -146,8 +154,11 @@ public class ProfileFunction<T extends CriteriaTracker> {
                 T critOther = entryOther.getKey();
                 int tArrOther = entryOther.getValue().getKey();
 
-                if ((critOther.dominates(critCand, true) || critOther.equals(critCand))
-                        && tArrOther <= tArrCand) {
+                if ((critOther.dominates(critCand, true) && tArrOther <= tArrCand)
+                        || (critOther.equals(critCand) && tArrOther < tArrCand)) {
+
+                    System.out.printf("%s dominates (among) %s\n", entryOther, entryCandidate);
+
                     dominated = true;
                     break;
                 }
@@ -175,10 +186,14 @@ public class ProfileFunction<T extends CriteriaTracker> {
         }
 
         if (createNewBag) {
+            System.out.printf("create bag, %s\n", newPartialJourneys);
+
             // create a new map at insertionIdx with remaining newPartialJourneys entries
             entries.add(insertionIdx,
                     new Pair<Integer, Map<T, Pair<Integer, Movement>>>(tDep, newPartialJourneys));
         } else {
+            System.out.printf("bag already exists, %s\n", newPartialJourneys);
+
             // add remaining newPartialJourneys entries to the map at insertionIdx
             entries.get(insertionIdx).getValue().putAll(newPartialJourneys);
         }
@@ -204,6 +219,9 @@ public class ProfileFunction<T extends CriteriaTracker> {
                     if ((newCriteria.dominates(oldCriteria, true) && newTArr <= oldTArr)
                             || (newCriteria.equals(oldCriteria) &&
                                     newTArr < oldTArr)) {
+
+                        System.out.printf("%s dominates (old) %s\n", newEntry, oldEntry);
+
                         it.remove();
                         break;
                     }
