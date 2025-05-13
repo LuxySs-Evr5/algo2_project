@@ -75,6 +75,18 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             } else if (movement instanceof Connection connection) {
                 tDep = connection.getTArr();
                 tripId = connection.getTripId();
+
+                switch (connection.getTransportType()){
+                    case BUS:
+                        break;
+                    case METRO:
+                        break;
+                    case TRAM:
+                        criteriaTracker.decTramsCount();
+                        break;
+                    case TRAIN:
+                        break;
+                }
             }
         }
     }
@@ -216,6 +228,18 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                 T newTracker = factory.get();
                 int tArr = c.getTArr();
 
+                switch (c.getTransportType()){
+                    case BUS:
+                        break;
+                    case METRO:
+                        break;
+                    case TRAM:
+                        newTracker.setTramsCount(1);
+                        break;
+                    case TRAIN:
+                        break;
+                }
+
                 System.out.printf("newtracker tau1: %s -> tarr: %s\n", newTracker, tArr);
 
                 updateTauC(tauC, newTracker, new Pair<Integer, Movement>(tArr, c));
@@ -226,6 +250,19 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
                     T newTracker = factory.get();
                     newTracker.setFootpathsCount(1);
+
+                    switch (c.getTransportType()){
+                        case BUS:
+                            break;
+                        case METRO:
+                            break;
+                        case TRAM:
+                            newTracker.setTramsCount(1);
+                            break;
+                        case TRAIN:
+                            break;
+                    }
+
 
                     System.out.printf("newtracker tau1: %s -> tarr: %s\n", newTracker, tArrWithfootpath);
 
@@ -255,6 +292,19 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                 T newTracker = factory.get();
                 newTracker.setFootpathsCount(footpathsCount);
 
+                switch (c.getTransportType()){
+                    case BUS:
+                        break;
+                    case METRO:
+                        break;
+                    case TRAM:
+                        int prevTramsCount = entry.getKey().getTramsCount();
+                        newTracker.setTramsCount(prevTramsCount + 1);
+                        break;
+                    case TRAIN:
+                        break;
+                }
+
                 System.out.printf("newtracker tau2: %s -> tarr: %s\n", newTracker, tArr);
 
                 updateTauC(tauC, newTracker, new Pair<>(tArr, c));
@@ -270,6 +320,19 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                 T newTracker = factory.get();
                 newTracker.setFootpathsCount(footpathsCount);
 
+                switch (c.getTransportType()){
+                    case BUS:
+                        break;
+                    case METRO:
+                        break;
+                    case TRAM:
+                        int prevTramsCount = entry.getKey().getTramsCount();
+                        newTracker.setTramsCount(prevTramsCount + 1);
+                        break;
+                    case TRAIN:
+                        break;
+                }
+
                 System.out.printf("newtracker tau3: %s -> tarr: %s\n", newTracker, tArr);
 
                 updateTauC(tauC, newTracker, new Pair<>(tArr, c));
@@ -282,6 +345,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             tauC.forEach((tracker, pairTArrMovement) -> {
                 T newTracker = factory.get();
                 newTracker.setFootpathsCount(tracker.getFootpathsCount());
+                newTracker.setTramsCount(tracker.getTramsCount());
 
                 int tArr = pairTArrMovement.getKey();
                 Movement movement = pairTArrMovement.getValue();
@@ -313,6 +377,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                                         e -> {
                                             T newTracker = factory.get();
                                             newTracker.setFootpathsCount(e.getKey().getFootpathsCount() + 1);
+                                            newTracker.setTramsCount(e.getKey().getTramsCount());
                                             return newTracker;
                                         },
                                         e -> new Pair<>(e.getValue().getKey(), f)));

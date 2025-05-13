@@ -43,6 +43,10 @@ public class Connection implements Movement {
         return routeInfo;
     }
 
+    public TransportType getTransportType() {
+        return routeInfo.getTransportType();
+    }
+
     @Override
     public String toString() {
         return String.format("tripId: %s, ((%s) -> (%s)), (%s -> %s)", tripId, pDep, pArr,
