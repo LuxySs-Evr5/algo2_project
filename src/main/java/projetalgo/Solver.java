@@ -165,7 +165,7 @@ public class Solver {
                 System.out.println("Walk " + duration + " from " + pDep.getName() + " to " + pArr.getName());
             } else if (movement instanceof Connection connection) {
                 String tripId = connection.getTripId();
-                RouteInfo routeInfo = connection.gRouteInfo();
+                RouteInfo routeInfo = connection.getRouteInfo();
                 if (currentTripId == null) {
                     currentTripId = tripId;
                     currentRouteInfo = routeInfo;

@@ -2,7 +2,7 @@ package projetalgo;
 
 public class Connection implements Movement {
     private final String tripId;
-    RouteInfo routeInfo;
+    private final RouteInfo routeInfo;
     private final Stop pDep; // departure point
     private final Stop pArr; // arrival point
     private final int tDep;  // departure time
@@ -39,7 +39,7 @@ public class Connection implements Movement {
         return tripId;
     }
 
-    public RouteInfo gRouteInfo() {
+    public RouteInfo getRouteInfo() {
         return routeInfo;
     }
 
