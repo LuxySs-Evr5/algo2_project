@@ -22,6 +22,24 @@ Le fichier exécutable sera généré à la racine du projet.
 java -jar algo2_project.jar
 ```
 
+### Mémoire insuffisante : OutOfMemoryError
+
+Si, lors de l’exécution, vous rencontrez une erreur du type :
+
+```sh
+java.lang.OutOfMemoryError: Java heap space
+```
+
+Cela signifie que la mémoire allouée par défaut à la JVM est insuffisante. Pour charger les fichiers GTFS de ce projet, au moins 3 Go de RAM sont recommandés.
+
+Lancez donc le programme avec 3 Go de RAM alloués :
+
+```sh
+java -Xmx3g -jar algo2_project.jar
+```
+
+### Comportement du programme
+
 Lors de l'exécution, le programme :
 
 1. Charge les fichiers GTFS des quatre opérateurs depuis les dossiers `./GTFS/{SNCB,STIB,TEC,DELIJN}/`.
