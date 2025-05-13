@@ -14,6 +14,7 @@
 \usepackage{xcolor}
 \usepackage{url}
 \usepackage{hyperref}
+\usepackage{amsmath, amssymb, amsfonts}
 \usepackage[linesnumbered,ruled,vlined]{algorithm2e}
 \lstset{
   basicstyle=\ttfamily,
@@ -61,6 +62,8 @@
 \section{Introduction}
 
 % TODO: par sûr du "au sens pareto"
+
+% TODO: changer les verbes au futur "détaillerons" etc
 
 Les transports en commun jouent un rôle central dans la mobilité en Belgique,
 où de nombreux citoyens dépendent quotidiennement des bus, trams, métros et
@@ -116,21 +119,21 @@ Les données GTFS utilisées dans notre programme sont les données publiques fo
 Le chargement des données est effectué via la fonction \texttt{loadOneCsvSet()} qui lit les fichiers suivants pour chaque opérateur :
 
 \begin{itemize}
-    \item \textbf{\texttt{stops.csv}} : contient les identifiants, noms et coordonnées géographiques des arrêts. Chaque arrêt est stocké dans une structure \texttt{Stop}, identifiée par son \texttt{stop\_id}.
-    
-    \item \textbf{\texttt{trips.csv}} : associe chaque \texttt{trip\_id} à une \texttt{route\_id}, représentant un parcours complet effectué par un véhicule.
-    
-    \item \textbf{\texttt{routes.csv}} : fournit le nom de chaque ligne, ainsi que le type de transport, et est identifiable grâce au \texttt{route\_id}. Ces données sont enregistrées dans une structure \texttt{RouteInfo} contenant toutes ces informations.
-    
-    \item \textbf{\texttt{stop\_times.csv}} : liste, pour chaque \texttt{trip}, les arrêts desservis dans l’ordre (\texttt{stop\_sequence}), avec l’heure de départ à chaque arrêt. Nous convertissons les horaires en secondes depuis minuit pour simplifier les comparaisons.
+	\item \textbf{\texttt{stops.csv}} : contient les identifiants, noms et coordonnées géographiques des arrêts. Chaque arrêt est stocké dans une structure \texttt{Stop}, identifiée par son \texttt{stop\_id}.
+
+	\item \textbf{\texttt{trips.csv}} : associe chaque \texttt{trip\_id} à une \texttt{route\_id}, représentant un parcours complet effectué par un véhicule.
+
+	\item \textbf{\texttt{routes.csv}} : fournit le nom de chaque ligne, ainsi que le type de transport, et est identifiable grâce au \texttt{route\_id}. Ces données sont enregistrées dans une structure \texttt{RouteInfo} contenant toutes ces informations.
+
+	\item \textbf{\texttt{stop\_times.csv}} : liste, pour chaque \texttt{trip}, les arrêts desservis dans l’ordre (\texttt{stop\_sequence}), avec l’heure de départ à chaque arrêt. Nous convertissons les horaires en secondes depuis minuit pour simplifier les comparaisons.
 \end{itemize}
 
 Une fois tous les fichiers lus, les informations sont regroupées en \textbf{connexions} représentant des trajets directs entre deux arrêts consécutifs d’un même trajet avec :
 \begin{itemize}
-    \item l’identifiant du trajet (\texttt{trip\_id}),
-    \item la ligne de transport concernée (\texttt{RouteInfo}),
-    \item l’arrêt de départ et d’arrivée (\texttt{Stop}),
-    \item le temps de départ et le temps d’arrivée (en secondes).
+	\item l’identifiant du trajet (\texttt{trip\_id}),
+	\item la ligne de transport concernée (\texttt{RouteInfo}),
+	\item l’arrêt de départ et d’arrivée (\texttt{Stop}),
+	\item le temps de départ et le temps d’arrivée (en secondes).
 \end{itemize}
 
 Toutes les connexions ainsi générées sont ensuite triées par heure de départ croissante, ce qui permet à l’algorithme CSA de fonctionner efficacement lors de la recherche du plus court chemin.
@@ -142,9 +145,9 @@ Avant de pouvoir exécuter l'algorithme du plus court chemin, il est également 
 Pour calculer ces \texttt{Footpath}, nous utilisons le \texttt{BallTree}. Celui-ci permet de réaliser des recherches de voisinage très rapides dans un espace à deux dimensions (latitude/longitude). Concrètement :
 
 \begin{itemize}
-    \item Tous les arrêts sont insérés dans un \texttt{BallTree}, avec leurs coordonnées GPS.
-    \item Pour chaque arrêt, le \texttt{BallTree} est interrogé pour trouver les arrêts situés dans un rayon de 500 mètres.
-    \item Un \texttt{Footpath} est alors créé entre l’arrêt source et chacun de ses voisins, avec une durée estimée basée sur une vitesse de marche moyenne (ici, 5 km/h).
+	\item Tous les arrêts sont insérés dans un \texttt{BallTree}, avec leurs coordonnées GPS.
+	\item Pour chaque arrêt, le \texttt{BallTree} est interrogé pour trouver les arrêts situés dans un rayon de 500 mètres.
+	\item Un \texttt{Footpath} est alors créé entre l’arrêt source et chacun de ses voisins, avec une durée estimée basée sur une vitesse de marche moyenne (ici, 5 km/h).
 \end{itemize}
 
 Ces chemins à pied sont ensuite ajoutés à l’ensemble des connexions disponibles pour l’algorithme, au même titre que les trajets en transport en commun. Cela permet à l’utilisateur de combiner marche et transports publics pour atteindre sa destination le plus rapidement possible.
@@ -156,9 +159,9 @@ Ces chemins à pied sont ensuite ajoutés à l’ensemble des connexions disponi
 Le CSA basique permet de résoudre le problème suivant :
 
 \begin{quote}
-Étant donné l'horaire des véhicules, un arrêt de départ $pDep$, un arrêt d'arrivée
-$pArr$, et un temps de départ $tDep$, renvoyer les différents segments du trajets
-arrivant le plus tôt possible en $pArr$ en partant de $pDep$ en $tDep$.
+	Étant donné l'horaire des véhicules, un arrêt de départ $pDep$, un arrêt d'arrivée
+	$pArr$, et un temps de départ $tDep$, renvoyer les différents segments du trajets
+	arrivant le plus tôt possible en $pArr$ en partant de $pDep$ en $tDep$.
 \end{quote}
 
 Notre version du CSA basique accepte des noms d’arrêts, qui ne sont pas
@@ -447,9 +450,53 @@ le CSA respecte bien les deux~\hyperref[item:dagcriteresshortestpath]{critères
 
 %-------------------------------------------------------------------
 
-\section{CSA multicritère}
+\section{Pareto CSA Profile (multicritère)}
 
-% Explication de "dominer", de "optimisation Pareto"
+% TODO: "qui pourrait laisser penser" pas fou
+
+% TODO: par sûr du "au sens pareto"
+
+Dans cette section, nous présentons puis réfutons une idée intuitive selon
+laquelle une simple modification du CSA basique permettrait d’en faire un
+algorithme multicritère. Nous présentons ensuite notre implémentation modifiée
+de l'algorithme mcpCSA qui peut prendre en compte plusieurs critères et
+optimise ceux-ci au sens pareto.\\
+
+
+Dans le CSA basique, la fonction de coût, nous renvoyant les couts placés dans \texttt{bestKnown}, se définit simplement par :
+$$
+	\operatorname{cost} : \mathbb{T} \to \mathbb{T}, \quad t \mapsto t
+$$
+C'est à dire que le cout est directemment le temps d'arrivée.\\
+
+%TODO: pas convaincu par le C "complexe" ni par le fait qu'on passe de \mathbb{T} à \mathbb{C}
+
+L'idée intuitive consiste alors à remplacer la fonction de coût par une
+fonction déterminée par l'utilisateur, prenant en paramètre les valeurs pour
+les critères supportés par le programme, e.g. le nombre de mouvements effectués
+en trams : $$ \text{cost} : \mathbb{X}_1 \times \cdots \times \mathbb{X}_k \to
+	\mathbb{C}, \quad (x_1, \ldots, x_k) \mapsto c $$ où $x_1, \ldots, x_k$
+représentent des valeurs pour les critères choisis par l'utilisateur, e.g.
+temps d'arrivée, nombre de connections en tram, nombre de chemins à pied, et $c
+	\in \mathbb{C}$ est le coût global calculé selon la fonction définie par
+l'utilisateur.
+
+Nous ne stockerions alors plus simplement le temps d'arrivée dans
+\texttt{bestKnown} mais $(x_1, \dots, x_n)$.
+Afin d'effectuer la comparaison entre deux trajets $X, Y$ pour déterminer si
+$X$ a un meilleur cout que $Y$, il de vérifier :
+$$
+	\operatorname{cost}(x_1, \dots, x_n) < \operatorname{cost}(y_1, \dots, y_n)
+$$
+
+Malheureusement, cette approche intuitive ne fonctionne par. Voici un
+contre-exemple :
+
+% TODO: écrire le contre-exmple avec tikz ou qqch de similaire
+
+
+
+% Explication de "dominer", de "optimisation pareto"
 
 % Expliauer pourquoi on peut pas juste remplacer la fonction de cout de l'algo
 % précédent (le temps d'arrivée) par un nouvelle fonction qui tient compte du
