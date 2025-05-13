@@ -25,15 +25,15 @@ public class Solver {
     }
 
     /**
-     * Returns true if the stop with the given name exists in the data.
+     * Returns the real name of the stop (in the data) if it exists, otherwise returns an empty string.
      */
-    boolean stopExists(final String name) {
+    String stopExists(final String name) {
         for (Stop stop : stopIdToStop.values()) {
             if (stop.getName().equalsIgnoreCase(name)) {
-                return true;
+                return stop.getName();
             }
         }
-        return false;
+        return "";
     }
 
     /**
@@ -242,11 +242,9 @@ public class Solver {
 
             if (valueStop.getName().equals(pArrName)) {
                 pArrIds.add(keyStopId);
-                System.out.printf("found a pArr: %s : %s\n", pArrName, keyStopId);
             }
 
             if (valueStop.getName().equals(pDepName)) {
-                System.out.printf("found a pDep: %s : %s\n", valueStop.getName(), keyStopId);
 
                 pDepIds.add(keyStopId);
 
@@ -305,8 +303,16 @@ public class Solver {
         }
 
         int tArrEarliest = bestKnown.get(pArrIdEarliest).getTArr();
-
         Stack<BestKnownEntry> finalPath = reconstructSolution(bestKnown, pDepIds, pArrIdEarliest);
+
+        System.out.println(
+            AinsiCode.BOLD + "\nHere are the directions for the shortest route from " +
+            AinsiCode.RED + AinsiCode.UNDERLINE + pDepName + AinsiCode.RESET + AinsiCode.BOLD +
+            " to " + AinsiCode.RED + AinsiCode.UNDERLINE + pArrName + AinsiCode.RESET + AinsiCode.BOLD +
+            ", departing at " + AinsiCode.RED + AinsiCode.UNDERLINE + TimeConversion.fromSeconds(tDep) + 
+            AinsiCode.RESET + AinsiCode.BOLD + " :\n" + AinsiCode.RESET
+        );
+
         printInstructions(finalPath);
 
         System.out.println(AinsiCode.BOLD + AinsiCode.RED + "You will arrive at " + stopIdToStop.get(pArrIdEarliest).getName() + " at " + TimeConversion.fromSeconds(tArrEarliest) + AinsiCode.RESET);
@@ -369,7 +375,7 @@ public class Solver {
             String[] line;
             while ((line = reader.readNext()) != null) {
                 String stopId = line[headerMap.get("stop_id")];
-                String stopName = line[headerMap.get("stop_name")].toLowerCase();
+                String stopName = line[headerMap.get("stop_name")];
                 Coord coord = new Coord(Double.parseDouble(line[headerMap.get("stop_lat")]), Double.parseDouble(line[headerMap.get("stop_lon")]));
                 stopIdToStop.put(stopId, new Stop(stopId, stopName, coord));
             }

@@ -25,9 +25,9 @@ public class Main {
         String instruction = textToShow;
         try {
             while (true) {
-                String input = reader.readLine(instruction).stripTrailing().toLowerCase();
+                String input = reader.readLine(instruction).stripTrailing();
     
-                if (input.equals("q") || input.equals("quit")) {
+                if (input.equalsIgnoreCase("q") || input.equalsIgnoreCase("quit")) {
                     System.out.println("Exiting the program ...");
                     System.exit(0);
                 }
@@ -37,8 +37,12 @@ public class Main {
                     continue;
                 } else if (!isStopName) {
                     return input;
-                } else if (solver.stopExists(input)) {
-                    return input;
+                } 
+                
+                String stop = solver.stopExists(input);
+                
+                if (!stop.isEmpty()) {
+                    return stop;
                 }
     
                 instruction = "The '" + input + "' stop was not found in the data. " + textToShow;
@@ -99,14 +103,6 @@ public class Main {
                 }
 
                 // -------------- Solve the shortest path --------------
-
-                System.out.println(
-                    AinsiCode.BOLD + "\nThe shortest path for " +
-                    AinsiCode.RED + AinsiCode.UNDERLINE + pDepName + AinsiCode.RESET + AinsiCode.BOLD +
-                    " to " + AinsiCode.RED + AinsiCode.UNDERLINE + pArrName + AinsiCode.RESET + AinsiCode.BOLD +
-                    " at " + AinsiCode.RED + AinsiCode.UNDERLINE + strTDep + AinsiCode.RESET + AinsiCode.BOLD +
-                    " is:" + AinsiCode.RESET
-                );
 
                 solver.solve(pDepName, pArrName, tDep);
             }
