@@ -162,7 +162,8 @@ public class Solver {
                 }
                 int travelTime = footpath.getTravelTime();
                 String duration = formatDuration(travelTime);
-                System.out.println("Walk " + duration + " from " + pDep.getName() + " to " + pArr.getName());
+                System.out.println("Walk " + duration + " from " + pDep.getName() + " (" + pDep.getTransportOperatorStop() + 
+                    ") to " + pArr.getName() + " (" + pArr.getTransportOperatorStop() + ")");
             } else if (movement instanceof Connection connection) {
                 String tripId = connection.getTripId();
                 RouteInfo routeInfo = connection.getRouteInfo();
@@ -377,7 +378,7 @@ public class Solver {
                 String stopId = line[headerMap.get("stop_id")];
                 String stopName = line[headerMap.get("stop_name")];
                 Coord coord = new Coord(Double.parseDouble(line[headerMap.get("stop_lat")]), Double.parseDouble(line[headerMap.get("stop_lon")]));
-                stopIdToStop.put(stopId, new Stop(stopId, stopName, coord));
+                stopIdToStop.put(stopId, new Stop(stopId, stopName, coord, csvSet.transportOperator));
             }
         }
 

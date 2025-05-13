@@ -4,11 +4,13 @@ public class Stop {
     private final String id;
     private final Coord coord;
     private final String name;
+    private final String transportOperatorStop;
 
-    public Stop(String id, String name, Coord coord) {
+    public Stop(String id, String name, Coord coord, String transportOperatorStop) {
         this.id = id;
         this.name = name;
         this.coord = coord;
+        this.transportOperatorStop = transportOperatorStop;
     }
 
     public String getId() {
@@ -21,6 +23,10 @@ public class Stop {
 
     public String getName() {
         return name;
+    }
+
+    public String getTransportOperatorStop() {
+        return transportOperatorStop;
     }
 
     @Override
