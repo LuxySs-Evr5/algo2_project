@@ -23,9 +23,7 @@ public class FootpathsCountCriteriaTracker implements CriteriaTracker {
     }
 
     @Override
-    public boolean dominates(CriteriaTracker criteriaTracker, boolean mightTransfer) {
-        // TODO: the type checking is very bad and handled poorly
-
+    public boolean dominates(CriteriaTracker criteriaTracker) {
         if (criteriaTracker instanceof FootpathsCountCriteriaTracker otherCritTracker) {
             return getFootpathsCount() < otherCritTracker.getFootpathsCount();
         } else {
@@ -47,7 +45,6 @@ public class FootpathsCountCriteriaTracker implements CriteriaTracker {
         return this.footpathsCount == other.footpathsCount;
     }
 
-    // ensure that it will only use the footpathsCount in our profile function map
     @Override
     public int hashCode() {
         return Integer.hashCode(footpathsCount);

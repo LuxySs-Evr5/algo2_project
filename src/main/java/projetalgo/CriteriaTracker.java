@@ -2,7 +2,7 @@ package projetalgo;
 
 public interface CriteriaTracker {
 
-    boolean dominates(CriteriaTracker criteriaTracker, boolean mightTransfer);
+    boolean dominates(CriteriaTracker criteriaTracker);
 
     /**
      * This method mut be implemented using the attribute values instead of the
@@ -26,17 +26,17 @@ public interface CriteriaTracker {
     }
 
     // -----------------------------------------------------
-    // TransfersCount
+    // TramsCount
     // -----------------------------------------------------
 
-    default int getTransfersCount() {
+    default int getTramsCount() {
         return 0;
     }
 
-    default void setTransfersCount(int transfersCount) {
+    default void setTramsCount(int tramsCount) {
     }
 
-    default void decTransfersCount() {
+    default void decTramsCount() {
     }
 
 }
