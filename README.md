@@ -6,7 +6,7 @@ Ce projet implémente un algorithme CSA (Connection Scan Algorithm) adapté aux 
 
 ## Compilation du projet
 
-Assurez-vous d’avoir Java 17 installé.
+Assurez-vous que Java 17 ou une version supérieure est installée sur votre système.
 
 Pour compiler et créer le fichier `JAR` :
 
