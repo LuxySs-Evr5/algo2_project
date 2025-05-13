@@ -290,15 +290,9 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             // insert a copy of tauC into T[ctrip]
             Map<CriteriaTracker, Pair<Integer, Movement>> copyOfTauC = new HashMap<>();
             tauC.forEach((tracker, pairTArrMovement) -> {
-
-                // TODO: make a copy constructor of tracker instead of setting manually
-                CriteriaTracker newTracker = factory.get();
-                newTracker.setFootpathsCount(tracker.getFootpathsCount());
-                newTracker.setTramsCount(tracker.getTramsCount());
-
                 int tArr = pairTArrMovement.getKey();
+                CriteriaTracker newTracker = tracker.copy();
                 Movement movement = pairTArrMovement.getValue();
-
                 copyOfTauC.put(newTracker, new Pair<Integer, Movement>(tArr, movement));
             });
             T.put(c.getTripId(), copyOfTauC);
