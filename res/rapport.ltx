@@ -52,6 +52,9 @@
 
 %-------------------------------------------------------------------
 
+
+%TODO: change $$ ... $$ with \[ ... \]
+
 %TODO: remplacer l'adjectif basique (pas formel)
 
 %TODO: parler du chargement des données
@@ -441,7 +444,7 @@ le CSA respecte bien les deux~\hyperref[item:dagcriteresshortestpath]{critères
 
 	\item \textbf{Relaxation des arêtes}~: Le second point est trivial, cela
 	      correspond exactement à l'étape de relaxation des mouvements et de
-	      mise-à-jour de \texttt{bestKnown}.
+	      mise à jour de \texttt{bestKnown}.
 
 \end{itemize}
 
@@ -454,7 +457,13 @@ le CSA respecte bien les deux~\hyperref[item:dagcriteresshortestpath]{critères
 
 %-------------------------------------------------------------------
 
-\section{Pareto CSA Profile (multicritère)}
+\section{CSA multicritère}
+
+% TODO: check le casing de $x$ et $y$
+
+% TODO: petite partie qui décrit le probleme du multicritère, en quoi ca
+% consiste un peu comme l'intro du CSA normale, il faut au moins dire qu'on
+% part de pDep en tDep et qu'on arrive en pArr
 
 % TODO: "qui pourrait laisser penser" pas fou
 
@@ -468,7 +477,7 @@ optimise ceux-ci au sens pareto.\\
 
 
 Dans le CSA basique, la fonction de coût, utilisée pour comparer deux trajets
-lors de la mise-à-jour de \texttt{bestKnown}, est définie par :
+lors de la mise à jour de \texttt{bestKnown}, est définie par :
 $$
 	\operatorname{cost} : \mathbb{T} \to \mathbb{T}, \quad t \mapsto t
 $$
@@ -482,7 +491,7 @@ les critères supportés par le programme, e.g. le nombre de mouvements effectu�
 en trams :
 $$ \text{cost} : \mathbb{X}_1 \times \cdots \times \mathbb{X}_n \to
 	\mathbb{C}, \quad (x_1, \ldots, x_n) \mapsto c
-$$
+$$ \label{item:CostMultiCriteria}
 où
 \begin{itemize}
 
@@ -569,22 +578,103 @@ Cette décision rend notre solution partielle invalide, car en prenant $c3$ qui
 arrive en $y$ à l'instant $t4$, nous ne pouvons plus atteindre $c2$ qui part de
 $y$ en $t2$.\\
 
-Formellement, cela est dû fait que seul le critère de temps d'arrivée respecte
-la propriété d' \textit{échangeabilité préfix}
-\cite{ConnectionScanAccelerated}.
+% TODO: check si ca serait pas mieux d'expliquer ca avant de mettre le
+% contre-exemple
+Formellement, cela est dû fait que seul le critère de temps d'arrivée le plus
+tôt respecte \textit{la condition d'échangeabilité préfixe} :
+\cite{ConnectionScanAccelerated} Soit $s_1, s_2, \dots, s_n$ un trajet optimal
+$A@tDep \rightarrow B$, i.e. partant de $A$ en $tDep$ et arrivant en $B$.
+Considérons un préfixe quelconque $s_1, \dots, s_i$, un trajet complet arrivant
+en $C$. Remplacer le préfixe par un autre trajet optimal $A@tDep \rightarrow C$
+doit donner un autre trajet optimal $A@tDep \rightarrow B$. Cependant, seul le
+critère d'arrivée le plus tôt satisfait cette propriété.\\
 
-% TODO: expliquer qu'en gros ca s'appelle la "prefix exchangeability" et que ca
-% marche que pour les temps d'arrivée, pas les autres couts + citer la source
+Similairement nous pouvons définir la \textit{condition d'échangeabilité
+	suffixe} \cite{ConnectionScanAccelerated} : Soit $s_1, \dots, s_n$ un trajet
+optimal $A@\tau \rightarrow B$. Considérons n'importe quel suffixe $s_i, \dots,
+	s_n$ qui est un trajet complet partant de $C$ en $\tau'$. Remplacer ce suffixe
+par un autre trajet optimal $C@\tau' \rightarrow B$ doit donner un autre trajet
+optimal.\\
 
-% Explication de "dominer", de "optimisation pareto"
+Étant donné que cette seconde condition est maintenue par les
+~\hyperref[item:CostMultiCriteria]{fonctions de coût multicritères}, nous en
+tirons avantage pour notre algorithme en construisant les trajets à partir du
+point d'arrivée \cite{ConnectionScanAccelerated}.\\
 
-% Expliauer pourquoi on peut pas juste remplacer la fonction de cout de l'algo
-% précédent (le temps d'arrivée) par un nouvelle fonction qui tient compte du
-% temps d'arrivée et de notre second critère.
+% TODO: séparation pour dire que ca c'est la partie qui parle du mcCSA
 
-% Expliquer l'autre algo:
-% - Expliquer les notions de profile etc.
+
+Définissons le concept de \textit{domination}
+\cite{ConnectionScanAlgorithmLong:2017}: soient deux tuples $X = (x_1, \dots,
+	x_n)$ et $Y = (y_1, \dots, y_n)$. Nous dirons que $X$ domine $Y$ si et
+seulement si :
+\[
+	\forall i \in \{1, \dots, n\},\ x_i \leq y_i \quad \land \quad \exists i \in \{1, \dots, n\},\ x_i < y_i.
+\] \label{item:defDomination}
+
+Sur base de~\hyperref[item:defDomination]{la définition de la domination}, nous
+définissons le concept de \textit{pareto-optimal}
+\cite{ConnectionScanAlgorithmLong:2017}: Soit $P$ un ensemble de tuples à
+composantes scalaires, un tuple $x$ est pareto-optimal par rapport à $P$ s'il
+n'existe aucun autre tuple $y \in P$ tel que $y$ domine $x$.\\
+
+Nous pouvons appliquer~\hyperref[item:defDomination]{la définition de la
+	domination} pour deux trajets arrivant au même arrêt $j1, j2$ en remplaçant
+$x_1, \dots ,x_n$ et $y_1, \dots ,y_n$ par les valeurs pour chaque critère,
+e.g. $x_1$ représente le nombre de connexions en tram du trajet $j1$, de même
+pour $x_2$ mais pour le trajet $j2$.\\
+
+Le mcCSA permet de rśoudre le problème suivant :
+\begin{quote}
+	Étant donné l'horaire des véhicules, un arrêt de départ $pDep$, un arrêt
+	d'arrivée $pArr$, et un temps de départ $tDep$, renvoyer le sous-ensemble
+	de trajets \textit{pareto-optimaux} par rapport à l'ensemble de tous les
+	trajets partant de $pDep$ à $tDep$ ou plus tard, et arrivant en $pArr$.
+\end{quote}
+
+% TODO: c'est bcp plus compliqué que ca car on doit garder tout ce qui part
+% plus tard
+
+Puisque nous construisons notre trajet en partant de l'arrivée, nous scannons
+les connections par ordre de départ décroissant. À tout instant de l'éxécution
+de l'algorithme, pour chaque arrêt $p$, l'algorithme doit déterminer un
+ensemble $\mathcal{S}_p$ de trajets tel que :
+\label{item:defProfileFunctionContent}
+\[
+	\forall j \in \mathcal{S}_p, \quad \nexists j' \in \mathcal{S}_p \text{ tel que } j'_{tDep} > j_{tDep} \text{ et } j' \text{ domine } j
+\]
+où :
+\begin{itemize}
+	\item $j_{tDep}$ désigne l'heure de départ du trajet $j$,
+\end{itemize}
+
+Nous appelons cet ensemble $\mathcal{S}_p$ la \textit{fonction de profil} de
+l'arrêt $p$. L'algorithme ajoute et supprime des trajets partiels dans les
+fonctions de profil au fur et à mesure que celui-ci scanne les connections.\\
+
+Bien que cela puisse paraître contre-intuitif au premier abord, il est possible
+de démontrer, à partir de~\hyperref[item:defProfileFunctionContent]{la
+	définition du contenu d'une fonction de profil}, que certains trajets dominés
+par d'autres peuvent néanmoins être conservés au sein de la fonction de profil.
+Une condition nécessaire (mais pas suffisante) pour qu'un trajet $j$ soit gardé
+malgré le fait que celui-ci soit dominé par un trajet $j'$ est que l'heure de
+départ de $j'$ soit antérieure à celle de $j$, c'est-à-dire : $j'_{tDep} <
+	j_{tDep}$.\\
+
+%TODO: changer le "est du au fait que"
+
+Nous devons conserver ces trajets car nous construisons les trajets en partant
+du point d'arrivée : Lorsque nous ajoutons un trajet $j$ dans la fonction de
+profil de l'arrêt $p$, nous n'avons aucune garantie qu'une autre connexion
+arrivant en $p$ et rendant la première connexion de $j$ atteignable existe.
+Nous devons donc conserver des alternatives à $j$, partant plus tard, celles-ci
+peuvent être dominées par $j$.
+
+
+% - Expliquer à quoi sert et comment est implémentée une profile function
+% - Expliquer "dominer" "optimisation pareto"
 % - Expliquer pourquoi les final footpaths sont gérés différement des interstop footpaths
+% - Parler du fait qu'on peut à nouveau faire l'opti de "critère de départ"
 
 
 %-------------------------------------------------------------------
