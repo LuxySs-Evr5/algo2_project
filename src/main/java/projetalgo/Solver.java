@@ -27,7 +27,7 @@ public class Solver {
     /**
      * Returns the result of the search for a stop with the given name.
      */
-    StopExistResult stopExists(final String name, final String routeName) {
+    StopExistResult singleStopExists(final String name, final String routeName) {
         Stop savedStop = null;
         for (Stop stop : stopIdToStop.values()) {
             if (stop.getRouteInfo() != null && stop.getName().equals(name) && stop.getRouteInfo().getRouteName().equals(routeName)) {
@@ -52,7 +52,7 @@ public class Solver {
     /**
      * Returns the result of the search for a stop with the given name.
      */
-    StopExistResult stopExists(final String name) {
+    StopExistResult singleStopExists(final String name) {
         Stop savedStop = null;
         for (Stop stop : stopIdToStop.values()) {
             if (stop.getName().equals(name)) {
@@ -77,25 +77,27 @@ public class Solver {
     /**
      * Return the stop if it exists with the stopName given, otherwise returns null.
      */
-    Stop getStop(final String stopName) {
+    List<Stop> getStops(final String stopName) {
+        List<Stop> stops = new ArrayList<>();
         for (Stop stop : stopIdToStop.values()) {
             if (stop.getName().equals(stopName)) {
-                return stop;
+                stops.add(stop);
             }
         }
-        return null;
+        return stops;
     }
 
     /**
      * Return the stop if it exists with the stopName given, otherwise returns null.
      */
-    Stop getStop(final String stopName, final String routeName) {
+    List<Stop> getStops(final String stopName, final String routeName) {
+        List<Stop> stops = new ArrayList<>();
         for (Stop stop : stopIdToStop.values()) {
             if (stop.getRouteInfo() != null && stop.getName().equals(stopName) && stop.getRouteInfo().getRouteName().equals(routeName)) {
-                return stop;
+                stops.add(stop);
             }
         }
-        return null;
+        return stops;
     }
 
     /**
@@ -293,7 +295,7 @@ public class Solver {
     /**
      * Connections must be sorted by their departure time.
      */
-    public void solve(Stop pDep, Stop pArr, int tDep) {
+    public void solve(List<Stop> pDep, List<Stop> pArr, int tDep) {
         List<Connection> filteredConnections = getFilteredConnections(tDep);
 
         // NOTE: could use a List<Stops> to iterate and get the id, no need for a

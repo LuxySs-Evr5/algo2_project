@@ -1,6 +1,7 @@
 package projetalgo;
 
 import java.io.IOException;
+import java.util.List;
 
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -14,13 +15,13 @@ import com.opencsv.exceptions.CsvValidationException;
 public class Main {
 
     /**
-     * @brief Get the input from the user.
+     * @brief Get a single stop input from the user.
      * @param solver the solver object to check if the stop exists (if stop is true)
      * @param reader the line reader object to read the input
      * @param textToShow the text to show to the user when asking for input
-     * @return the Stop input from the user
+     * @return List of stops input from the user (only one stop)
      */
-    private static Stop getStopInput(Solver solver, LineReader reader, final String textToShow) {
+    private static List<Stop> getStopInput(Solver solver, LineReader reader, final String textToShow) {
         String instruction = textToShow;
         try {
             while (true) {
@@ -36,24 +37,32 @@ public class Main {
                     continue;
                 }
 
-                StopExistResult stopExistResult = solver.stopExists(input);
+                StopExistResult stopExistResult = solver.singleStopExists(input);
                 
                 if (stopExistResult.equals(StopExistResult.EXISTS)) {
-                    return solver.getStop(input);
+                    return solver.getStops(input);
                 } else if (stopExistResult.equals(StopExistResult.SEVERAL_MATCHES)) {
-                    String instruct = "Several stops found with the name '" + input + "'. Please enter the full name of the route who passes by this stop: ";
+                    String instruct = "Several stops found with the name '" + input + "'. Please enter the full name of the route who passes by this stop or enter 'all' to use all the stops with this name: ";
                     while (true) {
                         String routeName = reader.readLine(instruct).stripTrailing();
                         if (routeName.equalsIgnoreCase("q") || routeName.equalsIgnoreCase("quit")) {
                             System.out.println("Exiting the program ...");
                             System.exit(0);
                         }
-                        StopExistResult stopExist = solver.stopExists(input, routeName);
+                        if (routeName.isEmpty()) {
+                            instruct = "Invalid input. Please enter the full name of the route who passes by this stop or enter 'all' to use all the stops with this name: ";
+                            continue;
+                        }
+                        if (routeName.equalsIgnoreCase("all")) {
+                            return solver.getStops(input);
+                        }
+
+                        StopExistResult stopExist = solver.singleStopExists(input, routeName);
 
                         switch (stopExist) {
                             case EXISTS -> {
                                 System.out.println("Stop found with the name '" + input + "' and the route '" + routeName + "'.");
-                                return solver.getStop(input, routeName);
+                                return solver.getStops(input, routeName);
                             }
                             case NOT_EXISTS -> {
                                 instruct = "The stop '" + input + "' with the route '" + routeName + "' was not found. Please try again: ";
@@ -76,7 +85,7 @@ public class Main {
             System.exit(0);
         }
         return null;
-    }   
+    }
     
     /**
      * @brief Get the input from the user.
@@ -154,12 +163,12 @@ public class Main {
             while (true) {
                 System.out.println(AinsiCode.BOLD + "\n=== Create a New Trip ===" + AinsiCode.RESET);
 
-                Stop pDeprr = getStopInput(solver, reader, "Enter the departure stop: ");
+                List<Stop> pDeprr = getStopInput(solver, reader, "Enter the departure stop: ");
                 if (pDeprr == null) {
                     System.out.println("Invalid stop. Please try again.");
                     continue;
                 }
-                Stop pArr = getStopInput(solver, reader, "Enter the arrival stop: ");
+                List<Stop> pArr = getStopInput(solver, reader, "Enter the arrival stop: ");
                 if (pArr == null) {
                     System.out.println("Invalid stop. Please try again.");
                     continue;
