@@ -562,12 +562,16 @@ $$
 	\texttt{bestKnown}_{cost}(z) > \operatorname{cost}(c3)
 $$
 
-Nous remplaçons alors les $x_1, \dots, \x_n$ (aini que l'instance de
+Nous remplaçons alors les $x_1, \dots, x_n$ (aini que l'instance de
 \texttt{Movement}) dans \texttt{bestKnown} pour l'arrêt $y$.
 
 Cette décision rend notre solution partielle invalide, car en prenant $c3$ qui
 arrive en $y$ à l'instant $t4$, nous ne pouvons plus atteindre $c2$ qui part de
-$y$ en $t2$.
+$y$ en $t2$.\\
+
+Formellement, cela est dû fait que seul le critère de temps d'arrivée respecte
+la propriété d' \textit{échangeabilité préfix}
+\cite{ConnectionScanAccelerated}.
 
 % TODO: expliquer qu'en gros ca s'appelle la "prefix exchangeability" et que ca
 % marche que pour les temps d'arrivée, pas les autres couts + citer la source
