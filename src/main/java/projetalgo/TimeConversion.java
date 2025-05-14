@@ -6,7 +6,6 @@ public class TimeConversion {
         try {
             String[] parts = time.split(":");
             if (parts.length != 3) {
-                System.err.println("Invalid time format, expected HH:MM:SS");
                 return -1;
             }
 

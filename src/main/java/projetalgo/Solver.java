@@ -25,15 +25,39 @@ public class Solver {
     }
 
     /**
-     * Returns the real name of the stop (in the data) if it exists, otherwise returns an empty string.
+     * Returns the result of the search for a stop with the given name.
      */
-    String stopExists(final String name) {
+    StopExistResult stopExists(final String name) {
+        Stop savedStop = null;
         for (Stop stop : stopIdToStop.values()) {
             if (stop.getName().equalsIgnoreCase(name)) {
-                return stop.getName();
+                if (savedStop == null) {
+                    savedStop = stop;
+                }
+                else if (!savedStop.getRouteInfo().equals(stop.getRouteInfo())) {
+                    System.out.println("Route info of stop: " + stop.getRouteInfo());
+                    System.out.println("Route info of savedStop: " + savedStop.getRouteInfo());
+                    return StopExistResult.SEVERAL_MATCHES;
+                }
             }
         }
-        return "";
+        
+        if (savedStop == null) {
+            return StopExistResult.NOT_EXISTS;
+        }
+        return StopExistResult.EXISTS;
+    }
+
+    /**
+     * Return the stop if it exists with the stopName given, otherwise returns null.
+     */
+    Stop getStop(final String stopName) {
+        for (Stop stop : stopIdToStop.values()) {
+            if (stop.getName().equalsIgnoreCase(stopName)) {
+                return stop;
+            }
+        }
+        return null;
     }
 
     /**
@@ -231,7 +255,7 @@ public class Solver {
     /**
      * Connections must be sorted by their departure time.
      */
-    public void solve(String pDepName, String pArrName, int tDep) {
+    public void solve(Stop pDep, Stop pArr, int tDep) {
         List<Connection> filteredConnections = getFilteredConnections(tDep);
 
         // NOTE: could use a List<Stops> to iterate and get the id, no need for a
@@ -250,11 +274,11 @@ public class Solver {
             String keyStopId = entry.getKey();
             Stop valueStop = entry.getValue();
 
-            if (valueStop.getName().equals(pArrName)) {
+            if (valueStop.equals(pArr)) {
                 pArrIds.add(keyStopId);
             }
 
-            if (valueStop.getName().equals(pDepName)) {
+            if (valueStop.equals(pDep)) {
 
                 pDepIds.add(keyStopId);
 
@@ -316,9 +340,9 @@ public class Solver {
         Stack<BestKnownEntry> finalPath = reconstructSolution(bestKnown, pDepIds, pArrIdEarliest);
 
         System.out.println(
-            AinsiCode.BOLD + "\nHere are the directions for the shortest journey from " +
-            AinsiCode.RED + AinsiCode.UNDERLINE + pDepName + AinsiCode.RESET + AinsiCode.BOLD +
-            " to " + AinsiCode.RED + AinsiCode.UNDERLINE + pArrName + AinsiCode.RESET + AinsiCode.BOLD +
+            AinsiCode.BOLD + "\nHere are the directions for the shortest route from " +
+            AinsiCode.RED + AinsiCode.UNDERLINE + pDep.getName() + AinsiCode.RESET + AinsiCode.BOLD +
+            " to " + AinsiCode.RED + AinsiCode.UNDERLINE + pArr.getName() + AinsiCode.RESET + AinsiCode.BOLD +
             ", departing at " + AinsiCode.RED + AinsiCode.UNDERLINE + TimeConversion.fromSeconds(tDep) + 
             AinsiCode.RESET + AinsiCode.BOLD + " :\n" + AinsiCode.RESET
         );

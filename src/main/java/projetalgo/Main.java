@@ -18,10 +18,9 @@ public class Main {
      * @param solver the solver object to check if the stop exists (if stop is true)
      * @param reader the line reader object to read the input
      * @param textToShow the text to show to the user when asking for input
-     * @param isStopName if true, the input must be a stop name, otherwise it's a time
-     * @return the input from the user
+     * @return the Stop input from the user
      */
-    private static String getInput(Solver solver, LineReader reader, final String textToShow, final boolean isStopName) {
+    private static Stop getStopInput(Solver solver, LineReader reader, final String textToShow) {
         String instruction = textToShow;
         try {
             while (true) {
@@ -35,14 +34,16 @@ public class Main {
                 if (input.isEmpty()) {
                     instruction = "Invalid input. " + textToShow;
                     continue;
-                } else if (!isStopName) {
-                    return input;
-                } 
+                }
+
+                System.out.println("input: " + input);
+
+                StopExistResult stopExistResult = solver.stopExists(input);
+
+                System.out.println("stopExistResult: " + stopExistResult);
                 
-                String stop = solver.stopExists(input);
-                
-                if (!stop.isEmpty()) {
-                    return stop;
+                if (stopExistResult.equals(StopExistResult.EXISTS)) {
+                    return solver.getStop(input);
                 }
     
                 instruction = "The '" + input + "' stop was not found in the data. " + textToShow;
@@ -51,8 +52,45 @@ public class Main {
             System.out.println("\nProgram interrupted by user.");
             System.exit(0);
         }
-        return "";
-    }    
+        return null;
+    }   
+    
+    /**
+     * @brief Get the input from the user.
+     * @param solver the solver object to check if the stop exists (if stop is true)
+     * @param reader the line reader object to read the input
+     * @param textToShow the text to show to the user when asking for input
+     * @return the time input from the user (int)
+     */
+    private static int getTimeInput(LineReader reader, final String textToShow) {
+        String instruction = textToShow;
+        try {
+            while (true) {
+                String input = reader.readLine(instruction).stripTrailing();
+    
+                if (input.equalsIgnoreCase("q") || input.equalsIgnoreCase("quit")) {
+                    System.out.println("Exiting the program ...");
+                    System.exit(0);
+                }
+
+                if (input.isEmpty()) {
+                    instruction = "Invalid time format, expected HH:MM:SS" + textToShow;
+                    continue;
+                }
+
+                int time = TimeConversion.toSeconds(input);
+                if (time == -1) {
+                    instruction = "Invalid time format, expected HH:MM:SS" + textToShow;
+                    continue;
+                }
+                return time;
+            }
+        } catch (UserInterruptException e) {
+            System.out.println("\nProgram interrupted by user.");
+            System.exit(0);
+        }
+        return -1;
+    } 
 
     public static void main(String[] args) {
         Solver solver = new Solver();
@@ -93,21 +131,28 @@ public class Main {
             while (true) {
                 System.out.println(AinsiCode.BOLD + "\n=== Create a New Trip ===" + AinsiCode.RESET);
 
-                String pDepName = getInput(solver, reader, "Enter the departure stop: ", true);
-                String pArrName = getInput(solver, reader, "Enter the arrival stop: ", true);
-                String strTDep = getInput(solver, reader, "Enter the departure time: ", false);
-
-                int tDep = TimeConversion.toSeconds(strTDep);
+                Stop pDeprr = getStopInput(solver, reader, "Enter the departure stop: ");
+                if (pDeprr == null) {
+                    System.out.println("Invalid stop. Please try again.");
+                    continue;
+                }
+                Stop pArr = getStopInput(solver, reader, "Enter the arrival stop: ");
+                if (pArr == null) {
+                    System.out.println("Invalid stop. Please try again.");
+                    continue;
+                }
+                int tDep = getTimeInput(reader, "Enter the departure time: ");
                 if (tDep == -1) {
+                    System.out.println("Invalid time format. Please try again.");
                     continue;
                 }
 
                 // -------------- Solve the shortest path --------------
 
-                solver.solve(pDepName, pArrName, tDep);
+                solver.solve(pDeprr, pArr, tDep);
             }
         } catch (IOException | CsvValidationException e) {
-            System.err.println("data file not found or invalid csv");
+            System.err.println("Sata file not found or invalid csv");
         }
     }
 

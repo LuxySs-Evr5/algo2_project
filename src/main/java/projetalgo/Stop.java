@@ -5,6 +5,7 @@ public class Stop {
     private final Coord coord;
     private final String name;
     private final String transportOperatorStop;
+    private RouteInfo routeInfo;
 
     public Stop(String id, String name, Coord coord, String transportOperatorStop) {
         this.id = id;
@@ -27,6 +28,14 @@ public class Stop {
 
     public String getTransportOperatorStop() {
         return transportOperatorStop;
+    }
+
+    public void setRouteInfo(RouteInfo route) {
+        this.routeInfo = route;
+    }
+
+    public RouteInfo getRouteInfo() {
+        return routeInfo;
     }
 
     @Override
