@@ -175,7 +175,7 @@ public class Main {
                 solver.solve(pDeprr, pArr, tDep);
             }
         } catch (IOException | CsvValidationException e) {
-            System.err.println("Sata file not found or invalid csv");
+            System.err.println("Data file not found or invalid csv");
         }
     }
 
