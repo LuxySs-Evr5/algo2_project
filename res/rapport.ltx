@@ -659,14 +659,10 @@ Nous appelons cet ensemble $\mathcal{S}_p$ la \textit{fonction de profil} de
 l'arrêt $p$. L'algorithme ajoute et supprime des trajets partiels dans les
 fonctions de profil au fur et à mesure que celui-ci scanne les connections.\\
 
-Bien que cela puisse paraître contre-intuitif au premier abord, il est possible
-de démontrer, à partir de~\hyperref[item:defProfileFunctionContent]{la
-	définition du contenu d'une fonction de profil}, que certains trajets dominés
-par d'autres peuvent néanmoins être conservés au sein de la fonction de profil.
-Une condition nécessaire (mais pas suffisante) pour qu'un trajet $j$ soit gardé
-malgré le fait que celui-ci soit dominé par un trajet $j'$ est que l'heure de
-départ de $j'$ soit antérieure à celle de $j$, c'est-à-dire : $j'_{tDep} <
-	j_{tDep}$.\\
+Notons que ~\hyperref[item:defProfileFunctionContent]{la définition du contenu
+d'une fonction de profil} nous autorise à conserver un trajet $j$ malgré le
+fait que celui-ci soit dominé par un trajet $j'$ si l'heure de départ de $j'$
+est antérieure à celle de $j$, c'est-à-dire : $j'_{tDep} < j_{tDep}$\\
 
 %TODO: changer le "est du au fait que"
 
