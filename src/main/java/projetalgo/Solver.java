@@ -27,17 +27,43 @@ public class Solver {
     /**
      * Returns the result of the search for a stop with the given name.
      */
+    StopExistResult stopExists(final String name, final String routeName) {
+        Stop savedStop = null;
+        for (Stop stop : stopIdToStop.values()) {
+            if (stop.getRouteInfo() != null && stop.getName().equals(name) && stop.getRouteInfo().getRouteName().equals(routeName)) {
+                if (savedStop == null) {
+                    savedStop = stop;
+                } else {
+                    RouteInfo info1 = savedStop.getRouteInfo();
+                    RouteInfo info2 = stop.getRouteInfo();
+                    if (info1 != null && info2 != null && !info1.equals(info2)) {
+                        return StopExistResult.SEVERAL_MATCHES;
+                    }
+                }
+            }
+        }
+        
+        if (savedStop == null) {
+            return StopExistResult.NOT_EXISTS;
+        }
+        return StopExistResult.EXISTS;
+    }
+
+    /**
+     * Returns the result of the search for a stop with the given name.
+     */
     StopExistResult stopExists(final String name) {
         Stop savedStop = null;
         for (Stop stop : stopIdToStop.values()) {
-            if (stop.getName().equalsIgnoreCase(name)) {
+            if (stop.getName().equals(name)) {
                 if (savedStop == null) {
                     savedStop = stop;
-                }
-                else if (!savedStop.getRouteInfo().equals(stop.getRouteInfo())) {
-                    System.out.println("Route info of stop: " + stop.getRouteInfo());
-                    System.out.println("Route info of savedStop: " + savedStop.getRouteInfo());
-                    return StopExistResult.SEVERAL_MATCHES;
+                } else {
+                    RouteInfo info1 = savedStop.getRouteInfo();
+                    RouteInfo info2 = stop.getRouteInfo();
+                    if (info1 != null && info2 != null && !info1.equals(info2)) {
+                        return StopExistResult.SEVERAL_MATCHES;
+                    }
                 }
             }
         }
@@ -53,7 +79,19 @@ public class Solver {
      */
     Stop getStop(final String stopName) {
         for (Stop stop : stopIdToStop.values()) {
-            if (stop.getName().equalsIgnoreCase(stopName)) {
+            if (stop.getName().equals(stopName)) {
+                return stop;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Return the stop if it exists with the stopName given, otherwise returns null.
+     */
+    Stop getStop(final String stopName, final String routeName) {
+        for (Stop stop : stopIdToStop.values()) {
+            if (stop.getRouteInfo() != null && stop.getName().equals(stopName) && stop.getRouteInfo().getRouteName().equals(routeName)) {
                 return stop;
             }
         }
@@ -544,8 +582,21 @@ public class Solver {
                     connections.add(connection);
                 }
             }
+        }
 
+        // --------- Add RouteInfo for each stop that have a connection ---------
+
+        for (Connection c : connections) {
+            Stop pDep = c.getPDep();
+            Stop pArr = c.getPArr();
+            RouteInfo route = c.getRouteInfo();
+
+            if (pDep.getRouteInfo() == null) {
+                pDep.setRouteInfo(route);
+            }
+            if (pArr.getRouteInfo() == null) {
+                pArr.setRouteInfo(route);
+            }
         }
     }
-
 }

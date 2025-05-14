@@ -36,14 +36,37 @@ public class Main {
                     continue;
                 }
 
-                System.out.println("input: " + input);
-
                 StopExistResult stopExistResult = solver.stopExists(input);
-
-                System.out.println("stopExistResult: " + stopExistResult);
                 
                 if (stopExistResult.equals(StopExistResult.EXISTS)) {
                     return solver.getStop(input);
+                } else if (stopExistResult.equals(StopExistResult.SEVERAL_MATCHES)) {
+                    String instruct = "Several stops found with the name '" + input + "'. Please enter the full name of the route who passes by this stop: ";
+                    while (true) {
+                        String routeName = reader.readLine(instruct).stripTrailing();
+                        if (routeName.equalsIgnoreCase("q") || routeName.equalsIgnoreCase("quit")) {
+                            System.out.println("Exiting the program ...");
+                            System.exit(0);
+                        }
+                        StopExistResult stopExist = solver.stopExists(input, routeName);
+
+                        switch (stopExist) {
+                            case EXISTS -> {
+                                System.out.println("Stop found with the name '" + input + "' and the route '" + routeName + "'.");
+                                return solver.getStop(input, routeName);
+                            }
+                            case NOT_EXISTS -> {
+                                instruct = "The stop '" + input + "' with the route '" + routeName + "' was not found. Please try again: ";
+                            }
+                            case SEVERAL_MATCHES -> {
+                                System.err.println("Several stops found with the name '" + input + "' and the route '" + routeName + "'. We cannot determine which one you want.");
+                                return null;
+                            }
+                            default ->  {
+                                throw new AssertionError();
+                            }
+                        }
+                    }
                 }
     
                 instruction = "The '" + input + "' stop was not found in the data. " + textToShow;

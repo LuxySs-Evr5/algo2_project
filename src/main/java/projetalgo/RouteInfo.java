@@ -33,4 +33,27 @@ public class RouteInfo {
     public String toString() {
         return transportOperator + " " + transportType + " line " + routeId + " (" + routeName + ")";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        } else if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        RouteInfo that = (RouteInfo) o;
+        return routeId.equals(that.routeId)
+            && routeName.equals(that.routeName)
+            && transportType == that.transportType
+            && transportOperator.equals(that.transportOperator);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = routeId.hashCode();
+        result = 31 * result + routeName.hashCode();
+        result = 31 * result + transportType.hashCode();
+        result = 31 * result + transportOperator.hashCode();
+        return result;
+    }
 }
