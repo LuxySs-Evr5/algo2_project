@@ -2,7 +2,7 @@ package projetalgo;
 
 public class TimeConversion {
 
-    public static int toSeconds(String time) {
+    public static int toSeconds(final String time) {
         try {
             String[] parts = time.split(":");
             if (parts.length != 3) {
@@ -28,6 +28,19 @@ public class TimeConversion {
         int seconds = totalSeconds % 60;
 
         return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
+    /**
+     * Returns string representation of the duration in minutes and seconds.
+     */
+    public static String formatDuration(final int seconds) {
+        int minutes = seconds / 60;
+        int remainingSeconds = seconds % 60;
+        if (minutes > 0) {
+            return minutes + " min" + (remainingSeconds > 0 ? " " + remainingSeconds + " sec" : "");
+        } else {
+            return remainingSeconds + " sec";
+        }
     }
 
 }

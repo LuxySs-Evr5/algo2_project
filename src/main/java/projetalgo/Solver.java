@@ -106,19 +106,6 @@ public class Solver {
     }
 
     /**
-     * Returns string representation of the duration in minutes and seconds.
-     */
-    private String formatDuration(final int seconds) {
-        int minutes = seconds / 60;
-        int remainingSeconds = seconds % 60;
-        if (minutes > 0) {
-            return minutes + " min" + (remainingSeconds > 0 ? " " + remainingSeconds + " sec" : "");
-        } else {
-            return remainingSeconds + " sec";
-        }
-    }
-
-    /**
      * Returns the index of the first connection departing at or after our departure
      * time.
      */
@@ -231,7 +218,7 @@ public class Solver {
                         departureTime = -1;
                     }
                     int travelTime = footpath.getTravelTime();
-                    String duration = formatDuration(travelTime);
+                    String duration = TimeConversion.formatDuration(travelTime);
                     String pDepInfo = pDep.getRouteInfo() != null
                             ? pDep.getRouteInfo().toString()
                             : "";
