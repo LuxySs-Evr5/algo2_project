@@ -21,7 +21,7 @@ public class Main {
      * @param textToShow the text to show to the user when asking for input
      * @return List of stops input from the user (only one stop)
      */
-    private static List<Stop> getStopInput(Solver solver, LineReader reader, final String textToShow) {
+    private static List<String> getStopInput(Solver solver, LineReader reader, final String textToShow) {
         String instruction = textToShow;
         try {
             while (true) {
@@ -163,13 +163,13 @@ public class Main {
             while (true) {
                 System.out.println(AinsiCode.BOLD + "\n=== Create a New Trip ===" + AinsiCode.RESET);
 
-                List<Stop> pDeprr = getStopInput(solver, reader, "Enter the departure stop: ");
-                if (pDeprr == null) {
+                List<String> pDepIds = getStopInput(solver, reader, "Enter the departure stop: ");
+                if (pDepIds == null) {
                     System.out.println("Invalid stop. Please try again.");
                     continue;
                 }
-                List<Stop> pArr = getStopInput(solver, reader, "Enter the arrival stop: ");
-                if (pArr == null) {
+                List<String> pArrIds = getStopInput(solver, reader, "Enter the arrival stop: ");
+                if (pArrIds == null) {
                     System.out.println("Invalid stop. Please try again.");
                     continue;
                 }
@@ -181,7 +181,7 @@ public class Main {
 
                 // -------------- Solve the shortest path --------------
 
-                solver.solve(pDeprr, pArr, tDep);
+                solver.solve(pDepIds, pArrIds, tDep);
             }
         } catch (IOException | CsvValidationException e) {
             System.err.println("Data file not found or invalid csv");

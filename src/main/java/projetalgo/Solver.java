@@ -30,7 +30,8 @@ public class Solver {
     StopExistResult singleStopExists(final String name, final String routeName) {
         Stop savedStop = null;
         for (Stop stop : stopIdToStop.values()) {
-            if (stop.getRouteInfo() != null && stop.getName().equals(name) && stop.getRouteInfo().getRouteName().equals(routeName)) {
+            if (stop.getRouteInfo() != null && stop.getName().equals(name)
+                    && stop.getRouteInfo().getRouteName().equals(routeName)) {
                 if (savedStop == null) {
                     savedStop = stop;
                 } else {
@@ -42,7 +43,7 @@ public class Solver {
                 }
             }
         }
-        
+
         if (savedStop == null) {
             return StopExistResult.NOT_EXISTS;
         }
@@ -67,7 +68,7 @@ public class Solver {
                 }
             }
         }
-        
+
         if (savedStop == null) {
             return StopExistResult.NOT_EXISTS;
         }
@@ -75,29 +76,33 @@ public class Solver {
     }
 
     /**
-     * Return the stop if it exists with the stopName given, otherwise returns null.
+     * Returns a list of stopIds of all stops matching the given stopName.
      */
-    List<Stop> getStops(final String stopName) {
-        List<Stop> stops = new ArrayList<>();
+    List<String> getStops(final String stopName) {
+        List<String> stopIds = new ArrayList<>();
         for (Stop stop : stopIdToStop.values()) {
             if (stop.getName().equals(stopName)) {
-                stops.add(stop);
+                stopIds.add(stop.getId());
             }
         }
-        return stops;
+
+        return stopIds;
     }
 
     /**
-     * Return the stop if it exists with the stopName given, otherwise returns null.
+     * Returns a list of stopIds of all stops matching the given stopName and
+     * routeName.
      */
-    List<Stop> getStops(final String stopName, final String routeName) {
-        List<Stop> stops = new ArrayList<>();
+    List<String> getStops(final String stopName, final String routeName) {
+        List<String> stopIds = new ArrayList<>();
         for (Stop stop : stopIdToStop.values()) {
-            if (stop.getRouteInfo() != null && stop.getName().equals(stopName) && stop.getRouteInfo().getRouteName().equals(routeName)) {
-                stops.add(stop);
+            if (stop.getRouteInfo() != null && stop.getName().equals(stopName)
+                    && stop.getRouteInfo().getRouteName().equals(routeName)) {
+                stopIds.add(stop.getId());
             }
         }
-        return stops;
+
+        return stopIds;
     }
 
     /**
@@ -112,7 +117,7 @@ public class Solver {
             return remainingSeconds + " sec";
         }
     }
-    
+
     /**
      * Returns the index of the first connection departing at or after our departure
      * time.
@@ -217,8 +222,8 @@ public class Solver {
                     if (currentTripId != null) {
                         if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
                             String depTimeStr = TimeConversion.fromSeconds(departureTime);
-                            System.out.println("Take " + currentRouteInfo.toString() + " from " 
-                                + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
+                            System.out.println("Take " + currentRouteInfo.toString() + " from "
+                                    + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
                         }
                         currentTripId = null;
                         currentRouteInfo = null;
@@ -227,10 +232,11 @@ public class Solver {
                     }
                     int travelTime = footpath.getTravelTime();
                     String duration = formatDuration(travelTime);
-                    System.out.println("Walk " + duration + " from " + pDep.getName() + " (" + pDep.getTransportOperatorStop() + 
-                        ") to " + pArr.getName() + " (" + pArr.getTransportOperatorStop() + ")");
-                        break;
-                    }
+                    System.out.println(
+                            "Walk " + duration + " from " + pDep.getName() + " (" + pDep.getTransportOperatorStop() +
+                                    ") to " + pArr.getName() + " (" + pArr.getTransportOperatorStop() + ")");
+                    break;
+                }
 
                 case Connection connection -> {
                     String tripId = connection.getTripId();
@@ -243,8 +249,8 @@ public class Solver {
                     } else if (!tripId.equals(currentTripId)) {
                         if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
                             String depTimeStr = TimeConversion.fromSeconds(departureTime);
-                            System.out.println("Take " + currentRouteInfo.toString() + " from " 
-                                + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
+                            System.out.println("Take " + currentRouteInfo.toString() + " from "
+                                    + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
                         }
                         currentTripId = tripId;
                         currentRouteInfo = routeInfo;
@@ -253,7 +259,7 @@ public class Solver {
                     }
                     break;
                 }
-            
+
                 default -> {
                     // Same trip -> continue
                 }
@@ -265,9 +271,9 @@ public class Solver {
         if (currentTripId != null) {
             if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
                 String depTimeStr = TimeConversion.fromSeconds(departureTime);
-                System.out.println("Take " + currentRouteInfo.toString() + " from " 
-                    + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
-            }            
+                System.out.println("Take " + currentRouteInfo.toString() + " from "
+                        + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
+            }
         }
     }
 
@@ -282,7 +288,8 @@ public class Solver {
      * soon as it scans a connection whose departure time exceeds the target stop’s
      * earliest arrival time."
      */
-    boolean checkConnectionTdepAfterEarliestTArr(Map<String, BestKnownEntry> bestKnown, Connection c, List<String> pArrIds) {
+    boolean checkConnectionTdepAfterEarliestTArr(Map<String, BestKnownEntry> bestKnown, Connection c,
+            List<String> pArrIds) {
         for (String pArrId : pArrIds) {
             if (c.getTDep() >= getBestKnownArrivalTime(bestKnown, pArrId)) {
                 return true;
@@ -295,49 +302,33 @@ public class Solver {
     /**
      * Connections must be sorted by their departure time.
      */
-    public void solve(List<Stop> pDep, List<Stop> pArr, int tDep) {
+    public void solve(List<String> pDepIds, List<String> pArrIds, int tDep) {
+        if (pDepIds.isEmpty()) {
+            System.out.println("no departure stop");
+            return;
+        }
+        if (pArrIds.isEmpty()) {
+            System.out.println("no destination stop");
+            return;
+        }
+
         List<Connection> filteredConnections = getFilteredConnections(tDep);
-
-        // NOTE: could use a List<Stops> to iterate and get the id, no need for a
-        // hashmap
-
-        // All stopIds that match pDepName
-        List<String> pDepIds = new ArrayList<>();
-
-        // All stopIds that match pArrName
-        List<String> pArrIds = new ArrayList<>();
 
         // Not in hashmap means infinity
         Map<String, BestKnownEntry> bestKnown = new HashMap<>();
 
-        for (Map.Entry<String, Stop> entry : stopIdToStop.entrySet()) {
-            String keyStopId = entry.getKey();
-            Stop valueStop = entry.getValue();
+        for (String pDepId : pDepIds) {
+            // The time to get to pDep is tDep because we are already there
+            bestKnown.put(pDepId, new BestKnownEntry(tDep, null));
 
-            if (valueStop.equals(pArr)) {
-                pArrIds.add(keyStopId);
-            }
-
-            if (valueStop.equals(pDep)) {
-
-                pDepIds.add(keyStopId);
-
-                // The time to get to pDep is tDep because we are already there
-                bestKnown.put(keyStopId, new BestKnownEntry(tDep, null));
-
-                // Footpaths initial setup
-                List<Footpath> footpathsFromPDep = stopIdToOutgoingFootpaths.get(keyStopId);
-                if (footpathsFromPDep != null) {
-                    for (Footpath f : stopIdToOutgoingFootpaths.get(keyStopId)) {
-                        bestKnown.put(f.getPArr().getId(),
-                                new BestKnownEntry(tDep + f.getTravelTime(), f));
-                    }
+            // Footpaths initial setup
+            List<Footpath> footpathsFromPDep = stopIdToOutgoingFootpaths.get(pDepId);
+            if (footpathsFromPDep != null) {
+                for (Footpath f : stopIdToOutgoingFootpaths.get(pDepId)) {
+                    bestKnown.put(f.getPArr().getId(),
+                            new BestKnownEntry(tDep + f.getTravelTime(), f));
                 }
             }
-        }
-
-        if (pArrIds.isEmpty()) { // no pArrId not found
-            System.out.println("invalid destination");
         }
 
         for (Connection c : filteredConnections) {
@@ -379,17 +370,22 @@ public class Solver {
         int tArrEarliest = bestKnown.get(pArrIdEarliest).getTArr();
         Stack<BestKnownEntry> finalPath = reconstructSolution(bestKnown, pDepIds, pArrIdEarliest);
 
+        String pDepName = finalPath.peek().getMovement().getPArr().getId();
+        String pArrName = finalPath.firstElement().getMovement().getPArr().getId();
+
         System.out.println(
-            AinsiCode.BOLD + "\nHere are the directions for the shortest route from " +
-            AinsiCode.RED + AinsiCode.UNDERLINE + pDep.getName() + AinsiCode.RESET + AinsiCode.BOLD +
-            " to " + AinsiCode.RED + AinsiCode.UNDERLINE + pArr.getName() + AinsiCode.RESET + AinsiCode.BOLD +
-            ", departing at " + AinsiCode.RED + AinsiCode.UNDERLINE + TimeConversion.fromSeconds(tDep) + 
-            AinsiCode.RESET + AinsiCode.BOLD + " :\n" + AinsiCode.RESET
-        );
+                AinsiCode.BOLD + "\nHere are the directions for the shortest route from " +
+                        AinsiCode.RED + AinsiCode.UNDERLINE + pDepName + AinsiCode.RESET + AinsiCode.BOLD +
+                        " to " + AinsiCode.RED + AinsiCode.UNDERLINE + pArrName + AinsiCode.RESET + AinsiCode.BOLD
+                        +
+                        ", departing at " + AinsiCode.RED + AinsiCode.UNDERLINE + TimeConversion.fromSeconds(tDep) +
+                        AinsiCode.RESET + AinsiCode.BOLD + " :\n" + AinsiCode.RESET);
 
         printInstructions(finalPath);
 
-        System.out.println(AinsiCode.BOLD + AinsiCode.RED + "You will arrive at " + stopIdToStop.get(pArrIdEarliest).getName() + " at " + TimeConversion.fromSeconds(tArrEarliest) + AinsiCode.RESET);
+        System.out.println(
+                AinsiCode.BOLD + AinsiCode.RED + "You will arrive at " + stopIdToStop.get(pArrIdEarliest).getName()
+                        + " at " + TimeConversion.fromSeconds(tArrEarliest) + AinsiCode.RESET);
     }
 
     public void loadData(CsvSet... csvSets) throws IOException, CsvValidationException {
@@ -416,8 +412,8 @@ public class Solver {
                     Footpath footpath = new Footpath(sourceStop, arrStop);
 
                     stopIdToOutgoingFootpaths
-                        .computeIfAbsent(sourceStop.getId(), k -> new ArrayList<>())
-                        .add(footpath);
+                            .computeIfAbsent(sourceStop.getId(), k -> new ArrayList<>())
+                            .add(footpath);
                 }
             }
         }
@@ -450,7 +446,8 @@ public class Solver {
             while ((line = reader.readNext()) != null) {
                 String stopId = line[headerMap.get("stop_id")];
                 String stopName = line[headerMap.get("stop_name")];
-                Coord coord = new Coord(Double.parseDouble(line[headerMap.get("stop_lat")]), Double.parseDouble(line[headerMap.get("stop_lon")]));
+                Coord coord = new Coord(Double.parseDouble(line[headerMap.get("stop_lat")]),
+                        Double.parseDouble(line[headerMap.get("stop_lon")]));
                 stopIdToStop.put(stopId, new Stop(stopId, stopName, coord, csvSet.transportOperator));
             }
         }
@@ -514,10 +511,11 @@ public class Solver {
             while ((line = reader.readNext()) != null) {
                 String routeId = line[headerMap.get("route_id")];
                 String routeShortName = line[headerMap.get("route_short_name")];
-                String routeLongName  = line[headerMap.get("route_long_name")];
+                String routeLongName = line[headerMap.get("route_long_name")];
                 TransportType transportType = TransportType.valueOf(line[headerMap.get("route_type")]);
 
-                RouteInfo routeInfo = new RouteInfo(routeShortName, routeLongName, transportType, csvSet.transportOperator);
+                RouteInfo routeInfo = new RouteInfo(routeShortName, routeLongName, transportType,
+                        csvSet.transportOperator);
                 routeIdToRouteInfo.put(routeId, routeInfo);
             }
         }
