@@ -163,6 +163,13 @@ L'avantage du \texttt{BallTree} réside dans sa complexité de recherche : alors
 
 \section{CSA Basique}
 
+% TODO: expliquer la big flaw du CSA basique, comme on update seulement les
+% footpaths directement connectés au connexions scannées, (on progpage pas plus
+% qu'un seul footpath, jamais on propagera 2+ footpaths plus loin), ca repose
+% sur le fait qu'on ne marche jamais 2 fois d'affilé. Cependant, cette
+% condition est respectée uniquement si on a la fermeture transitive du graphe
+% des footpaths, ce qui en pratique n'est pas le cas.
+
 Le CSA basique permet de résoudre le problème suivant :
 
 \begin{quote}
