@@ -316,7 +316,7 @@ public class Solver {
         Stack<BestKnownEntry> finalPath = reconstructSolution(bestKnown, pDepIds, pArrIdEarliest);
 
         System.out.println(
-            AinsiCode.BOLD + "\nHere are the directions for the shortest route from " +
+            AinsiCode.BOLD + "\nHere are the directions for the shortest journey from " +
             AinsiCode.RED + AinsiCode.UNDERLINE + pDepName + AinsiCode.RESET + AinsiCode.BOLD +
             " to " + AinsiCode.RED + AinsiCode.UNDERLINE + pArrName + AinsiCode.RESET + AinsiCode.BOLD +
             ", departing at " + AinsiCode.RED + AinsiCode.UNDERLINE + TimeConversion.fromSeconds(tDep) + 
