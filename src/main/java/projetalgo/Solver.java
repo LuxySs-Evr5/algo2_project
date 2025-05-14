@@ -232,9 +232,15 @@ public class Solver {
                     }
                     int travelTime = footpath.getTravelTime();
                     String duration = formatDuration(travelTime);
+                    String pDepInfo = pDep.getRouteInfo() != null
+                            ? pDep.getRouteInfo().toString()
+                            : "";
+                    String pArrInfo = pArr.getRouteInfo() != null
+                            ? pArr.getRouteInfo().toString()
+                            : "";
                     System.out.println(
-                            "Walk " + duration + " from " + pDep.getName() + " (" + pDep.getTransportOperatorStop() +
-                                    ") to " + pArr.getName() + " (" + pArr.getTransportOperatorStop() + ")");
+                            "Walk " + duration + " from " + pDep.getName() + " (" + pDepInfo +
+                                    ") to " + pArr.getName() + " (" + pArrInfo + ")");
                     break;
                 }
 
@@ -310,6 +316,14 @@ public class Solver {
         if (pArrIds.isEmpty()) {
             System.out.println("no destination stop");
             return;
+        }
+        for (String PDepId : pDepIds) {
+            for (String PArrId : pArrIds) {
+                if (PDepId.equals(PArrId)) {
+                    System.out.println("You are already at your destination");
+                    return;
+                }
+            }
         }
 
         List<Connection> filteredConnections = getFilteredConnections(tDep);
