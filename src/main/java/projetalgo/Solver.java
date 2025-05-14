@@ -370,8 +370,8 @@ public class Solver {
         int tArrEarliest = bestKnown.get(pArrIdEarliest).getTArr();
         Stack<BestKnownEntry> finalPath = reconstructSolution(bestKnown, pDepIds, pArrIdEarliest);
 
-        String pDepName = finalPath.peek().getMovement().getPArr().getId();
-        String pArrName = finalPath.firstElement().getMovement().getPArr().getId();
+        String pDepName = finalPath.peek().getMovement().getPDep().getName();
+        String pArrName = finalPath.firstElement().getMovement().getPArr().getName();
 
         System.out.println(
                 AinsiCode.BOLD + "\nHere are the directions for the shortest route from " +

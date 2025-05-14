@@ -61,7 +61,6 @@ public class Main {
 
                         switch (stopExist) {
                             case EXISTS -> {
-                                System.out.println("Stop found with the name '" + input + "' and the route '" + routeName + "'.");
                                 return solver.getStops(input, routeName);
                             }
                             case NOT_EXISTS -> {
