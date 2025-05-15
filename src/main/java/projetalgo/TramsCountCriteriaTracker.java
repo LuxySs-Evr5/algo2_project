@@ -31,11 +31,6 @@ public class TramsCountCriteriaTracker implements CriteriaTracker {
     }
 
     @Override
-    public void setTramsCount(int tramsCount) {
-        this.tramsCount = tramsCount;
-    }
-
-    @Override
     public void decTramsCount() {
         tramsCount--;
     }

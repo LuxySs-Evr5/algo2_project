@@ -31,11 +31,6 @@ public class FootpathsCountCriteriaTracker implements CriteriaTracker {
     }
 
     @Override
-    public void setFootpathsCount(int footpathsCount) {
-        this.footpathsCount = footpathsCount;
-    }
-
-    @Override
     public void decFootpathsCount() {
         footpathsCount--;
     }

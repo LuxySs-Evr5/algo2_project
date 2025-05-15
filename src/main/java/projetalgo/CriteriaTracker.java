@@ -13,7 +13,6 @@ public interface CriteriaTracker {
     @Override
     boolean equals(Object obj);
 
-    // TODO: remove the other methods below (maybe just some methods, not all of them) if addMovement() works
     CriteriaTracker addMovement(Movement m);
 
     // -----------------------------------------------------
@@ -22,9 +21,6 @@ public interface CriteriaTracker {
 
     default int getFootpathsCount() {
         return 0;
-    }
-
-    default void setFootpathsCount(int footpathsCount) {
     }
 
     default void decFootpathsCount() {
@@ -36,9 +32,6 @@ public interface CriteriaTracker {
 
     default int getTramsCount() {
         return 0;
-    }
-
-    default void setTramsCount(int tramsCount) {
     }
 
     default void decTramsCount() {
