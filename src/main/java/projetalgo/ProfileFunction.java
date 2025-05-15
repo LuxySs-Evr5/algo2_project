@@ -18,7 +18,8 @@ public class ProfileFunction<T extends CriteriaTracker> {
     }
 
     /**
-     * TODO
+     * Get the movement whose corresponding CriteriaTracker matches the given CriteriaTracker
+     * and whose departure time is as early as possible while being >= tDep.
      */
     public Movement getFirstMatch(int tDep, CriteriaTracker criteriaTracker) {
         int firstReachableEntryIdx = getFirstReachableEntry(tDep);
@@ -40,7 +41,31 @@ public class ProfileFunction<T extends CriteriaTracker> {
     }
 
     /**
-     * TODO
+     * Returns the index of the first entry whose departure time is greater
+     * than or equal to tDep, entries.size() if no such entry.
+     *
+     * NOTE: This could be done with a binary search, but in practice it would
+     * probably slow down the algorithm as we are always inserting near the
+     * front of the entries array. (Because entries are sorted by increasing
+     * departure time and we are scanning connections by decreasing departure
+     * time.) The only reason why it is not always exactly in the first bag is
+     * because of interstop footpaths:
+     *
+     * Let X, Y, Z be three stops. Let c be a connection leaving Y at t1. Let d
+     * be a connection leaving Z at t2. Let f be a footpath from Y to Z that can
+     * be travelled in fTravelTime.
+     *
+     * Assume t1 is before t2, therefore c is scanned first. Since f is an
+     * incoming footpath of Y, the profile function of Z (f's departure stop)
+     * will be updated (pushing new partial journeys leaving at time t1 -
+     * fTravelTime).
+     *
+     * The next connection to be scanned is d, Z's profile will be updated
+     * (again): adding partial journeys taking connection d (at t2).
+     *
+     * If t2 > t1 - fTravelTime, the journeys added in the previous step won't
+     * be added at the front of Z's profile entries but right after the bag that
+     * stores the journeys previously added when scanning f (near the front).
      */
     private int getFirstReachableEntry(int tDep) {
         for (int i = entries.size() - 1; i >= 0; i--) {
@@ -49,7 +74,6 @@ public class ProfileFunction<T extends CriteriaTracker> {
             }
         }
 
-        // TODO: handle the -1 case when calling this function
         return -1; // no reachable entry found
     }
 
