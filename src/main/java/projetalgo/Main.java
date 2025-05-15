@@ -16,6 +16,29 @@ import com.opencsv.exceptions.CsvValidationException;
 
 
 public class Main {
+    /**
+     * @brief Get the stops with the same name but not duplicate. (duplicate means that the stop is in the same route but in different direction)
+     * @param stopResult the list of stops to check
+     * @return List of stops with the same name but not duplicate
+     */
+    private static List<Stop> getSameStopsNameNoDuplicate(List<Stop> stopResult) {
+        List<Stop> stopExistResult = new ArrayList<>();
+        for (Stop stop : stopResult) {
+            RouteInfo routeInfo = stop.getRouteInfo();
+            if (routeInfo != null && stopExistResult.isEmpty()) {
+                stopExistResult.add(stop);
+                continue;
+            }
+            List<Stop> savedStops = new ArrayList<>();
+            for (Stop stop1 : stopExistResult) {
+                if (!stop1.getRouteInfo().equals(routeInfo)) {
+                    savedStops.add(stop1);
+                }
+            }
+            stopExistResult.addAll(savedStops);
+        }
+        return stopExistResult;
+    }
 
     /**
      * @brief Get a single stop input from the user.
@@ -41,28 +64,13 @@ public class Main {
                 }
 
                 List<Stop> stopResult = solver.stopsWithName(input, Optional.empty());
-
-                List<Stop> stopExistResult = new ArrayList<>();
-                for (Stop stop : stopResult) {
-                    RouteInfo routeInfo = stop.getRouteInfo();
-                    if (routeInfo != null && stopExistResult.isEmpty()) {
-                        stopExistResult.add(stop);
-                        continue;
-                    }
-                    List<Stop> savedStops = new ArrayList<>();
-                    for (Stop stop1 : stopExistResult) {
-                        if (!stop1.getRouteInfo().equals(routeInfo)) {
-                            savedStops.add(stop1);
-                        }
-                    }
-                    stopExistResult.addAll(savedStops);
-                }
+                List<Stop> differentStopsSameNameResult = getSameStopsNameNoDuplicate(stopResult);
                 
-                if (stopExistResult.size() == 1) {
+                if (differentStopsSameNameResult.size() == 1) {
                     return stopResult.stream()
                             .map(Stop::getId)
                             .collect(Collectors.toList());
-                } else if (stopExistResult.size() > 1) {
+                } else if (differentStopsSameNameResult.size() > 1) {
                     String instruct = "Several stops found with the name '" + input + "'. Please enter the full name of the route who passes by this stop or enter 'all' to use all the stops with this name: ";
                     while (true) {
                         String routeName = reader.readLine(instruct).stripTrailing();
@@ -81,32 +89,17 @@ public class Main {
                         }
 
                         List<Stop> stopResultWithRouteName = solver.stopsWithName(input, Optional.of(routeName));
+                        List<Stop> differentStopsSameNameWithRouteNameResult = getSameStopsNameNoDuplicate(stopResultWithRouteName);
 
-                        List<Stop> stopExistResultWithRouteName = new ArrayList<>();
-                        for (Stop stop : stopResultWithRouteName) {
-                            RouteInfo routeInfo = stop.getRouteInfo();
-                            if (routeInfo != null && stopExistResultWithRouteName.isEmpty()) {
-                                stopExistResultWithRouteName.add(stop);
-                                continue;
-                            }
-                            List<Stop> savedStops = new ArrayList<>();
-                            for (Stop stop1 : stopExistResultWithRouteName) {
-                                if (!stop1.getRouteInfo().equals(routeInfo)) {
-                                    savedStops.add(stop1);
-                                }
-                            }
-                            stopExistResultWithRouteName.addAll(savedStops);
-                        }
-
-                        if (stopExistResultWithRouteName.size() == 1) {
-                            return stopExistResultWithRouteName.stream()
+                        if (differentStopsSameNameWithRouteNameResult.size() == 1) {
+                            return differentStopsSameNameWithRouteNameResult.stream()
                                     .map(Stop::getId)
                                     .collect(Collectors.toList());
                         }
-                        if (stopExistResultWithRouteName.isEmpty()) {
+                        if (differentStopsSameNameWithRouteNameResult.isEmpty()) {
                             instruct = "The stop '" + input + "' with the route '" + routeName + "' was not found. Please try again: ";
                         }
-                        else if (stopExistResultWithRouteName.size() > 1) {
+                        else if (differentStopsSameNameWithRouteNameResult.size() > 1) {
                             System.err.println("Several stops found with the name '" + input + "' and the route '" + routeName + "'. We cannot determine which one you want.");
                             return null;
                         }
