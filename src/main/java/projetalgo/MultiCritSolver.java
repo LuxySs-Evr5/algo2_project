@@ -54,6 +54,9 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         return i;
     }
 
+    /**
+     * Displays instructions for completing the journey.
+     */
     private void displayJourney(Map<String, ProfileFunction<CriteriaTracker>> S, String pDepId,
             String pArrId, int tDep,
             CriteriaTracker criteriaTracker) {
@@ -92,6 +95,11 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         }
     }
 
+    /**
+     * Displays the characteristics of the journeys in S's profile and prompts the
+     * user to select one. Returns the CriteriaTracker corresponding to the select
+     * journey.
+     */
     CriteriaTracker promptJourney(Map<String, ProfileFunction<CriteriaTracker>> S, String pDepId, int tDep) {
         Map<CriteriaTracker, Pair<Integer, Movement>> results = S.get(pDepId).evaluateAt(tDep);
 
@@ -156,6 +164,12 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         return options.get(choice);
     }
 
+    /**
+     * Updates TauC by adding the given entry in it. If this entry conflicts with
+     * one already in TauC, i.e. there is already another CriteriaTracker with the
+     * same characteristics in TauC, only the one with the best arrival time is
+     * kept in TauC.
+     */
     private void updateTauC(Map<CriteriaTracker, Pair<Integer, Movement>> tauC, CriteriaTracker criteriaTracker,
             Pair<Integer, Movement> tArrMovement) {
 
@@ -174,6 +188,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
     }
 
     /**
+     * Solves the multicriteria problem (mcCSA variant).
      * Connections must be sorted by their departure time.
      */
     public void solve(String pDepId, String pArrId, int tDep) {
@@ -317,6 +332,10 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         displayJourney(S, pDepId, pArrId, tDep, criteriaTracker);
     }
 
+    /**
+     * Loads all the data corresponding to all the given csvSets :
+     * connections, stopIdToStop, tripIds and stopIdToIncomingFootpaths.
+     */
     public void loadData(CsvSet... csvSets) throws IOException, CsvValidationException {
         // TODO: check that we reinitialize every member
         this.connections = new ArrayList<>();
@@ -350,6 +369,10 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
     }
 
+    /**
+     * Loads all the data corresponding to all the given csvSets :
+     * connections, stopIdToStop, tripIds and stopIdToIncomingFootpaths.
+     */
     private void loadOneCsvSet(CsvSet csvSet) throws IOException, CsvValidationException {
         // ------------------- stops.csv -------------------
         System.out.println("__stops.csv__");
