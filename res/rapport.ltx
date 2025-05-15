@@ -60,9 +60,13 @@
 %TODO: parler du chargement des données
 %TODO: parler du ballTree
 
+%TODO: parler du fait que l'algo du CSA normal nous fait faire des switch inutiles
+
 %TODO: mentionner le fait qu'on a considéré que le temps de changement entre deux trips est 0s
 
-%TODO: parler du fait que nos footpaths sont pas transitivement fermés en pratique en tout cas
+%TODO: parler du "limited walking optimization" et que ca a besoin que nos
+%footpaths soient transitivement fermés ce qui en pratique n'est pas du tout le
+%cas
 
 \section{Introduction}
 
@@ -660,7 +664,7 @@ l'arrêt $p$. L'algorithme ajoute et supprime des trajets partiels dans les
 fonctions de profil au fur et à mesure que celui-ci scanne les connections.\\
 
 Notons que ~\hyperref[item:defProfileFunctionContent]{la définition du contenu
-d'une fonction de profil} nous autorise à conserver un trajet $j$ malgré le
+	d'une fonction de profil} nous autorise à conserver un trajet $j$ malgré le
 fait que celui-ci soit dominé par un trajet $j'$ si l'heure de départ de $j'$
 est antérieure à celle de $j$, c'est-à-dire : $j'_{tDep} < j_{tDep}$\\
 
