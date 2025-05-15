@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Stack;
 
 import com.opencsv.CSVReader;
@@ -27,82 +28,17 @@ public class Solver {
     /**
      * Returns the result of the search for a stop with the given name.
      */
-    StopExistResult singleStopExists(final String name, final String routeName) {
-        Stop savedStop = null;
+    List<Stop> stopsWithName(final String name, Optional<String> routeName) {
+        List<Stop> matchingStops = new ArrayList<>();
         for (Stop stop : stopIdToStop.values()) {
-            if (stop.getRouteInfo() != null && stop.getName().equals(name)
-                    && stop.getRouteInfo().getRouteName().equals(routeName)) {
-                if (savedStop == null) {
-                    savedStop = stop;
-                } else {
-                    RouteInfo info1 = savedStop.getRouteInfo();
-                    RouteInfo info2 = stop.getRouteInfo();
-                    if (info1 != null && info2 != null && !info1.equals(info2)) {
-                        return StopExistResult.SEVERAL_MATCHES;
-                    }
-                }
+            if (routeName.isPresent() && stop.getRouteInfo() != null && !stop.getRouteInfo().getRouteName().equals(routeName.get())) {
+                continue;
             }
-        }
-
-        if (savedStop == null) {
-            return StopExistResult.NOT_EXISTS;
-        }
-        return StopExistResult.EXISTS;
-    }
-
-    /**
-     * Returns the result of the search for a stop with the given name.
-     */
-    StopExistResult singleStopExists(final String name) {
-        Stop savedStop = null;
-        for (Stop stop : stopIdToStop.values()) {
             if (stop.getName().equals(name)) {
-                if (savedStop == null) {
-                    savedStop = stop;
-                } else {
-                    RouteInfo info1 = savedStop.getRouteInfo();
-                    RouteInfo info2 = stop.getRouteInfo();
-                    if (info1 != null && info2 != null && !info1.equals(info2)) {
-                        return StopExistResult.SEVERAL_MATCHES;
-                    }
-                }
+                matchingStops.add(stop);
             }
         }
-
-        if (savedStop == null) {
-            return StopExistResult.NOT_EXISTS;
-        }
-        return StopExistResult.EXISTS;
-    }
-
-    /**
-     * Returns a list of stopIds of all stops matching the given stopName.
-     */
-    List<String> getStops(final String stopName) {
-        List<String> stopIds = new ArrayList<>();
-        for (Stop stop : stopIdToStop.values()) {
-            if (stop.getName().equals(stopName)) {
-                stopIds.add(stop.getId());
-            }
-        }
-
-        return stopIds;
-    }
-
-    /**
-     * Returns a list of stopIds of all stops matching the given stopName and
-     * routeName.
-     */
-    List<String> getStops(final String stopName, final String routeName) {
-        List<String> stopIds = new ArrayList<>();
-        for (Stop stop : stopIdToStop.values()) {
-            if (stop.getRouteInfo() != null && stop.getName().equals(stopName)
-                    && stop.getRouteInfo().getRouteName().equals(routeName)) {
-                stopIds.add(stop.getId());
-            }
-        }
-
-        return stopIds;
+        return matchingStops;
     }
 
     /**

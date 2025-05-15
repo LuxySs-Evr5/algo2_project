@@ -1,7 +1,10 @@
 package projetalgo;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
@@ -37,11 +40,29 @@ public class Main {
                     continue;
                 }
 
-                StopExistResult stopExistResult = solver.singleStopExists(input);
+                List<Stop> stopResult = solver.stopsWithName(input, Optional.empty());
+
+                List<Stop> stopExistResult = new ArrayList<>();
+                for (Stop stop : stopResult) {
+                    RouteInfo routeInfo = stop.getRouteInfo();
+                    if (routeInfo != null && stopExistResult.isEmpty()) {
+                        stopExistResult.add(stop);
+                        continue;
+                    }
+                    List<Stop> savedStops = new ArrayList<>();
+                    for (Stop stop1 : stopExistResult) {
+                        if (!stop1.getRouteInfo().equals(routeInfo)) {
+                            savedStops.add(stop1);
+                        }
+                    }
+                    stopExistResult.addAll(savedStops);
+                }
                 
-                if (stopExistResult.equals(StopExistResult.EXISTS)) {
-                    return solver.getStops(input);
-                } else if (stopExistResult.equals(StopExistResult.SEVERAL_MATCHES)) {
+                if (stopExistResult.size() == 1) {
+                    return stopResult.stream()
+                            .map(Stop::getId)
+                            .collect(Collectors.toList());
+                } else if (stopExistResult.size() > 1) {
                     String instruct = "Several stops found with the name '" + input + "'. Please enter the full name of the route who passes by this stop or enter 'all' to use all the stops with this name: ";
                     while (true) {
                         String routeName = reader.readLine(instruct).stripTrailing();
@@ -54,25 +75,40 @@ public class Main {
                             continue;
                         }
                         if (routeName.equalsIgnoreCase("all")) {
-                            return solver.getStops(input);
+                            return stopResult.stream()
+                                    .map(Stop::getId)
+                                    .collect(Collectors.toList());
                         }
 
-                        StopExistResult stopExist = solver.singleStopExists(input, routeName);
+                        List<Stop> stopResultWithRouteName = solver.stopsWithName(input, Optional.of(routeName));
 
-                        switch (stopExist) {
-                            case EXISTS -> {
-                                return solver.getStops(input, routeName);
+                        List<Stop> stopExistResultWithRouteName = new ArrayList<>();
+                        for (Stop stop : stopResultWithRouteName) {
+                            RouteInfo routeInfo = stop.getRouteInfo();
+                            if (routeInfo != null && stopExistResultWithRouteName.isEmpty()) {
+                                stopExistResultWithRouteName.add(stop);
+                                continue;
                             }
-                            case NOT_EXISTS -> {
-                                instruct = "The stop '" + input + "' with the route '" + routeName + "' was not found. Please try again: ";
+                            List<Stop> savedStops = new ArrayList<>();
+                            for (Stop stop1 : stopExistResultWithRouteName) {
+                                if (!stop1.getRouteInfo().equals(routeInfo)) {
+                                    savedStops.add(stop1);
+                                }
                             }
-                            case SEVERAL_MATCHES -> {
-                                System.err.println("Several stops found with the name '" + input + "' and the route '" + routeName + "'. We cannot determine which one you want.");
-                                return null;
-                            }
-                            default ->  {
-                                throw new AssertionError();
-                            }
+                            stopExistResultWithRouteName.addAll(savedStops);
+                        }
+
+                        if (stopExistResultWithRouteName.size() == 1) {
+                            return stopExistResultWithRouteName.stream()
+                                    .map(Stop::getId)
+                                    .collect(Collectors.toList());
+                        }
+                        if (stopExistResultWithRouteName.isEmpty()) {
+                            instruct = "The stop '" + input + "' with the route '" + routeName + "' was not found. Please try again: ";
+                        }
+                        else if (stopExistResultWithRouteName.size() > 1) {
+                            System.err.println("Several stops found with the name '" + input + "' and the route '" + routeName + "'. We cannot determine which one you want.");
+                            return null;
                         }
                     }
                 }
