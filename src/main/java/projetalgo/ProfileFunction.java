@@ -18,7 +18,8 @@ public class ProfileFunction<T extends CriteriaTracker> {
     }
 
     /**
-     * Get the movement whose corresponding CriteriaTracker matches the given CriteriaTracker
+     * Get the movement whose corresponding CriteriaTracker matches the given
+     * CriteriaTracker
      * and whose departure time is as early as possible while being >= tDep.
      */
     public Movement getFirstMatch(int tDep, CriteriaTracker criteriaTracker) {
@@ -104,28 +105,7 @@ public class ProfileFunction<T extends CriteriaTracker> {
 
             boolean dominated = false;
 
-            // TODO: swap 1) and 2) (better performance)
-
-            // 1) check domination by any old journey
-            for (int i = 0; i <= firstReachableEntryIdx && !dominated; i++) {
-                for (Map.Entry<T, Pair<Integer, Movement>> entryOld : entries.get(i).getValue().entrySet()) {
-                    T critOld = entryOld.getKey();
-                    int tArrOld = entryOld.getValue().getKey();
-
-                    if ((critOld.dominates(critCand) && tArrOld <= tArrCand) || (critOld.equals(critCand)
-                            && tArrOld < tArrCand)) {
-                        dominated = true;
-                        break;
-                    }
-                }
-            }
-            if (dominated) {
-
-                outerIt.remove();
-                continue;
-            }
-
-            // 2) check domination by any other new journey
+            // 1) check domination by any other new journey
             for (Map.Entry<T, Pair<Integer, Movement>> entryOther : newPartialJourneys.entrySet()) {
                 if (entryOther == entryCandidate) {
                     continue;
@@ -138,6 +118,24 @@ public class ProfileFunction<T extends CriteriaTracker> {
                         || (critOther.equals(critCand) && tArrOther < tArrCand)) {
                     dominated = true;
                     break;
+                }
+            }
+            if (dominated) {
+                outerIt.remove();
+                continue;
+            }
+
+            // 2) check domination by any old journey
+            for (int i = 0; i <= firstReachableEntryIdx && !dominated; i++) {
+                for (Map.Entry<T, Pair<Integer, Movement>> entryOld : entries.get(i).getValue().entrySet()) {
+                    T critOld = entryOld.getKey();
+                    int tArrOld = entryOld.getValue().getKey();
+
+                    if ((critOld.dominates(critCand) && tArrOld <= tArrCand) || (critOld.equals(critCand)
+                            && tArrOld < tArrCand)) {
+                        dominated = true;
+                        break;
+                    }
                 }
             }
             if (dominated) {
