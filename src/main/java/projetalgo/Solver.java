@@ -191,6 +191,9 @@ public class Solver {
         return finalPath;
     }
 
+    /**
+     * Displays instructions for completing the journey.
+     */
     public void printInstructions(Stack<BestKnownEntry> finalPath) {
         String currentTripId = null;
         RouteInfo currentRouteInfo = null;
@@ -271,7 +274,7 @@ public class Solver {
     }
 
     /**
-     * Returns true if the given connection's arrival time is after the
+     * Returns true if the given connection's departure time is after the
      * earliest arrival time to one of pArrIds.
      *
      * NOTE: in the paper "Intriguingly Simple and Fast Transit Routing?" by
@@ -389,6 +392,11 @@ public class Solver {
                         + " at " + TimeConversion.fromSeconds(tArrEarliest) + AinsiCode.RESET);
     }
 
+
+    /**
+     * Loads all the data corresponding to all the given csvSets :
+     * connections, stopIdToStop, tripIds and stopIdToOutgoingFootpaths.
+     */
     public void loadData(CsvSet... csvSets) throws IOException, CsvValidationException {
         // TODO: check that we reinitialize every member
         stopIdToStop = new HashMap<>();
