@@ -17,15 +17,6 @@ public class ProfileFunction<T extends CriteriaTracker> {
         this.entries = new ArrayList<>();
     }
 
-    // TODO: remove this
-    public void displayTDeps() {
-        for (Pair<Integer, Map<T, Pair<Integer, Movement>>> entry : entries) {
-            System.out.printf("%s ", TimeConversion.fromSeconds(entry.getKey()));
-        }
-
-        System.out.println();
-    }
-
     /**
      * TODO
      */
