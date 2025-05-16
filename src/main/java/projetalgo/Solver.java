@@ -182,17 +182,9 @@ public class Solver extends AbstractSolver {
      * Connections must be sorted by their departure time.
      */
     public void solve(List<String> pDepIds, List<String> pArrIds, int tDep) {
-        if (pDepIds.isEmpty()) {
-            System.out.println("no departure stop");
-            return;
-        }
-        if (pArrIds.isEmpty()) {
-            System.out.println("no destination stop");
-            return;
-        }
-        for (String PDepId : pDepIds) {
-            for (String PArrId : pArrIds) {
-                if (PDepId.equals(PArrId)) {
+        for (String pDepId : pDepIds) {
+            for (String pArrId : pArrIds) {
+                if (pDepId.equals(pArrId)) {
                     System.out.println("You are already at your destination");
                     return;
                 }
