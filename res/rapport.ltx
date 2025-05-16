@@ -52,9 +52,6 @@
 
 %-------------------------------------------------------------------
 
-
-%TODO: change $$ ... $$ with \[ ... \]
-
 %TODO: remplacer l'adjectif basique (pas formel)
 
 %TODO: parler du chargement des données
@@ -161,6 +158,8 @@ Pour calculer ces \texttt{Footpath}, nous utilisons le \texttt{BallTree}. Celui-
 
 Ces chemins à pied sont ensuite ajoutés à l’ensemble des connexions disponibles pour l’algorithme, au même titre que les trajets en transport en commun. Cela permet à l’utilisateur de combiner marche et transports publics pour atteindre sa destination le plus rapidement possible.\\
 
+
+% TODO: expliquer en quoi consiste la recherche naive des voisins
 L'avantage du \texttt{BallTree} réside dans sa complexité de recherche : alors qu’une recherche naïve des voisins aurait une complexité en $\mathcal{O}(n^2)$, celle du \texttt{BallTree} est en $\mathcal{O}(n)$ dans le pire des cas, grâce à sa structure hiérarchique. Cette amélioration permet de rendre l’étape de génération des chemins à pied plus rapide.\\
 
 %-------------------------------------------------------------------
@@ -489,9 +488,9 @@ optimise ceux-ci au sens pareto.\\
 
 Dans le CSA basique, la fonction de coût, utilisée pour comparer deux trajets
 lors de la mise à jour de \texttt{bestKnown}, est définie par :
-$$
+\[
 	\operatorname{cost} : \mathbb{T} \to \mathbb{T}, \quad t \mapsto t
-$$
+\]
 C'est à dire que le cout est directemment le temps d'arrivée.\\
 
 %TODO: pas convaincu par le C "complexe" ni par le fait qu'on passe de \mathbb{T} à \mathbb{C}
@@ -500,9 +499,10 @@ L'idée intuitive consiste alors à remplacer la fonction de coût par une
 fonction déterminée par l'utilisateur, prenant en paramètre les valeurs pour
 les critères supportés par le programme, e.g. le nombre de mouvements effectués
 en trams :
-$$ \text{cost} : \mathbb{X}_1 \times \cdots \times \mathbb{X}_n \to
+\[
+	\text{cost} : \mathbb{X}_1 \times \cdots \times \mathbb{X}_n \to
 	\mathbb{C}, \quad (x_1, \ldots, x_n) \mapsto c
-$$ \label{item:CostMultiCriteria}
+\] \label{item:CostMultiCriteria}
 où
 \begin{itemize}
 
@@ -520,9 +520,9 @@ Nous conservons alors dans \texttt{bestKnown}, pour chaque arrêt, les $x_1,
 
 Afin d'effectuer la comparaison entre deux trajets $X, Y$ pour déterminer si
 $X$ a un meilleur cout que $Y$, il suffit de vérifier :
-$$
+\[
 	\operatorname{cost}(x_1, \dots, x_n) < \operatorname{cost}(y_1, \dots, y_n)
-$$
+\]
 
 Malheureusement, cette approche intuitive ne fonctionne pas. Voici un
 contre-exemple :
@@ -554,9 +554,9 @@ contre-exemple :
 % TODO: qqch pour expliquer ce qui est quoi dans ce graphe, expliquer que t1<t2<t3<t4
 
 Notons pour toute connection $c$:
-$$
+\[
 	\operatorname{cost}(c) = \operatorname{cost}(pDep \rightarrow c_{pDep} + c)
-$$
+\]
 
 Autrement dit, le coût
 d'une connexion $c$ correspond au coût du trajet composé du meilleur itinéraire
@@ -567,20 +567,20 @@ puis empruntant la connexion $c$.\\
 Étant donné que $c1_{tDep} < c2_{tDep} < c3_{tdep}$, nous scannons d'abord $c1$.
 % TODO: améliorer cette phrase
 Une fois le scan de $c1$ terminé :
-$$
+\[
 	\texttt{bestKnown}_{cost}(y) \leq \operatorname{cost}(c1)
-$$
+\]
 
 Il en va de même pour le scan de $c2$ :
-$$
+\[
 	\texttt{bestKnown}_{cost}(z) \leq \operatorname{cost}(c2)
-$$
+\]
 
 Et enfin, nous scannons la connection $c3$.
 Supposons que:
-$$
+\[
 	\texttt{bestKnown}_{cost}(z) > \operatorname{cost}(c3)
-$$
+\]
 
 Nous remplaçons alors les $x_1, \dots, x_n$ (aini que l'instance de
 \texttt{Movement}) dans \texttt{bestKnown} pour l'arrêt $y$.
