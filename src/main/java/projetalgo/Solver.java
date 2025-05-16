@@ -4,14 +4,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Stack;
 
 public class Solver extends AbstractSolver {
-
-    private HashMap<String, Stop> stopIdToStop;
     private HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths;
-    private List<Connection> connections;
 
     public Solver(Data data) {
         super(data);
@@ -276,7 +272,7 @@ public class Solver extends AbstractSolver {
 
         System.out.println(
                 AinsiCode.BOLD + AinsiCode.RED + "You will arrive at " + stopIdToStop.get(pArrIdEarliest).getName()
-                        + " at " + TimeConversion.fromSeconds(tArrEarliest) + AinsiCode.RESET);
+                        + " at " + TimeConversion.fromSeconds(tArrEarliest) + AinsiCode.RESET + "\n");
     }
 
     /**
