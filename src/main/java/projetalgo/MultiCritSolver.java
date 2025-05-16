@@ -17,8 +17,7 @@ import com.opencsv.exceptions.CsvValidationException;
 import javafx.util.Pair;
 
 // TODO: doc pour template args etc
-public class MultiCritSolver<T extends CriteriaTracker> {
-    private final Supplier<T> factory;
+public class MultiCritSolver {
     private HashMap<String, Stop> stopIdToStop;
     private HashMap<String, List<Footpath>> stopIdToIncomingFootpaths;
     private List<String> tripIds;
@@ -26,8 +25,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
     private static final List<Footpath> EMPTY_FOOTPATH_LIST = List.of();
 
-    public MultiCritSolver(Supplier<T> factory) {
-        this.factory = factory;
+    public MultiCritSolver() {
         this.stopIdToStop = new HashMap<>();
         this.tripIds = new ArrayList<>();
         this.connections = new ArrayList<>();
@@ -233,11 +231,12 @@ public class MultiCritSolver<T extends CriteriaTracker> {
      *
      * TODO: check that those doc parameters are still correct
      *
-     * @param pDepId the departure stop ID
-     * @param pArrId the arrival stop ID
-     * @param tDep   the departure time (in seconds since midnight)
+     * @param criteriaTrackerFactory    the criteriaTracker factory (depends on the criteria that the caller wants to use)
+     * @param pDepId                    the departure stop ID
+     * @param pArrId                    the arrival stop ID
+     * @param tDep                      the departure time in seconds
      */
-    public void solve(String pDepId, String pArrId, int tDep) {
+    public <T extends CriteriaTracker> void solve(Supplier<T> criteriaTrackerFactory, String pDepId, String pArrId, int tDep) {
 
         // TODO: comment out the tau2 and T stuff.
 
@@ -299,7 +298,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             // directly arrives at pArr. (In the original pseudocode, since the travel time
             // from pArr to pArr is 0, this was done without splitting it in two cases).
             if (c.getPArr().getId().equals(pArrId)) { // no need to walk if we arrive directly at pArrId
-                CriteriaTracker newTracker = factory.get().addMovement(c);
+                CriteriaTracker newTracker = criteriaTrackerFactory.get().addMovement(c);
                 int tArr = c.getTArr();
 
                 updateTauC(tauC, newTracker, new Pair<Integer, Movement>(tArr, c));
@@ -315,13 +314,13 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                     // the destination).
                     int tArrWithfootpath = c.getTArr() + finalFootpath.getTravelTime();
 
-                    CriteriaTracker newTracker = factory.get().addMovement(finalFootpath).addMovement(c);
+                    CriteriaTracker newTracker = criteriaTrackerFactory.get().addMovement(finalFootpath).addMovement(c);
 
                     updateTauC(tauC, newTracker, new Pair<Integer, Movement>(tArrWithfootpath, c));
 
                     int foopathTDep = c.getTArr();
 
-                    CriteriaTracker finalFootpathNewTracker = factory.get().addMovement(finalFootpath);
+                    CriteriaTracker finalFootpathNewTracker = criteriaTrackerFactory.get().addMovement(finalFootpath);
 
                     // insert the footpath in c.pArr's profile
                     sCPArr.insert(foopathTDep,
