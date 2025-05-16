@@ -183,10 +183,10 @@ public class Main {
 
 
             Data AllData = Data.loadFromCSVs(sncbSet, stibSet, delijnSet, tecSet);
-            Data sncbData = Data.loadFromCSVs(sncbSet);
+            Data stibData = Data.loadFromCSVs(stibSet);
             
             Solver solver = new Solver(AllData);
-            MultiCritSolver multiCritSolver = new MultiCritSolver(sncbData);
+            MultiCritSolver multiCritSolver = new MultiCritSolver(stibData);
 
             long endTime = System.nanoTime();
             double durationInSeconds = (endTime - startTime) /  1_000_000_000.0;
@@ -205,7 +205,7 @@ public class Main {
                     System.out.println("Exiting the program ...");
                     System.exit(0);
                 }
-                
+
                 SolverType solverType;
                 switch (solverTypeStr) {
                     case "0" -> {
