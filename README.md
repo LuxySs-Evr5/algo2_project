@@ -18,6 +18,8 @@ Le fichier exécutable sera généré à la racine du projet.
 
 ## Exécution
 
+Voici la commande pour exécuter le programme :
+
 ```sh
 java -jar algo2_project.jar
 ```
@@ -42,19 +44,19 @@ java -Xmx3g -jar algo2_project.jar
 
 Lors de l'exécution, le programme :
 
-1. Charge les fichiers GTFS des quatre opérateurs depuis les dossiers `./GTFS/{SNCB,STIB,TEC,DELIJN}/`.
+1. Charge les fichiers GTFS des quatre opérateurs depuis les dossiers `./GTFS/{SNCB,STIB,TEC,DELIJN}`.
 
 2. Détermine les connexions à pied entre arrêts proches (500m max).
 
 3. Invite l'utilisateur à saisir :
 
-    - un nom d’arrêt de départ,
+    - un nom d’arrêt de départ (le nom exact de l'arrêt en respectant les majuscules, minuscules et espaces),
 
-    - un nom d’arrêt d’arrivée,
+    - un nom d’arrêt d’arrivée (le nom exact de l'arrêt en respectant les majuscules, minuscules et espaces),
 
     - une heure de départ (format `hh:mm:ss`).
 
-4. Affiche le chemin le plus rapide calculé en détail avec toutes les connexions.
+4. Affiche le chemin calculé en détail avec toutes les instructions de connexions.
 
 ## Structure des fichiers GTFS
 
