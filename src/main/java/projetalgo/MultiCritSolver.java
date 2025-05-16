@@ -1,9 +1,6 @@
 package projetalgo;
 
-import java.io.FileReader;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -11,17 +8,14 @@ import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import com.opencsv.CSVReader;
-import com.opencsv.exceptions.CsvValidationException;
-
 import javafx.util.Pair;
 
 // TODO: doc pour template args etc
 public class MultiCritSolver extends AbstractSolver {
-    private HashMap<String, List<Footpath>> stopIdToIncomingFootpaths;
+    private final HashMap<String, List<Footpath>> stopIdToIncomingFootpaths;
 
     // TODO: not necessary since we don't use tau2
-    private List<String> tripIds;
+    private final List<String> tripIds;
 
     private static final List<Footpath> EMPTY_FOOTPATH_LIST = List.of();
 
@@ -269,7 +263,7 @@ public class MultiCritSolver extends AbstractSolver {
 
         // for all trips x do T [x] ← ∞;
         tripIds.forEach(tripId -> {
-            T.put(tripId, new HashMap<CriteriaTracker, Pair<Integer, Movement>>());
+            T.put(tripId, new HashMap<>());
         });
 
         // ### Actual algorithm
@@ -300,7 +294,7 @@ public class MultiCritSolver extends AbstractSolver {
                 CriteriaTracker newTracker = criteriaTrackerFactory.get().addMovement(c);
                 int tArr = c.getTArr();
 
-                updateTauC(tauC, newTracker, new Pair<Integer, Movement>(tArr, c));
+                updateTauC(tauC, newTracker, new Pair<>(tArr, c));
             } else { // doesn't arrive directly at target -> must walk to target
 
                 // In practice, the path that leads to pArr may not exist if it is too long to
@@ -315,7 +309,7 @@ public class MultiCritSolver extends AbstractSolver {
 
                     CriteriaTracker newTracker = criteriaTrackerFactory.get().addMovement(finalFootpath).addMovement(c);
 
-                    updateTauC(tauC, newTracker, new Pair<Integer, Movement>(tArrWithfootpath, c));
+                    updateTauC(tauC, newTracker, new Pair<>(tArrWithfootpath, c));
 
                     int foopathTDep = c.getTArr();
 
@@ -323,8 +317,8 @@ public class MultiCritSolver extends AbstractSolver {
 
                     // insert the footpath in c.pArr's profile
                     sCPArr.insert(foopathTDep,
-                            new HashMap<CriteriaTracker, Pair<Integer, Movement>>(Map.of(finalFootpathNewTracker,
-                                    new Pair<Integer, Movement>(tArrWithfootpath, finalFootpath))));
+                            new HashMap<>(Map.of(finalFootpathNewTracker,
+                                    new Pair<>(tArrWithfootpath, finalFootpath))));
                 }
             }
 
@@ -424,7 +418,7 @@ public class MultiCritSolver extends AbstractSolver {
     /**
      * Generates all the footpaths.
      */
-    public void genFootpaths(double maxDistKm) {
+    private void genFootpaths(double maxDistKm) {
         BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
         double maxDistanceKm = maxDistKm; // TODO: replace by the actual value
         for (Stop sourceStop : stopIdToStop.values()) {

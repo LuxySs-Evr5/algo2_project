@@ -1,7 +1,5 @@
 package projetalgo;
 
-import java.util.HashMap;
-import java.util.List;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,12 +7,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
-import java.util.Stack;
 
 import com.opencsv.CSVReader;
 import com.opencsv.exceptions.CsvValidationException;
-
 
 public class Data {
     public HashMap<String, Stop> stopIdToStop;
