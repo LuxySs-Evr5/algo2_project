@@ -267,27 +267,24 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             }
 
             // τ2 ← T [ctrip];
-            for (Map.Entry<CriteriaTracker, Pair<Integer, Movement>> entry : T.get(c.getTripId())
-                    .entrySet()) {
-
-                int tArr = entry.getValue().getKey();
-
-                CriteriaTracker prevTracker = entry.getKey();
-                CriteriaTracker newTracker = prevTracker.addMovement(c);
-
-                updateTauC(tauC, newTracker, new Pair<>(tArr, c));
-            }
+            T.get(c.getTripId())
+                    .entrySet()
+                    .forEach(entry -> {
+                        int tArr = entry.getValue().getKey();
+                        CriteriaTracker prevTracker = entry.getKey();
+                        CriteriaTracker newTracker = prevTracker.addMovement(c);
+                        updateTauC(tauC, newTracker, new Pair<>(tArr, c));
+                    });
 
             // τ3 ← evaluate S[carr stop] at carr time;
-            for (Map.Entry<CriteriaTracker, Pair<Integer, Movement>> entry : sCPArr
-                    .evaluateAt(c.getTArr()).entrySet()) {
-                int tArr = entry.getValue().getKey();
-
-                CriteriaTracker prevTracker = entry.getKey();
-                CriteriaTracker newTracker = prevTracker.addMovement(c);
-
-                updateTauC(tauC, newTracker, new Pair<>(tArr, c));
-            }
+            sCPArr.evaluateAt(c.getTArr())
+                    .entrySet()
+                    .forEach(entry -> {
+                        int tArr = entry.getValue().getKey();
+                        CriteriaTracker prevTracker = entry.getKey();
+                        CriteriaTracker newTracker = prevTracker.addMovement(c);
+                        updateTauC(tauC, newTracker, new Pair<>(tArr, c));
+                    });
 
             // insert a copy of tauC into T[ctrip]
             T.put(c.getTripId(),
