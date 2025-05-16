@@ -7,7 +7,6 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Scanner;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -133,12 +132,10 @@ public class MultiCritSolver extends AbstractSolver {
             System.out.printf(" %s\n\n", tracker);
         }
 
-        Scanner scanner = new Scanner(System.in);
         int choice = -1;
         while (true) {
-            System.out.print("Enter the number of the journey you want to choose: ");
             try {
-                choice = Integer.parseInt(scanner.nextLine());
+                choice = Integer.parseInt(InteractiveConsole.ask("Enter the number of the journey you want to choose: "));
                 if (choice >= 0 && choice < options.size()) {
                     break;
                 } else {
@@ -148,8 +145,6 @@ public class MultiCritSolver extends AbstractSolver {
                 System.out.println("Invalid input, please enter a number.");
             }
         }
-
-        scanner.close();
 
         return options.get(choice);
     }

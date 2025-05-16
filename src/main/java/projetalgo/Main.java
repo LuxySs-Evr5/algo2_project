@@ -49,16 +49,15 @@ public class Main {
     /**
      * @brief Get a single stop input from the user.
      * @param solver the solver object to check if the stop exists (if stop is true)
-     * @param reader the line reader object to read the input
      * @param textToShow the text to show to the user when asking for input
      * @param uniqueStop if true, we want only one stop (if false, we can have all the stops with the same name or not (depending on the user choice))
      * @return List of stops input from the user (only one stop)
      */
-    private static List<String> getStopInput(Solver solver, LineReader reader, final String textToShow, final boolean uniqueStop) {
+    private static List<String> getStopInput(Solver solver, final String textToShow, final boolean uniqueStop) {
         String instruction = textToShow;
         try {
             while (true) {
-                String input = reader.readLine(instruction).stripTrailing();
+                String input = InteractiveConsole.ask(instruction).stripTrailing();
     
                 if (input.equalsIgnoreCase("q") || input.equalsIgnoreCase("quit")) {
                     System.out.println("Exiting the program ...");
@@ -80,7 +79,7 @@ public class Main {
                 } else if (differentStopsSameNameResult.size() > 1) {
                     String instruct = "Several stops found with the name '" + input + "'. Please enter the full name of the route who passes by this stop or enter 'all' to use all the stops with this name: ";
                     while (true) {
-                        String routeName = reader.readLine(instruct).stripTrailing();
+                        String routeName = InteractiveConsole.ask(instruct).stripTrailing();
                         if (routeName.equalsIgnoreCase("q") || routeName.equalsIgnoreCase("quit")) {
                             System.out.println("Exiting the program ...");
                             System.exit(0);
@@ -125,15 +124,14 @@ public class Main {
     /**
      * @brief Get the input from the user.
      * @param solver the solver object to check if the stop exists (if stop is true)
-     * @param reader the line reader object to read the input
      * @param textToShow the text to show to the user when asking for input
      * @return the time input from the user (int)
      */
-    private static int getTimeInput(LineReader reader, final String textToShow) {
+    private static int getTimeInput(final String textToShow) {
         String instruction = textToShow;
         try {
             while (true) {
-                String input = reader.readLine(instruction).stripTrailing();
+                String input = InteractiveConsole.ask(instruction).stripTrailing();
     
                 if (input.equalsIgnoreCase("q") || input.equalsIgnoreCase("quit")) {
                     System.out.println("Exiting the program ...");
@@ -161,8 +159,9 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            Terminal terminal = TerminalBuilder.terminal();
+            Terminal terminal = TerminalBuilder.builder().dumb(true).build();
             LineReader reader = LineReaderBuilder.builder().terminal(terminal).build();
+            InteractiveConsole.init(reader);
 
             // -------------- Load the GTFS data --------------
 
@@ -195,13 +194,13 @@ public class Main {
             System.out.printf("Data loaded successfully in %.2f seconds!\n", durationInSeconds);
 
             System.out.println("\nYou can press 'q' or enter 'quit' at any time to stop the program.");
-            System.out.println("For the Departure Time, use 24-hour time format, e.g., 08:00:30 or 17:30:45\n");
+            System.out.println("For the Departure Time, use 24-hour time format, e.g., 08:00:30 or 17:30:45");
 
             // -------------- While the user won't quit --------------
 
-            String instruction = "Please choose whether you want optimize a second criterion before entering your journey (enter '0' for earliest arrival or '1' for multicriteria): ";
+            String instruction = "\nPlease choose whether you want optimize a second criterion before entering your journey (enter '0' for earliest arrival or '1' for multicriteria): ";
             while (true) {
-                String solverTypeStr = reader.readLine(instruction).stripTrailing();
+                String solverTypeStr = InteractiveConsole.ask(instruction).stripTrailing();
                 if (solverTypeStr.equalsIgnoreCase("q") || solverTypeStr.equalsIgnoreCase("quit")) {
                     System.out.println("Exiting the program ...");
                     System.exit(0);
@@ -222,17 +221,17 @@ public class Main {
                     while (running) {
                         System.out.println(AinsiCode.BOLD + "\n=== Create a New Trip ===" + AinsiCode.RESET);
 
-                        List<String> pDepIds = getStopInput(solver, reader, "Enter the departure stop: ", false);
+                        List<String> pDepIds = getStopInput(solver, "Enter the departure stop: ", false);
                         if (pDepIds == null) {
                             System.out.println("Invalid stop. Please try again.");
                             continue;
                         }
-                        List<String> pArrIds = getStopInput(solver, reader, "Enter the arrival stop: ", false);
+                        List<String> pArrIds = getStopInput(solver, "Enter the arrival stop: ", false);
                         if (pArrIds == null) {
                             System.out.println("Invalid stop. Please try again.");
                             continue;
                         }
-                        int tDep = getTimeInput(reader, "Enter the departure time: ");
+                        int tDep = getTimeInput("Enter the departure time: ");
                         if (tDep == -1) {
                             System.out.println("Invalid time format. Please try again.");
                             continue;
@@ -249,17 +248,17 @@ public class Main {
                     while (running) {
                         System.out.println(AinsiCode.BOLD + "\n=== Create a New Trip ===" + AinsiCode.RESET);
 
-                        List<String> pDepIds = getStopInput(solver, reader, "Enter the departure stop: ", true);
+                        List<String> pDepIds = getStopInput(solver, "Enter the departure stop: ", true);
                         if (pDepIds == null || pDepIds.size() != 1) {
                             System.out.println("Invalid stop. Please try again.");
                             continue;
                         }
-                        List<String> pArrIds = getStopInput(solver, reader, "Enter the arrival stop: ", true);
+                        List<String> pArrIds = getStopInput(solver, "Enter the arrival stop: ", true);
                         if (pArrIds == null || pArrIds.size() != 1) {
                             System.out.println("Invalid stop. Please try again.");
                             continue;
                         }
-                        int tDep = getTimeInput(reader, "Enter the departure time: ");
+                        int tDep = getTimeInput("Enter the departure time: ");
                         if (tDep == -1) {
                             System.out.println("Invalid time format. Please try again.");
                             continue;

@@ -272,7 +272,7 @@ public class Solver extends AbstractSolver {
 
         System.out.println(
                 AinsiCode.BOLD + AinsiCode.RED + "You will arrive at " + stopIdToStop.get(pArrIdEarliest).getName()
-                        + " at " + TimeConversion.fromSeconds(tArrEarliest) + AinsiCode.RESET + "\n");
+                        + " at " + TimeConversion.fromSeconds(tArrEarliest) + AinsiCode.RESET);
     }
 
     /**
