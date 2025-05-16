@@ -48,11 +48,11 @@ Lors de l'exécution, le programme :
 
 2. Détermine les connexions à pied entre arrêts proches (500m max).
 
-3. Invite l'utilisateur à saisir :
+3. Invite l'utilisateur à chosir s'il veut le chemin le plus rapide ou le multicritère, puis à saisir :
 
-    - un nom d’arrêt de départ (le nom exact de l'arrêt en respectant les majuscules, minuscules et espaces),
+    - Le nom exact de l’arrêt de départ, en respectant les majuscules, minuscules et espaces ;
 
-    - un nom d’arrêt d’arrivée (le nom exact de l'arrêt en respectant les majuscules, minuscules et espaces),
+    - Le nom exact de l’arrêt d’arrivée, avec les mêmes contraintes de format ;
 
     - une heure de départ (format `hh:mm:ss`).
 
@@ -88,7 +88,7 @@ GTFS/
 
 L'utilisateur peut entrer `q` ou `quit` à tout moment pour quitter le programme.
 
-Les noms d'arrêts ne sont pas sensibles à la casse. Pour chaque arrêt saisi, le programme va d'abord vérifier si l'arrêt existe dans les données chargées.
+Les noms d'arrêts ne sont pas sensibles à la casse. Pour chaque arrêt saisi, le programme va d'abord vérifier si l'arrêt existe dans les données chargées. Par contre, il faut entrer le nom exact de l'arrêt, en respectant les majuscules, minuscules et espaces.
 
 Le programme propose un *terminal interactif* : il est possible d’utiliser les flèches haut et bas pour naviguer dans l’historique des commandes, et les flèches gauche et droite pour modifier une ligne en cours de saisie.
 
