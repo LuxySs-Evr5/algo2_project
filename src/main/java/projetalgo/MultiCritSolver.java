@@ -7,6 +7,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -35,7 +36,8 @@ public class MultiCritSolver extends AbstractSolver {
         this.genFootpaths(maxFootpathDistKm);
 
         // TODO: remove this
-        // System.out.println("stopIdToIncomingFootpaths: " + stopIdToIncomingFootpaths);
+        // System.out.println("stopIdToIncomingFootpaths: " +
+        // stopIdToIncomingFootpaths);
         // System.out.println("connections: " + connections);
         // System.out.println("stopIdToStop: " + stopIdToStop);
     }
@@ -86,11 +88,16 @@ public class MultiCritSolver extends AbstractSolver {
 
     /**
      * Displays the characteristics of the journeys in S's profile and prompts the
-     * user to select one. Returns the CriteriaTracker corresponding to the select
-     * journey.
+     * user to select one if at least one journey exists. Returns the
+     * CriteriaTracker corresponding to the select journey.
+     * If no journey exists, an empty optional is returned.
      */
-    CriteriaTracker promptJourney(Map<String, ProfileFunction> S, String pDepId, int tDep) {
+    Optional<CriteriaTracker> promptJourney(Map<String, ProfileFunction> S, String pDepId, int tDep) {
         Map<CriteriaTracker, Pair<Integer, Movement>> results = S.get(pDepId).evaluateAt(tDep);
+
+        if (results.isEmpty()) {
+            return Optional.empty();
+        }
 
         // find journeys dominated by other journeys that we can take
         // NOTE: Until now, there could be journeys that were dominated by other
@@ -146,7 +153,7 @@ public class MultiCritSolver extends AbstractSolver {
             }
         }
 
-        return options.get(choice);
+        return Optional.of(options.get(choice));
     }
 
     /**
@@ -214,12 +221,14 @@ public class MultiCritSolver extends AbstractSolver {
      *
      * TODO: check that those doc parameters are still correct
      *
-     * @param criteriaTrackerFactory    the criteriaTracker factory (depends on the criteria that the caller wants to use)
-     * @param pDepId                    the departure stop ID
-     * @param pArrId                    the arrival stop ID
-     * @param tDep                      the departure time in seconds
+     * @param criteriaTrackerFactory the criteriaTracker factory (depends on the
+     *                               criteria that the caller wants to use)
+     * @param pDepId                 the departure stop ID
+     * @param pArrId                 the arrival stop ID
+     * @param tDep                   the departure time in seconds
      */
-    public <T extends CriteriaTracker> void solve(Supplier<T> criteriaTrackerFactory, String pDepId, String pArrId, int tDep) {
+    public <T extends CriteriaTracker> void solve(Supplier<T> criteriaTrackerFactory, String pDepId, String pArrId,
+            int tDep) {
 
         // TODO: comment out the tau2 and T stuff.
 
@@ -328,13 +337,13 @@ public class MultiCritSolver extends AbstractSolver {
             // legs/transfers.
             //
             // T.get(c.getTripId())
-            //         .entrySet()
-            //         .forEach(entry -> {
-            //             int tArr = entry.getValue().getKey();
-            //             CriteriaTracker prevTracker = entry.getKey();
-            //             CriteriaTracker newTracker = prevTracker.addMovement(c);
-            //             updateTauC(tauC, newTracker, new Pair<>(tArr, c));
-            //         });
+            // .entrySet()
+            // .forEach(entry -> {
+            // int tArr = entry.getValue().getKey();
+            // CriteriaTracker prevTracker = entry.getKey();
+            // CriteriaTracker newTracker = prevTracker.addMovement(c);
+            // updateTauC(tauC, newTracker, new Pair<>(tArr, c));
+            // });
 
             // τ3 ← evaluate S[carr stop] at carr time;
             //
@@ -398,9 +407,12 @@ public class MultiCritSolver extends AbstractSolver {
         }
 
         System.out.println("prompting journey");
-        CriteriaTracker criteriaTracker = promptJourney(S, pDepId, tDep);
-        System.out.println("printing journey");
-        displayJourney(S, pDepId, pArrId, tDep, criteriaTracker);
+        Optional<CriteriaTracker> optCriteriaTracker = promptJourney(S, pDepId, tDep);
+
+        optCriteriaTracker.ifPresentOrElse(
+                criteriaTracker -> displayJourney(S, pDepId, pArrId, tDep, criteriaTracker),
+                () -> System.out.println("no journey found"));
+
     }
 
     /**
