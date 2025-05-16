@@ -20,16 +20,18 @@ import javafx.util.Pair;
 public class MultiCritSolver {
     private HashMap<String, Stop> stopIdToStop;
     private HashMap<String, List<Footpath>> stopIdToIncomingFootpaths;
-    private List<String> tripIds;
     private List<Connection> connections;
+
+    // TODO: not necessary since we don't use tau2
+    private List<String> tripIds;
 
     private static final List<Footpath> EMPTY_FOOTPATH_LIST = List.of();
 
     public MultiCritSolver() {
         this.stopIdToStop = new HashMap<>();
-        this.tripIds = new ArrayList<>();
-        this.connections = new ArrayList<>();
         this.stopIdToIncomingFootpaths = new HashMap<>();
+        this.connections = new ArrayList<>();
+        this.tripIds = new ArrayList<>();
     }
 
     /**
