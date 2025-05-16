@@ -16,6 +16,7 @@ import com.opencsv.exceptions.CsvValidationException;
 
 import javafx.util.Pair;
 
+// TODO: doc pour template args etc
 public class MultiCritSolver<T extends CriteriaTracker> {
     private final Supplier<T> factory;
     private HashMap<String, Stop> stopIdToStop;
@@ -191,26 +192,75 @@ public class MultiCritSolver<T extends CriteriaTracker> {
     }
 
     /**
-     * Solves the multicriteria problem (mcCSA variant).
-     * Connections must be sorted by their departure time.
+     * Solves the multicriteria Connection Scan problem (mcCSA variant), computing
+     * Pareto-optimal journeys from a departure stop to an arrival stop, given a
+     * departure time and a CriteriaTracker's derivative (template argument).
+     *
+     * This implementation is based on the two pseudocodes from the article:
+     * Julian Dibbelt, Thomas Pajor, Ben Strasser, Dorothea Wagner.
+     * "Connection Scan Algorithm" (March 2017):
+     * 1. "Pareto Connection Scan profile algorithm without interstop footpaths"
+     * (Figure 11) (for the pareto optimisation)
+     * 2. "Earliest arrival Connection Scan profile algorithm with interstop
+     * footpaths and the limited walking optimization" (Figure 9) (for the interstop
+     * footpaths)
+     *
+     *
+     * === Key Difference from the Original Pareto optimization pseudocode ===
+     * 1. The second optimization criterion differs:
+     * The original pseudocode optimizes the number of legs whereas our
+     * implementation optimizes the number of movements using certain
+     * transport modes such as bus, tram, train, metro, footpath, using a
+     * `CriteriaTracker` derivative and its overridden `dominates()` logic.
+     * This allows the user to write a `CriteriaTracker` derivative and override
+     * `dominates()` so that it maximizes or minimizes the number of bus-connections
+     * for example.
+     *
+     * 2. To reconstruct the journey at the end, not only do we store the
+     * arrival time for each partial journey but also the last Movement taken for
+     * this journey (both are stored in a Pair). Pay attention to the fact that we
+     * build the journeys backwards from pArr, meaning that "last movement taken"
+     * means "the next movement to take if we are travelling the journey forward".
+     * Thus, a Pair<Integer, Movement> (tArr, m) can be read as:
+     * "There exists a partial journey arriving at tArr, and to continue it from
+     * here, you must take the movement m."
+     *
+     *
+     * Similarities & differences to the original pseudocodes are noted with
+     * comments. Due to differences in data structures and optimization goals, some
+     * lines differ slightly and some have been removed as they are irreleveant for
+     * our optimization goals (see τ2 below).
+     *
+     * TODO: check that those doc parameters are still correct
+     *
+     * @param pDepId the departure stop ID
+     * @param pArrId the arrival stop ID
+     * @param tDep   the departure time (in seconds since midnight)
      */
     public void solve(String pDepId, String pArrId, int tDep) {
-        // stopId -> ProfileFunction
-        Map<String, ProfileFunction<CriteriaTracker>> S = new HashMap<>();
 
-        // tripId -> Map<CriteriaTracker -> tArr for this journey>
-        Map<String, Map<CriteriaTracker, Pair<Integer, Movement>>> T = new HashMap<>();
-
-        // stopId -> footpath to dest
-        Map<String, Footpath> D = new HashMap<>();
+        // TODO: comment out the tau2 and T stuff.
 
         // ### init data structure
 
-        // NOTE: We don't initalize the default values for all stops/trips with
+        // stopId -> stop's ProfileFunction
+        Map<String, ProfileFunction<CriteriaTracker>> S = new HashMap<>();
+
+        // tripId -> Map<CriteriaTracker -> (tArr for this journey + last Movement
+        // taken)>
+        Map<String, Map<CriteriaTracker, Pair<Integer, Movement>>> T = new HashMap<>();
+
+        // stopId -> footpath to pArr (dest)
+        // In the original pseudocode (figure 11), D only stores the footpath's
+        // travel times but we store the Footpath objects directly.
+        Map<String, Footpath> D = new HashMap<>();
+
+        // We don't initalize the default values for all stops/trips with
         // infinities as this is not necessary because the absence of a key in the
         // hashmap already represents the default value.
 
         // for all footpaths f with farr stop = target do D[x] ← fdur;
+        // We store the footpaths directly instead of the footpath's travel time.
         stopIdToIncomingFootpaths.getOrDefault(pArrId, new ArrayList<>()).forEach(footpath -> {
             D.put(footpath.getPDep().getId(), footpath);
         });
@@ -229,26 +279,40 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
         for (Connection c : connections.subList(getEarliestReachableConnectionIdx(tDep), connections.size())) {
             if (c.getPDep().getId().equals(pArrId)) {
-                // avoid stupid loops, e.g. if our dest is D and the algorithm scans a
-                // connection from S to D, without this "continue", it will consider the journey
-                // that takes the connection and then walks back to D.
+                // avoid stupid loops, e.g. if our dest is A and the algorithm scans a
+                // connection c from A to B, without this "continue", it will consider the
+                // journeys that take the connection c and then come back to A.
                 continue;
             }
 
             // τc ← min{τ1, τ2, τ3};
+            // In the original pseudocode (figure 11) τ1, τ2, τ3 are caculated separately
+            // and then merged to create τc. Our implementation directly updates tauC
+            // without creating tau1/2/3 temporarily.
             Map<CriteriaTracker, Pair<Integer, Movement>> tauC = new HashMap<>();
 
             ProfileFunction<CriteriaTracker> sCPArr = S.get(c.getPArr().getId());
 
-            // τ1
+            // τ1 : corresponds to "take c and then walk to pArr"
+            // Since D doesn't store travel times but footpaths, and there is no footpath
+            // from pArr to pArr, we have to handle separately the case where the connection
+            // directly arrives at pArr. (In the original pseudocode, since the travel time
+            // from pArr to pArr is 0, this was done without splitting it in two cases).
             if (c.getPArr().getId().equals(pArrId)) { // no need to walk if we arrive directly at pArrId
                 CriteriaTracker newTracker = factory.get().addMovement(c);
                 int tArr = c.getTArr();
 
                 updateTauC(tauC, newTracker, new Pair<Integer, Movement>(tArr, c));
-            } else {
+            } else { // doesn't arrive directly at target -> must walk to target
+
+                // In practice, the path that leads to pArr may not exist if it is too long to
+                // travel.
                 Footpath finalFootpath = D.get(c.getPArr().getId());
+
                 if (finalFootpath != null) {
+                    // from pseudocode figure 9: τ1 ← carr time + D[carr stop]
+                    // (The arrival time is the arrival time of the connection + the time to walk to
+                    // the destination).
                     int tArrWithfootpath = c.getTArr() + finalFootpath.getTravelTime();
 
                     CriteriaTracker newTracker = factory.get().addMovement(finalFootpath).addMovement(c);
@@ -259,7 +323,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
                     CriteriaTracker finalFootpathNewTracker = factory.get().addMovement(finalFootpath);
 
-                    // insert the footpath in c.parr
+                    // insert the footpath in c.pArr's profile
                     sCPArr.insert(foopathTDep,
                             new HashMap<CriteriaTracker, Pair<Integer, Movement>>(Map.of(finalFootpathNewTracker,
                                     new Pair<Integer, Movement>(tArrWithfootpath, finalFootpath))));
@@ -267,6 +331,18 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             }
 
             // τ2 ← T [ctrip];
+            // This corresponds to continuing on the same trip without transferring.
+            //
+            // In the original algorithm, we don't increase the number of legs in τ2 because
+            // τ2 is for "staying on the same trip", the number of legs is
+            // increased in τ3 as τ3 is for transferring to other trips.
+            //
+            // But since our algorithm only optimizes criteria on the movement-level instead
+            // of trip-level (meaning ours doesn't depend on trip-related data (e.g.
+            // transfers), but only the connection being scanned), this case doesn't need to
+            // be handled separately from tau3 in our algorithm. Here is the tau2 code
+            // in case we ever want to add a trip-level criterion such as number of
+            // legs/transfers.
             T.get(c.getTripId())
                     .entrySet()
                     .forEach(entry -> {
@@ -277,11 +353,23 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                     });
 
             // τ3 ← evaluate S[carr stop] at carr time;
+            //
+            // τ3 corresponds to the "change trip" case in the original
+            // pseudocode (figure 11).
+            //
+            // As explained for τ2 our algorithm doesn't take number of transfers and other
+            // trip-related data into account.
+            // Therefore, in our algorithm, c is just like any other connection (no matter
+            // which trip it belongs to) that should be considered for CriteriaTracker.
             sCPArr.evaluateAt(c.getTArr())
                     .entrySet()
                     .forEach(entry -> {
                         int tArr = entry.getValue().getKey();
                         CriteriaTracker prevTracker = entry.getKey();
+
+                        // For example, if c is a bus-connection, and our criteriaTracker takes the
+                        // number of buses connections into account, the busesCount would be increased
+                        // in addMovement.
                         CriteriaTracker newTracker = prevTracker.addMovement(c);
                         updateTauC(tauC, newTracker, new Pair<>(tArr, c));
                     });
