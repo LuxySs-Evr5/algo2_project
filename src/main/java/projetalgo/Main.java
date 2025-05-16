@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.jline.reader.EndOfFileException;
 import org.jline.reader.LineReader;
 import org.jline.reader.LineReaderBuilder;
 import org.jline.reader.UserInterruptException;
@@ -193,8 +194,8 @@ public class Main {
 
             System.out.printf("Data loaded successfully in %.2f seconds!\n", durationInSeconds);
 
-            System.out.println("\nPress 'q' or enter 'quit' to stop the program at any time.");
-            System.out.println("For the Departure Time, use 24-hour time format, e.g., 08:00:30 or 17:30:45");
+            System.out.println("\nYou can press 'q' or enter 'quit' at any time to stop the program.");
+            System.out.println("For the Departure Time, use 24-hour time format, e.g., 08:00:30 or 17:30:45\n");
 
             // -------------- While the user won't quit --------------
 
@@ -276,6 +277,8 @@ public class Main {
         } catch (IOException | CsvValidationException e) {
             System.err.println("Data file not found or invalid csv");
         }
+        catch (UserInterruptException | EndOfFileException e) {
+            System.out.println("\nProgram interrupted by user.");
+        }
     }
-
 }
