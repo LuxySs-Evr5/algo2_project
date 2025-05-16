@@ -82,13 +82,16 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                 // TODO: find a better way of doing this
                 switch (connection.getTransportType()) {
                     case BUS:
+                        criteriaTracker.decBusesCount();
                         break;
                     case METRO:
+                        criteriaTracker.decMetrosCount();
                         break;
                     case TRAM:
                         criteriaTracker.decTramsCount();
                         break;
                     case TRAIN:
+                        criteriaTracker.decTrainsCount();
                         break;
                 }
             }
