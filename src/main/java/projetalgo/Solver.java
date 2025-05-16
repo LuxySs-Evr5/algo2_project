@@ -83,6 +83,7 @@ public class Solver extends AbstractSolver {
         Stop tripStartStop = null;
         Stop previousStop = null;
         int departureTime = -1;
+        int arrivalTime = -1;
 
         while (!finalPath.isEmpty()) {
             BestKnownEntry entry = finalPath.pop();
@@ -95,25 +96,31 @@ public class Solver extends AbstractSolver {
                     if (currentTripId != null) {
                         if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
                             String depTimeStr = TimeConversion.fromSeconds(departureTime);
-                            System.out.println("Take " + currentRouteInfo.toString() + " from "
-                                    + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
+                            String arrTimeStr = TimeConversion.fromSeconds(arrivalTime);
+                            System.out.println(
+                                "Take " + AinsiCode.BOLD + AinsiCode.RED + currentRouteInfo.toString() + AinsiCode.RESET + " from "
+                                + AinsiCode.BOLD + AinsiCode.RED + tripStartStop.getName() + AinsiCode.RESET + " at " + AinsiCode.BOLD + 
+                                AinsiCode.RED + depTimeStr + AinsiCode.RESET + " to " + AinsiCode.BOLD + AinsiCode.RED + 
+                                previousStop.getName() + AinsiCode.RESET + " (" + arrTimeStr + ")."
+                            );
                         }
                         currentTripId = null;
                         currentRouteInfo = null;
                         tripStartStop = null;
                         departureTime = -1;
+                        arrivalTime = -1;
                     }
                     int travelTime = footpath.getTravelTime();
+                    String depTimeStr = TimeConversion.fromSeconds(entry.getTArr() - travelTime);
+                    String arrTimeStr = TimeConversion.fromSeconds(entry.getTArr());
                     String duration = TimeConversion.formatDuration(travelTime);
-                    String pDepInfo = pDep.getRouteInfo() != null
-                            ? pDep.getRouteInfo().toString()
-                            : "";
-                    String pArrInfo = pArr.getRouteInfo() != null
-                            ? pArr.getRouteInfo().toString()
-                            : "";
                     System.out.println(
-                            "Walk " + duration + " from " + pDep.getName() + " (" + pDepInfo +
-                                    ") to " + pArr.getName() + " (" + pArrInfo + ")");
+                        "From " + AinsiCode.BOLD + AinsiCode.RED + pDep.getName() + AinsiCode.RESET + " (" + pDep.getTransportOperatorStop() + 
+                        "), leave on foot at " + AinsiCode.BOLD + AinsiCode.RED + depTimeStr + AinsiCode.RESET + " to reach " + AinsiCode.BOLD + 
+                        AinsiCode.RED + pArr.getName() + AinsiCode.RESET + " (" + pArr.getTransportOperatorStop() + ") by " + AinsiCode.BOLD + 
+                        AinsiCode.RED + arrTimeStr + AinsiCode.RESET + ". Expect a walk of around " + AinsiCode.BOLD + AinsiCode.RED + duration + AinsiCode.RESET + "."
+                    );
+
                     break;
                 }
 
@@ -125,16 +132,23 @@ public class Solver extends AbstractSolver {
                         currentRouteInfo = routeInfo;
                         tripStartStop = pDep;
                         departureTime = connection.getTDep();
+                        arrivalTime = connection.getTArr();
                     } else if (!tripId.equals(currentTripId)) {
                         if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
                             String depTimeStr = TimeConversion.fromSeconds(departureTime);
-                            System.out.println("Take " + currentRouteInfo.toString() + " from "
-                                    + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
+                            String arrTimeStr = TimeConversion.fromSeconds(arrivalTime);
+                            System.out.println(
+                                "Take " + AinsiCode.BOLD + AinsiCode.RED + currentRouteInfo.toString() + AinsiCode.RESET + " from "
+                                + AinsiCode.BOLD + AinsiCode.RED + tripStartStop.getName() + AinsiCode.RESET + " at " + AinsiCode.BOLD + 
+                                AinsiCode.RED + depTimeStr + AinsiCode.RESET + " to " + AinsiCode.BOLD + AinsiCode.RED + 
+                                previousStop.getName() + AinsiCode.RESET + " (" + arrTimeStr + ")."
+                            );
                         }
                         currentTripId = tripId;
                         currentRouteInfo = routeInfo;
                         tripStartStop = pDep;
                         departureTime = connection.getTDep();
+                        arrivalTime = connection.getTArr();
                     }
                     break;
                 }
@@ -150,8 +164,13 @@ public class Solver extends AbstractSolver {
         if (currentTripId != null) {
             if (tripStartStop != null && previousStop != null && currentRouteInfo != null) {
                 String depTimeStr = TimeConversion.fromSeconds(departureTime);
-                System.out.println("Take " + currentRouteInfo.toString() + " from "
-                        + tripStartStop.getName() + " at " + depTimeStr + " to " + previousStop.getName());
+                String arrTimeStr = TimeConversion.fromSeconds(arrivalTime);
+                System.out.println(
+                    "Take " + AinsiCode.BOLD + AinsiCode.RED + currentRouteInfo.toString() + AinsiCode.RESET + " from "
+                    + AinsiCode.BOLD + AinsiCode.RED + tripStartStop.getName() + AinsiCode.RESET + " at " + AinsiCode.BOLD + 
+                    AinsiCode.RED + depTimeStr + AinsiCode.RESET + " to " + AinsiCode.BOLD + AinsiCode.RED + 
+                    previousStop.getName() + AinsiCode.RESET + " (" + arrTimeStr + ")."
+                );
             }
         }
     }
@@ -254,16 +273,16 @@ public class Solver extends AbstractSolver {
 
         System.out.println(
                 AinsiCode.BOLD + "\nHere are the directions for the shortest route from " +
-                        AinsiCode.RED + AinsiCode.UNDERLINE + pDepName + AinsiCode.RESET + AinsiCode.BOLD +
-                        " to " + AinsiCode.RED + AinsiCode.UNDERLINE + pArrName + AinsiCode.RESET + AinsiCode.BOLD
+                        AinsiCode.RED + pDepName + AinsiCode.RESET + AinsiCode.BOLD +
+                        " to " + AinsiCode.RED + pArrName + AinsiCode.RESET + AinsiCode.BOLD
                         +
-                        ", departing at " + AinsiCode.RED + AinsiCode.UNDERLINE + TimeConversion.fromSeconds(tDep) +
+                        ", departing at " + AinsiCode.RED + TimeConversion.fromSeconds(tDep) +
                         AinsiCode.RESET + AinsiCode.BOLD + " :\n" + AinsiCode.RESET);
 
         printInstructions(finalPath);
 
         System.out.println(
-                AinsiCode.BOLD + AinsiCode.RED + "You will arrive at " + stopIdToStop.get(pArrIdEarliest).getName()
+                AinsiCode.BOLD + AinsiCode.UNDERLINE + AinsiCode.RED + "You will arrive at " + stopIdToStop.get(pArrIdEarliest).getName()
                         + " at " + TimeConversion.fromSeconds(tArrEarliest) + AinsiCode.RESET);
     }
 
