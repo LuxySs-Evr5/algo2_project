@@ -58,7 +58,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
     /**
      * Displays instructions for completing the journey.
      */
-    private void displayJourney(Map<String, ProfileFunction<CriteriaTracker>> S, String pDepId,
+    private void displayJourney(Map<String, ProfileFunction> S, String pDepId,
             String pArrId, int tDep,
             CriteriaTracker criteriaTracker) {
 
@@ -104,7 +104,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
      * user to select one. Returns the CriteriaTracker corresponding to the select
      * journey.
      */
-    CriteriaTracker promptJourney(Map<String, ProfileFunction<CriteriaTracker>> S, String pDepId, int tDep) {
+    CriteriaTracker promptJourney(Map<String, ProfileFunction> S, String pDepId, int tDep) {
         Map<CriteriaTracker, Pair<Integer, Movement>> results = S.get(pDepId).evaluateAt(tDep);
 
         // find journeys dominated by other journeys that we can take
@@ -244,7 +244,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
         // ### init data structure
 
         // stopId -> stop's ProfileFunction
-        Map<String, ProfileFunction<CriteriaTracker>> S = new HashMap<>();
+        Map<String, ProfileFunction> S = new HashMap<>();
 
         // tripId -> Map<CriteriaTracker -> (tArr for this journey + last Movement
         // taken)>
@@ -267,7 +267,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
 
         // for all stops x do S[x] ← {(∞, ∞)}
         stopIdToStop.forEach((stopId, stop) -> {
-            S.put(stopId, new ProfileFunction<CriteriaTracker>());
+            S.put(stopId, new ProfileFunction());
         });
 
         // for all trips x do T [x] ← ∞;
@@ -291,7 +291,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
             // without creating tau1/2/3 temporarily.
             Map<CriteriaTracker, Pair<Integer, Movement>> tauC = new HashMap<>();
 
-            ProfileFunction<CriteriaTracker> sCPArr = S.get(c.getPArr().getId());
+            ProfileFunction sCPArr = S.get(c.getPArr().getId());
 
             // τ1 : corresponds to "take c and then walk to pArr"
             // Since D doesn't store travel times but footpaths, and there is no footpath
@@ -381,7 +381,7 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                                     e -> e.getKey().copy(),
                                     e -> new Pair<>(e.getValue().getKey(), e.getValue().getValue()))));
 
-            ProfileFunction<CriteriaTracker> sCPDep = S.get(c.getPDep().getId());
+            ProfileFunction sCPDep = S.get(c.getPDep().getId());
             boolean atLeastOneNotDominated = sCPDep.insert(c.getTDep(), tauC);
 
             // Propagate into incoming footpaths only if at least one entry from tauC was
