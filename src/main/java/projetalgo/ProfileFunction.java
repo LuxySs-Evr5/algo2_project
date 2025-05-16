@@ -8,10 +8,10 @@ import java.util.Map;
 
 import javafx.util.Pair;
 
-public class ProfileFunction<T extends CriteriaTracker> {
+public class ProfileFunction {
     // List<Pair<depatureTime, Map<CriteriaTracker --> Pair<arrivalTime,
     // movement>>>>, sorted by decreasing depatureTime
-    private List<Pair<Integer, Map<T, Pair<Integer, Movement>>>> entries;
+    private List<Pair<Integer, Map<CriteriaTracker, Pair<Integer, Movement>>>> entries;
 
     public ProfileFunction() {
         this.entries = new ArrayList<>();
@@ -31,7 +31,7 @@ public class ProfileFunction<T extends CriteriaTracker> {
         }
 
         for (int i = firstReachableEntryIdx; i >= 0; i--) {
-            Map<T, Pair<Integer, Movement>> map = entries.get(i).getValue();
+            Map<CriteriaTracker, Pair<Integer, Movement>> map = entries.get(i).getValue();
             if (map.containsKey(criteriaTracker)) {
                 Movement movement = map.get(criteriaTracker).getValue();
                 return movement;
@@ -82,7 +82,7 @@ public class ProfileFunction<T extends CriteriaTracker> {
      * Inserts new partial journeys departing at tDep.
      *
      * @param tDep               departure time (in seconds)
-     * @param newPartialJourneys a map from each CriteriaTracker (T) to a Pair of
+     * @param newPartialJourneys a map from each CriteriaTracker to a Pair of
      *                           (arrivalTime, movement), where arrival time is the
      *                           arrival time at the destination and movement is the
      *                           next connection/footpath to take if following
@@ -91,27 +91,27 @@ public class ProfileFunction<T extends CriteriaTracker> {
      * @return True if at least one newPartialJourneys has been inserted (meaning it
      *         wasn't dominated); false otherwise.
      */
-    public boolean insert(int tDep, Map<T, Pair<Integer, Movement>> newPartialJourneys) {
+    public boolean insert(int tDep, Map<CriteriaTracker, Pair<Integer, Movement>> newPartialJourneys) {
         // 1. find the index of the last entry (from the back) whose key is <= tDep
         int firstReachableEntryIdx = getFirstReachableEntry(tDep);
 
         // 2. filter dominated journeys in newPartialJourneys
-        Iterator<Map.Entry<T, Pair<Integer, Movement>>> outerIt = newPartialJourneys.entrySet().iterator();
+        Iterator<Map.Entry<CriteriaTracker, Pair<Integer, Movement>>> outerIt = newPartialJourneys.entrySet().iterator();
 
         while (outerIt.hasNext()) {
-            Map.Entry<T, Pair<Integer, Movement>> entryCandidate = outerIt.next();
-            T critCand = entryCandidate.getKey();
+            Map.Entry<CriteriaTracker, Pair<Integer, Movement>> entryCandidate = outerIt.next();
+            CriteriaTracker critCand = entryCandidate.getKey();
             int tArrCand = entryCandidate.getValue().getKey();
 
             boolean dominated = false;
 
             // 1) check domination by any other new journey
-            for (Map.Entry<T, Pair<Integer, Movement>> entryOther : newPartialJourneys.entrySet()) {
+            for (Map.Entry<CriteriaTracker, Pair<Integer, Movement>> entryOther : newPartialJourneys.entrySet()) {
                 if (entryOther == entryCandidate) {
                     continue;
                 }
 
-                T critOther = entryOther.getKey();
+                CriteriaTracker critOther = entryOther.getKey();
                 int tArrOther = entryOther.getValue().getKey();
 
                 if ((critOther.dominates(critCand) && tArrOther <= tArrCand)
@@ -127,8 +127,8 @@ public class ProfileFunction<T extends CriteriaTracker> {
 
             // 2) check domination by any old journey
             for (int i = 0; i <= firstReachableEntryIdx && !dominated; i++) {
-                for (Map.Entry<T, Pair<Integer, Movement>> entryOld : entries.get(i).getValue().entrySet()) {
-                    T critOld = entryOld.getKey();
+                for (Map.Entry<CriteriaTracker, Pair<Integer, Movement>> entryOld : entries.get(i).getValue().entrySet()) {
+                    CriteriaTracker critOld = entryOld.getKey();
                     int tArrOld = entryOld.getValue().getKey();
 
                     if ((critOld.dominates(critCand) && tArrOld <= tArrCand) || (critOld.equals(critCand)
@@ -163,7 +163,7 @@ public class ProfileFunction<T extends CriteriaTracker> {
         if (createNewBag) {
             // create a new map at insertionIdx with remaining newPartialJourneys entries
             entries.add(insertionIdx,
-                    new Pair<Integer, Map<T, Pair<Integer, Movement>>>(tDep, newPartialJourneys));
+                    new Pair<Integer, Map<CriteriaTracker, Pair<Integer, Movement>>>(tDep, newPartialJourneys));
         } else {
             // add remaining newPartialJourneys entries to the map at insertionIdx
             entries.get(insertionIdx).getValue().putAll(newPartialJourneys);
@@ -172,19 +172,19 @@ public class ProfileFunction<T extends CriteriaTracker> {
         // 4. remove partialJourneys that leave at/after tDep and that are now dominated
         // by the remaining newPartialJourneys
         for (int i = insertionIdx; i < entries.size(); i++) {
-            Pair<Integer, Map<T, Pair<Integer, Movement>>> entry = entries.get(i);
+            Pair<Integer, Map<CriteriaTracker, Pair<Integer, Movement>>> entry = entries.get(i);
 
-            Map<T, Pair<Integer, Movement>> existingJourneys = entry.getValue();
-            Iterator<Map.Entry<T, Pair<Integer, Movement>>> it = existingJourneys.entrySet().iterator();
+            Map<CriteriaTracker, Pair<Integer, Movement>> existingJourneys = entry.getValue();
+            Iterator<Map.Entry<CriteriaTracker, Pair<Integer, Movement>>> it = existingJourneys.entrySet().iterator();
 
             while (it.hasNext()) {
-                Map.Entry<T, Pair<Integer, Movement>> oldEntry = it.next();
-                T oldCriteria = oldEntry.getKey();
+                Map.Entry<CriteriaTracker, Pair<Integer, Movement>> oldEntry = it.next();
+                CriteriaTracker oldCriteria = oldEntry.getKey();
                 int oldTArr = oldEntry.getValue().getKey();
 
                 // check if this old journey is now dominated by any new one
-                for (Map.Entry<T, Pair<Integer, Movement>> newEntry : newPartialJourneys.entrySet()) {
-                    T newCriteria = newEntry.getKey();
+                for (Map.Entry<CriteriaTracker, Pair<Integer, Movement>> newEntry : newPartialJourneys.entrySet()) {
+                    CriteriaTracker newCriteria = newEntry.getKey();
                     int newTArr = newEntry.getValue().getKey();
 
                     if ((newCriteria.dominates(oldCriteria) && newTArr <= oldTArr)
@@ -208,14 +208,14 @@ public class ProfileFunction<T extends CriteriaTracker> {
      * time. Returns a map from CriteriaTracker to its best (arrivalTime, movement)
      * pair.
      */
-    public Map<T, Pair<Integer, Movement>> evaluateAt(int tDep) {
-        Map<T, Pair<Integer, Movement>> ret = new HashMap<>();
+    public Map<CriteriaTracker, Pair<Integer, Movement>> evaluateAt(int tDep) {
+        Map<CriteriaTracker, Pair<Integer, Movement>> ret = new HashMap<>();
 
         // all the entries that leave at/after tdep
         for (int i = 0; i <= getFirstReachableEntry(tDep); i++) {
-            for (Map.Entry<T, Pair<Integer, Movement>> entry : entries.get(i).getValue().entrySet()) {
-                // if multiple times the same T, put at that T key the pair<arrivalTime,
-                // Movement> that has the earliest arrivalTime
+            for (Map.Entry<CriteriaTracker, Pair<Integer, Movement>> entry : entries.get(i).getValue().entrySet()) {
+                // if multiple times the same CriteriaTracker, put at that CriteriaTracker key
+                // the pair<arrivalTime, Movement> that has the earliest arrivalTime
                 Pair<Integer, Movement> pairCurrentlyAtKey = ret.get(entry.getKey());
                 if (pairCurrentlyAtKey == null) {
                     ret.put(entry.getKey(), entry.getValue());
@@ -240,15 +240,15 @@ public class ProfileFunction<T extends CriteriaTracker> {
         sb.append("ProfileFunction:\n");
 
         for (int i = entries.size() - 1; i >= 0; i--) {
-            Pair<Integer, Map<T, Pair<Integer, Movement>>> entry = entries.get(i);
+            Pair<Integer, Map<CriteriaTracker, Pair<Integer, Movement>>> entry = entries.get(i);
 
             int departureTime = entry.getKey();
-            Map<T, Pair<Integer, Movement>> criteriaMap = entry.getValue();
+            Map<CriteriaTracker, Pair<Integer, Movement>> criteriaMap = entry.getValue();
 
             sb.append("  Departure Time: ").append(TimeConversion.fromSeconds(departureTime)).append("\n");
 
-            for (Map.Entry<T, Pair<Integer, Movement>> mapEntry : criteriaMap.entrySet()) {
-                T criteria = mapEntry.getKey();
+            for (Map.Entry<CriteriaTracker, Pair<Integer, Movement>> mapEntry : criteriaMap.entrySet()) {
+                CriteriaTracker criteria = mapEntry.getKey();
                 Pair<Integer, Movement> value = mapEntry.getValue();
                 int arrivalTime = value.getKey();
                 Movement movement = value.getValue();
