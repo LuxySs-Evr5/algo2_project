@@ -74,22 +74,30 @@
 Les transports en commun jouent un rôle central dans la mobilité en Belgique,
 où de nombreux citoyens dépendent quotidiennement des bus, trams, métros et
 trains pour se déplacer. Déterminer l’itinéraire le plus rapide entre deux
-points constitue un enjeu crucial. Ce rapport présente deux variantes d’un
-algorithme de plus court chemin prenant en compte les trajets multimodaux, i.e.
-pouvant combiner différents modes de transport en commun. Celles-ci prennent
-également en compte, des segments de marche à pied entre les arrêts. Les deux
-algorithmes sont des variantes du Connection Scan Algorithm (CSA)
-\cite{ConnectionScanAlgorithmLong:2017}. Dans un premier temps, nous détaillerons
-le fonctionnement et notre implémentation du CSA basique qui optimise seulement
-le temps d'arrivée. Dans un second temps, nous présenterons notre second
-algorithme, une version légèrement modifiée du mcpCSA (où mc signifie
-"multicritère" et p "profil") présenté dans
-\cite{ConnectionScanAlgorithmLong:2017}. Ce dernier peut prendre en
-considération d'autres critères et optimise ceux-ci au sens pareto.
+arrêts constitue un enjeu crucial. Ce rapport présente deux algorithmes de plus
+court chemin prenant en compte les trajets multimodaux, i.e. pouvant combiner
+différents modes de transport en commun. Celles-ci prennent également en
+compte, des segments de marche à pied entre les arrêts. Les deux algorithmes
+sont regroupés sous le nom de \textit{Connection Scan Algorithm (CSA)} et sont
+présentés dans \cite{ConnectionScanAlgorithmLong:2017}.
+Dans un premier temps, nous expliquons
+les notions générales aux problèmes de plus court chemin dans le contexte des
+transports en commun. % TODO: il faut rajouter une section pour parler de ca
+Dans un deuxième temps, nous détaillons le fonctionnement et notre
+implémentation du CSA de base qui optimise seulement le temps d'arrivée
+(\textit{earliest arrival CSA}). Dans un troisième temps, nous présentons une
+version fortement insipirée du \textit{Pareto Connection Scan profile
+	algorithm}. Ce dernier peut prendre en considération d'autres critères, en plus
+du temps d'arrivée, et optimise ceux-ci au sens pareto.
 
 %-------------------------------------------------------------------
 
 \section{Principales classes et méthodes utilisées dans le programme java}
+
+% TODO: virer les trucs spécifiques a un seul des algos et les mettre dans la
+% section de l'algo correspondant. 
+
+% TODO: ajouter Movement
 
 \begin{itemize}
 	\item \textbf{Solver}~: classe principale contenant la logique de calcul du plus court chemin. Elle contient les méthodes
