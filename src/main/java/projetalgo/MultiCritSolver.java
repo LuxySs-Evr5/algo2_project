@@ -296,17 +296,16 @@ public class MultiCritSolver<T extends CriteriaTracker> {
                                     e -> e.getKey().copy(),
                                     e -> new Pair<>(e.getValue().getKey(), e.getValue().getValue()))));
 
-            boolean atLeastOneNotDominated = S.get(c.getPDep().getId()).insert(c.getTDep(), tauC);
+            ProfileFunction<CriteriaTracker> sCPDep = S.get(c.getPDep().getId());
+            boolean atLeastOneNotDominated = sCPDep.insert(c.getTDep(), tauC);
 
             // Propagate into incoming footpaths only if at least one entry from tauC was
-            // inserted actually inserted (not dominated) in c.pDep.
-            // (A partial journey being dominated in c.pDep implies it is also dominated in
-            // incoming footpaths of c.pDep).
+            // actually inserted (not dominated) in c.pDep. (A partial journey being
+            // dominated in c.pDep implies that it is also dominated in incoming footpaths
+            // of c.pDep).
             if (atLeastOneNotDominated) {
                 // in c.PDep as they would also be dominated in incomin footpaths.
-                Map<CriteriaTracker, Pair<Integer, Movement>> sCPDepEvaluatedAtCTDep = S
-                        .get(c.getPDep().getId())
-                        .evaluateAt(c.getTDep());
+                Map<CriteriaTracker, Pair<Integer, Movement>> sCPDepEvaluatedAtCTDep = sCPDep.evaluateAt(c.getTDep());
 
                 for (Footpath f : stopIdToIncomingFootpaths.getOrDefault(c.getPDep().getId(), EMPTY_FOOTPATH_LIST)) {
                     int fTDep = c.getTDep() - f.getTravelTime();
