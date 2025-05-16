@@ -7,7 +7,7 @@ import java.util.Map;
 import java.util.Stack;
 
 public class Solver extends AbstractSolver {
-    private HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths;
+    private final HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths;
 
     public Solver(Data data) {
         super(data);
@@ -77,7 +77,7 @@ public class Solver extends AbstractSolver {
     /**
      * Displays instructions for completing the journey.
      */
-    public void printInstructions(Stack<BestKnownEntry> finalPath) {
+    private void printInstructions(Stack<BestKnownEntry> finalPath) {
         String currentTripId = null;
         RouteInfo currentRouteInfo = null;
         Stop tripStartStop = null;
@@ -270,7 +270,7 @@ public class Solver extends AbstractSolver {
     /**
      * Generates all the footpaths.
      */
-    public void genFootpaths(double maxDistKm) {
+    private void genFootpaths(double maxDistKm) {
         BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
         double maxDistanceKm = maxDistKm;
         for (Stop sourceStop : stopIdToStop.values()) {

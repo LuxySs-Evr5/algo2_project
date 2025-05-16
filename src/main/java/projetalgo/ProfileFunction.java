@@ -11,7 +11,7 @@ import javafx.util.Pair;
 public class ProfileFunction {
     // List<Pair<depatureTime, Map<CriteriaTracker --> Pair<arrivalTime,
     // movement>>>>, sorted by decreasing depatureTime
-    private List<Pair<Integer, Map<CriteriaTracker, Pair<Integer, Movement>>>> entries;
+    private final List<Pair<Integer, Map<CriteriaTracker, Pair<Integer, Movement>>>> entries;
 
     public ProfileFunction() {
         this.entries = new ArrayList<>();
@@ -163,7 +163,7 @@ public class ProfileFunction {
         if (createNewBag) {
             // create a new map at insertionIdx with remaining newPartialJourneys entries
             entries.add(insertionIdx,
-                    new Pair<Integer, Map<CriteriaTracker, Pair<Integer, Movement>>>(tDep, newPartialJourneys));
+                    new Pair<>(tDep, newPartialJourneys));
         } else {
             // add remaining newPartialJourneys entries to the map at insertionIdx
             entries.get(insertionIdx).getValue().putAll(newPartialJourneys);
@@ -197,7 +197,7 @@ public class ProfileFunction {
             }
         }
 
-        return newPartialJourneys.size() > 0;
+        return !newPartialJourneys.isEmpty();
     }
 
     /**

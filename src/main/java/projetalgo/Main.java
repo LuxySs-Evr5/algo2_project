@@ -205,14 +205,21 @@ public class Main {
                     System.out.println("Exiting the program ...");
                     System.exit(0);
                 }
+                
                 SolverType solverType;
-                if (solverTypeStr.equals("0")) {
-                    solverType = SolverType.EARLIEST_ARRIVAL;
-                } else if (solverTypeStr.equals("1")) {
-                    solverType = SolverType.MULTI_CRIT;
-                } else {
-                    instruction = "Invalid input. Please enter '0' or '1': ";
-                    continue;
+                switch (solverTypeStr) {
+                    case "0" -> {
+                        solverType = SolverType.EARLIEST_ARRIVAL;
+                        break;
+                    }
+                    case "1" -> {
+                        solverType = SolverType.MULTI_CRIT;
+                        break;
+                    }
+                    default -> {
+                        instruction = "Invalid input. Please enter '0' or '1': ";
+                        continue;
+                    }
                 }
 
                 boolean running = true;
