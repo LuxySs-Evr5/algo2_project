@@ -31,7 +31,7 @@ public class RouteInfo {
 
     @Override
     public String toString() {
-        return transportOperator + " " + transportType + " line " + routeId + " (" + routeName + ")";
+        return transportOperator + " " + transportType + " " + routeId + " (" + routeName + ")";
     }
 
     @Override

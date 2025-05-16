@@ -58,6 +58,8 @@ Lors de l'exécution, le programme :
 
 4. Affiche le chemin calculé en détail avec toutes les instructions de connexions.
 
+Le programme considère une vitesse de marche de 5 km/h.
+
 ## Structure des fichiers GTFS
 
 Les sous-dossiers portant le nom des opérauteurs se situant dans `./GTFS/` doivent contenir les 4 fichiers suivants :
