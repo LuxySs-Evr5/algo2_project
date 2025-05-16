@@ -222,12 +222,12 @@ public class Main {
                         System.out.println(AinsiCode.BOLD + "\n=== Create a New Trip ===" + AinsiCode.RESET);
 
                         List<String> pDepIds = getStopInput(solver, "Enter the departure stop: ", false);
-                        if (pDepIds == null) {
+                        if (pDepIds == null || pDepIds.isEmpty()) {
                             System.out.println("Invalid stop. Please try again.");
                             continue;
                         }
                         List<String> pArrIds = getStopInput(solver, "Enter the arrival stop: ", false);
-                        if (pArrIds == null) {
+                        if (pArrIds == null || pArrIds.isEmpty()) {
                             System.out.println("Invalid stop. Please try again.");
                             continue;
                         }

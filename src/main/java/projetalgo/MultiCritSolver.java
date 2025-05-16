@@ -142,7 +142,8 @@ public class MultiCritSolver extends AbstractSolver {
         int choice = -1;
         while (true) {
             try {
-                choice = Integer.parseInt(InteractiveConsole.ask("Enter the number of the journey you want to choose: "));
+                choice = Integer
+                        .parseInt(InteractiveConsole.ask("Enter the number of the journey you want to choose: "));
                 if (choice >= 0 && choice < options.size()) {
                     break;
                 } else {
@@ -229,6 +230,11 @@ public class MultiCritSolver extends AbstractSolver {
      */
     public <T extends CriteriaTracker> void solve(Supplier<T> criteriaTrackerFactory, String pDepId, String pArrId,
             int tDep) {
+
+        if (pDepId.equals(pArrId)) {
+            System.out.println("You are already at your destination");
+            return;
+        }
 
         // TODO: comment out the tau2 and T stuff.
 
