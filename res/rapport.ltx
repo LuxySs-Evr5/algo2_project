@@ -67,10 +67,7 @@
 
 \section{Introduction}
 
-% TODO: par sûr du "au sens pareto"
-
-% TODO: changer les verbes au futur "détaillerons" etc
-
+% TODO: check que cette intro reprend bien toutes les grandes sections (et pas en trop)
 Les transports en commun jouent un rôle central dans la mobilité en Belgique,
 où de nombreux citoyens dépendent quotidiennement des bus, trams, métros et
 trains pour se déplacer. Déterminer l’itinéraire le plus rapide entre deux
@@ -480,7 +477,8 @@ le CSA respecte bien les deux~\hyperref[item:dagcriteresshortestpath]{critères
 
 \subsection{Complexité}
 
-% TODO complexité
+% TODO complexité temporelle
+% TODO complexité spatiale
 
 
 %-------------------------------------------------------------------
@@ -609,6 +607,7 @@ $y$ en $t2$.\\
 
 % TODO: check si ca serait pas mieux d'expliquer ca avant de mettre le
 % contre-exemple
+% TODO: pourquoi on repete le fait que c'et le seul a la fin ?
 Formellement, cela est dû fait que seul le critère de temps d'arrivée le plus
 tôt respecte \textit{la condition d'échangeabilité préfixe} :
 \cite{ConnectionScanAccelerated} Soit $s_1, s_2, \dots, s_n$ un trajet optimal
@@ -630,8 +629,9 @@ optimal.\\
 tirons avantage pour notre algorithme en construisant les trajets à partir du
 point d'arrivée \cite{ConnectionScanAccelerated}.\\
 
-% TODO: séparation pour dire que ca c'est la partie qui parle du mcCSA
-
+% TODO: séparation pour dire que ca c'est la partie qui parle du mcCSA 
+% TODO: expliquer qu'on utilise le concept de domination pour mcCSA et plus de
+% fonction de cout comme plus haut
 
 Définissons le concept de \textit{domination}
 \cite{ConnectionScanAlgorithmLong:2017}: soient deux tuples $X = (x_1, \dots,
@@ -661,9 +661,8 @@ Le mcCSA permet de rśoudre le problème suivant :
 	trajets partant de $pDep$ à $tDep$ ou plus tard, et arrivant en $pArr$.
 \end{quote}
 
-% TODO: c'est bcp plus compliqué que ca car on doit garder tout ce qui part
-% plus tard
-
+% TODO: on a mis qu'il doit détermine UN ensemble mais en vrai c'est le plus
+% grand ensemble possible tel que ...
 Puisque nous construisons notre trajet en partant de l'arrivée, nous scannons
 les connections par ordre de départ décroissant. À tout instant de l'éxécution
 de l'algorithme, pour chaque arrêt $p$, l'algorithme doit déterminer un
