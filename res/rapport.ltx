@@ -890,16 +890,20 @@ Notre gestion du cas 1 ne permet que de gérer les chemins finaux, il reste nous
 à gérer les autres chemins. Nous devonc donc considérer le cas où l'utilisateur
 est arrivé au départ de $c$ en prenant un chemin.
 
-% TODO: parler du fait qu'on peut ne faire ca que quand ya eu au moins un non-dominé plus haut
-% et ca marche quand meme
 Pour ce faire, pour chaque chemin qui arrive en $c_{pDep}$, nous reutilisons le
 groupe des meilleurs trajets partiels et nous modifons chacun de ses
 \texttt{CriteriaTracker} pour que ceux-ci tiennent compte du chemin arrivant en
-$c_{pDep}$. Nous insérons chacun de ses groupes de meilleurs trajets paritels
-modifiés dans la fonction de profile du chemin correspondant.\\
+$c_{pDep}$. Nous insérons chacun de ces groupes de meilleurs trajets partiels
+modifiés dans la fonction de profile du chemin correspondant, avec le temps de
+départ $c_{tDep} - f_{travelTime}$. Lorsqu'aucun trajet partiel n'a été gardé à
+l'étape précédente (l'insertion dans des meilleurs trajets partiels dans la
+fonction de profile $S_{c_{pDep}}$), cette étape-ci n'est pas nécessaire, car
+tous ces trajets seront inévitablement aussi dominés. Cette optimization est
+appelée \textit{limited walking}~\cite{ConnectionScanAlgorithmLong:2017}.
+\\
 
-Avec ceci et le cas 1, nous tenons compte de tous les chemins excepté celui qui
-relie directemment $pDep$ à $pArr$.
+Avec ceci et le cas 1, nous tenons compte de tous les chemins, excepté celui qui
+relie directemment $pDep$ à $pArr$.\\
 
 % Distinguons les critères de domination faisant usage des données associées aux
 % trips, e.g. le nombre de transferts, le nombre de connexions effectuées en bus
