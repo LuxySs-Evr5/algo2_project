@@ -783,20 +783,22 @@ $x_1, \dots ,x_n$ et $y_1, \dots ,y_n$ par les valeurs pour chaque critère,
 e.g. $x_1$ représente le nombre de connexions en tram du trajet $j1$, de même
 pour $x_2$ mais pour le trajet $j2$.\\
 
-Le mcCSA permet de rśoudre le problème suivant :
+Le mcCSA permet de résoudre le problème suivant :
 \begin{quote}
-	Étant donné l'horaire des véhicules, un arrêt de départ $pDep$, un arrêt
-	d'arrivée $pArr$, et un temps de départ $tDep$, renvoyer le sous-ensemble
-	de trajets \textit{pareto-optimaux} par rapport à l'ensemble de tous les
-	trajets partant de $pDep$ à $tDep$ ou plus tard, et arrivant en $pArr$.
+	Étant donné l'horaire, un arrêt de départ $pDep$, un arrêt d'arrivée
+	$pArr$, et un temps de départ $tDep$, et des critères de domination,
+	renvoyer le sous-ensemble de trajets \textit{pareto-optimaux} par rapport
+	aux critères de domination imposés par l'utilisateur et à l'ensemble de
+	tous les trajets partant de $pDep$ à $tDep$ ou plus tard, et arrivant en
+	$pArr$.
 \end{quote}
 
-% TODO: on a mis qu'il doit détermine UN ensemble mais en vrai c'est le plus
-% grand ensemble possible tel que ...
+% TODO: pour fonctionner on va devoir maintenir 
+
 Puisque nous construisons notre trajet en partant de l'arrivée, nous scannons
-les connections par ordre de départ décroissant. À tout instant de l'éxécution
-de l'algorithme, pour chaque arrêt $p$, l'algorithme doit déterminer un
-ensemble $\mathcal{S}_p$ de trajets tel que :
+les connections par ordre de départ décroissant. À chaque étape de l'éxécution
+de l'algorithme, pour chaque arrêt $p$, l'algorithme doit maintenir un
+ensemble de trajets partiels $\mathcal{S}_p$ tel que :
 \label{item:defProfileFunctionContent}
 \[
 	\forall j \in \mathcal{S}_p, \quad \nexists j' \in \mathcal{S}_p \text{ tel que } j'_{tDep} > j_{tDep} \text{ et } j' \text{ domine } j
@@ -807,23 +809,63 @@ où :
 \end{itemize}
 
 Nous appelons cet ensemble $\mathcal{S}_p$ la \textit{fonction de profil} de
-l'arrêt $p$. L'algorithme ajoute et supprime des trajets partiels dans les
-fonctions de profil au fur et à mesure que celui-ci scanne les connections dans
-l'ordre de départ décroissant.\\
+l'arrêt $p$. L'algorithme ajoute et supprime des trajets partiels (jusqu'à
+destination) dans les fonctions de profil au fur et à mesure que celui-ci
+scanne les connections dans l'ordre de départ décroissant. À chaque connexion
+scannée $c$ nous tentons d'ajouter tous les trajets partiels qui peuvent être
+effectués à partir de la connection $c$ dans la fonction de profile l'arrêt
+$c_{pDep}$. Ceux dominés par un trajet partiel de $\mathcal{S}_{c_{pDep}}$
+partant en $tDep$ ou plus tard, ne sont pas gardés.\\
+
+Afin de rendre le choix des critères de domination souple, nous introduisons la
+notion de \texttt{CriteriaTracker}, une classe permettant de maintenir les
+informations nécessaires à l'évaluation de tous les critères d'un trajet
+partiel donné. Les fonctions de profile gardent pour chaque temps de départ de
+trajets partiels, l'ensemble des trajets partiels concernés, chacun avec son
+\texttt{CriteriaTracker} associé.
+Lors de l'ajout des trajets partiels dans la fonction de profile de $c_{pDep}$,
+seuls sont ajoutés les trajets partiels non-dominés par les trajets-partiels
+partant en $c_{tDep}$ ou plus tard.\\
 
 Notons que ~\hyperref[item:defProfileFunctionContent]{la définition du contenu
 	d'une fonction de profil} nous autorise à conserver un trajet $j$ malgré le
 fait que celui-ci soit dominé par un trajet $j'$ si l'heure de départ de $j'$
-est antérieure à celle de $j$, c'est-à-dire : $j'_{tDep} < j_{tDep}$\\
-
-%TODO: changer le "est du au fait que"
+est antérieure à celle de $j$, c'est-à-dire~: $j'_{tDep} < j_{tDep}$
 
 Nous devons conserver ces trajets car nous construisons les trajets en partant
-du point d'arrivée : Lorsque nous ajoutons un trajet $j$ dans la fonction de
+du point d'arrivée~: Lorsque nous ajoutons un trajet $j$ dans la fonction de
 profil de l'arrêt $p$, nous n'avons aucune garantie qu'une autre connexion
 arrivant en $p$ et rendant la première connexion de $j$ atteignable existe.
 Nous devons donc conserver des alternatives à $j$, partant plus tard, celles-ci
-peuvent être dominées par $j$.
+peuvent être dominées par $j$.\\
+
+De plus, nous retirons les trajets partant avant $c_{tDep}$ qui sont dominés
+par les trajets partiels que nous venons d'ajouter, car il est préfèrable
+d'attendre et prendre ceux qui les dominent plutôt que de prendre ces trajets
+partielles dominés.\\
+
+Les trajets partiels que nous tentons d'ajouter à chaque connexion $c$ scannée peuvent résulter de trois cas \cite{ConnectionScanAlgorithmLong:2017}~:
+\begin{enumerate}
+	\item l'utilisateur n'a que trois possibilités pour continuer son trajet à partir de la connexion $c$
+	      \begin{enumerate}
+		      \item L'utilisateur peut sortir du véhicule et marcher jusqu'à la destination (s'il n'y est pas déjà).
+		      \item Il peut rester dans le même véhicule et prendre la prochaine connexion (si celle-ci existe).
+		      \item Il peut sortir du véhicule et rentrer dans un autre véhicule.
+	      \end{enumerate}
+
+	\item l'utilisateur ne peut être arrivé dans la connection $c$ que par deux moyens
+	      \begin{enumerate}
+		      \item Soit il était déjà dans le même trip que $c$ (si $c$ n'est pas la première connection de son trip),
+		      \item soit il est arrivé au départ de $c$ en prenant un chemin à pied.
+	      \end{enumerate}
+\end{enumerate}
+
+
+
+% Distinguons les critères de domination faisant usage des données associées aux
+% trips, e.g. le nombre de transferts, le nombre de connexions effectuées en bus
+% appartenant à des trips différents, de ceux faisant usage de données uniquement
+% liés aux mouvements individuels, e.g. le nombre de connexions en bus.
 
 
 % - Expliquer à quoi sert et comment est implémentée une profile function
