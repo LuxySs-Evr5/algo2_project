@@ -192,17 +192,36 @@ ainsi. Toutefois, ceux-ci les parcourent dans des ordres opposés.\ % parler du 
 
 \subsection{Construction des chemins à pied (\texttt{Footpath})}
 
-Afin de créer les objets représentant les chemins à pieds entre les arrêts proches efficacement, nous utilisons les méthodes \texttt{genFootpaths} de \texttt{Solver} et \texttt{MultiCritSolver}.
+% voir page 4
+% TODO: expliquer pourquoi c'est nécessaire
+Les algorithmes CSA~\cite{ConnectionScanAlgorithmLong:2017} requièrent que le graphe des chemins à pied
+\begin{itemize}
 
-% TODO: tres moche l'histoire de distance max
-Celles-ci prennent en paramètre \texttt{maxDistKm}, la distance maximale (en kilomètres) qu'un chemin peut parcourir à pied. Les chemins plus longs sont exclus.
+    \item soit transitivement fermé
+
+    \item satisfasse l'inégalité triangulaire
+
+\end{itemize}
+
+Une solution simple, qui respecte ces deux critères, consiste à parcourir les
+arrêts à l’aide de deux boucles for imbriquées, en considérant chaque paire de
+\texttt{Stop} appartenant à deux chemins différents (un dans chaque sens).
+Cette approche présente une complexité en $\Theta(n^2)$, ce qui entraîne des durées
+d’exécution particulièrement longue.
+
+Afin de réduire ces temps d'éxécution, nous offrons la possibilité de réduire
+le nombre de chemins à pied en ne tenant pas compte de ceux dépassant une
+certaine distance donnée. (Le graphe n'est alors plus transitivement fermé).
+Nous pouvons ajuster cette distance via le paramètre \texttt{maxDistKm} des
+méthodes \texttt{genFootpaths} de \texttt{Solver} et \texttt{MultiCritSolver},
+permettant de créer les instances de \texttt{Footpaths}.
 
 Il existe deux implémentations distinctes de \texttt{genFootpaths} car les deux solveurs ont des structures de stockage différentes :
 \begin{itemize}
 
-	\item \texttt{Solver} requiert une map associant chaque \texttt{stopId} à la liste des \texttt{Footpath} *partant* de cet arrêt.
+	\item \texttt{Solver} requiert une map associant chaque \texttt{stopId} à la liste des \texttt{Footpath} partant de cet arrêt.
 
-	\item \texttt{MultiCritSolver} requiert une map associant chaque \texttt{stopId} à la liste des \texttt{Footpath} *arrivant* à cet arrêt.
+	\item \texttt{MultiCritSolver} requiert une map associant chaque \texttt{stopId} à la liste des \texttt{Footpath} arrivant à cet arrêt.
 
 \end{itemize}
 
@@ -224,8 +243,9 @@ L'algorithme de génération s'effectue ainsi :
 % TODO: expliquer en quoi consiste la recherche naive des voisins
 % WARN: BallTree is not in O(n) in worst case, I fucked-up very bad
 % TODO: fix this huge mistake
-L'avantage du \texttt{BallTree} réside dans sa complexité de recherche : alors qu’une recherche naïve des voisins aurait une complexité en $\mathcal{O}(n^2)$, celle du \texttt{BallTree} est en $\mathcal{O}(n)$ dans le pire des cas, grâce à sa structure hiérarchique. Cette amélioration permet de rendre l’étape de génération des chemins à pied plus rapide.\\
-
+L'avantage du \texttt{BallTree} réside dans sa complexité temporelle avantageuse pour la recherche des arrêts voisins d'un arrêt donné dans un certain rayon :
+alors qu’une recherche naïve des voisins aurait une complexité en $\mathcal{O}(n^2)$, celle du \texttt{BallTree} est en $\mathcal{O}(n)$ dans le pire des cas, grâce à sa structure hiérarchique.
+Cette amélioration permet de rendre l’étape de génération des chemins à pied plus rapide.\\
 
 \subsection{Complexité du chargement}
 % TODO: complexité temporelle (balltree + tim sort)
@@ -233,7 +253,7 @@ L'avantage du \texttt{BallTree} réside dans sa complexité de recherche : alors
 
 %-------------------------------------------------------------------
 
-\section{CSA Basique}
+\section{CSA de base (arrivée la plus tôt)}
 
 % TODO: expliquer la big flaw du CSA basique, comme on update seulement les
 % footpaths directement connectés au connexions scannées, (on progpage pas plus
