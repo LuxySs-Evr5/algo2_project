@@ -91,32 +91,50 @@ du temps d'arrivée, et optimise ceux-ci au sens pareto.
 
 \section{Principales classes et méthodes utilisées dans le programme java}
 
-% TODO: virer les trucs spécifiques a un seul des algos et les mettre dans la
-% section de l'algo correspondant. 
-
-% TODO: ajouter Movement
-
 \begin{itemize}
-	\item \textbf{Solver}~: classe principale contenant la logique de calcul du plus court chemin. Elle contient les méthodes
-	      \begin{itemize}
-		      \item \texttt{solve()}~: cœur de l’algorithme, calcule le plus court chemin à partir des données.
 
-		      \item \texttt{reconstructSolution()} et \texttt{printInstructions()}~: reconstruisent le chemin optimal et affichent les instructions de trajet.
+	% TODO: bizarre comment on alterne entre pas-phrase et phrase
 
-		      \item \texttt{loadData()} et \texttt{loadOneCsvSet()}~: chargent les différentes données des horaires et arrêts.
-	      \end{itemize}
+	\item \textbf{Coord}~: représente des coordonnées géographiques. Permet de calculer la distance du grand cercle séparant séparant deux instances de \texttt{Coord} via la méthode \texttt{distanceTo()}. Pour ce faire, cette dernière utilise la formule de \texttt{Haversine} \cite{haversineFormula}.
+
+	\item \textbf{Stop}~: représente un arrêt. Cette classe contient essentiellement l’identifiant,le nom et les coordonnées géographiques de l'arrêt.
 
 	\item \textbf{Connection}~: classe représentant un trajet direct entre deux arrêts, avec une heure de départ et d'arrivée ainsi que le point de départ et d'arrivée du trajet.
 
-	\item \textbf{Footpath}~: représente un déplacement à pied entre deux arrêts proches avec le point de départ et d'arrivée.
+	\item \textbf{Footpath}~: représente un chemin à pied entre deux arrêts proches avec le point de départ et d'arrivée.
 
-	\item \textbf{Stop}~: représente un arrêt. Cette classe contient l’identifiant de l'arrêt, son nom et ses coordonnées géographiques.
+	\item \textbf{Movement}~: sert d'abstraction pour \texttt{Footpath} et \texttt{Connection}.
 
-	\item \textbf{Coord}~: représente des coordonnées géographiques et permet de calculer les distances à l’aide de la formule de \texttt{Haversine} pour la méthode \texttt{distanceTo()} qui détermine la distance entre deux \texttt{Coord}.
+	\item \textbf{BallTree}~: % TODO
 
-	\item \textbf{BestKnownEntry}~: associe à un arrêt le meilleur temps d’arrivée connu ainsi que l’action (trajet ou marche) permettant d’y parvenir.
+	      % TODO: is this one really necessary ?
+	\item \textbf{TransportType}~: enumérée contenant les différents moyens de déplacement.
 
-	\item \textbf{Main}~: initialise un \texttt{Solver}, charge les différentes données grâce à la méthode \texttt{CsvSet()} et les passe au \texttt{Solver}, et essaie de trouver un plus court chemin entre deux arrêts à une heure de départ donnée.
+	\item \textbf{Solver}~: classe regroupant la logique nécessaire pour le CSA de base. Les méthodes essentielles :
+
+	      \begin{itemize}
+		      \item \texttt{solve()}~: implémentation de l'algorithme CSA de base.
+
+		            % TODO: might wanna split this in two
+		      \item \texttt{reconstructSolution()} et \texttt{printInstructions()}~: reconstruisent le chemin optimal et affichent les instructions de trajet.
+
+		      \item \texttt{genFootPaths()} génère les chemins à pied en ne gardant que ceux dont la longueur est inférieur ou égale celle précisée, à l'aide de la classe \texttt{BallTree}.
+	      \end{itemize}
+
+	\item \textbf{MultiCritSolver}~: classe regroupant la logique nécessaire pour le CSA multicritère. Les méthodes essentielles :
+
+	      \begin{itemize}
+		      \item \texttt{solve()}~: implémentation de l'algorithme CSA multicritère.
+
+		      \item \texttt{displayJourney()}~: affiche les instructions de trajet.
+
+		      \item \texttt{genFootPaths()} génère les chemins à pied en ne gardant que ceux dont la longueur est inférieur ou égale celle précisée, à l'aide de la classe \texttt{BallTree}.
+	      \end{itemize}
+
+	\item \textbf{AbstractSolver}~: Regroupe les fonctions communes à Solver et AbstractSolver.
+
+	\item \textbf{Main}~: % TODO
+
 \end{itemize}
 
 %-------------------------------------------------------------------
