@@ -328,25 +328,34 @@ uns des autres, et calcule le plus court trajet parmi ceux qui partent d’un de
 arrêts de départ possibles et arrivent à un des arrêts d’arrivée possibles.
 
 \subsection{Structure de données}
-Notre programme utilise principalement des \texttt{hashmaps}, des \texttt{listes} et une \texttt{pile} comme structures de données.
+
+Notre implémentation utilise principalement des \texttt{HashMap}, des
+\texttt{ArrayList} et une \texttt{Stack}.
 
 \begin{itemize}
-	\item \texttt{HashMap<String, Stop> stopIdToStop}~: permet d’associer l'identifiant d'un stop à l'objet \texttt{Stop}.
 
-	\item \texttt{HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths}~: pour chaque arrêt, on garde une liste des chemins accessibles à pied.
+    \item \texttt{HashMap<String, Stop> stopIdToStop}~: permet d’associer
+        l'identifiant d'un arrêt à l'objet \texttt{Stop}.
 
-	\item \texttt{List<Connection> connections}~: liste des connexions triée par heure de départ croissante.
+    \item \texttt{HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths}~:
+        associe à chaque arrêt une liste contenant les différentes instances de
+        \texttt{Footpath} qui démarrent de cet arrêt.
 
-	\item \texttt{Map<String, BestKnownEntry> bestKnown}~: permet de garder à
-	      jour le meilleur temps d’arrivée connu pour chaque arrêt, ainsi que le
-	      denier mouvement (trajet ou marche) qui nous y mène. Pour chaque arrêt,
-	      si son identifiant unique est \texttt{stopId}, alors \texttt{bestKnown}
-	      à l'entrée \texttt{stopId} peut se lire comme "nous parvenons en
-	      \texttt{stopId} à l'instant \texttt{bestKnown.get(stopId).getTArr()} en
-	      empruntant un trajet se terminant par
-	      \texttt{bestKnown.get(stopId).getMovement()}".
+    \item \texttt{List<Connection> connections}~: liste des connexions triée
+        par heure de départ croissante.
 
-	\item \texttt{Stack<BestKnownEntry>}~: utilisée pour reconstruire le chemin optimal, afin d'afficher les instructions dans l’ordre.
+    \item \texttt{Map<String, BestKnownEntry> bestKnown}~: permet de garder à
+        jour le meilleur temps d’arrivée connu pour chaque arrêt, ainsi que le
+        denier mouvement (trajet ou marche) qui nous y mène. Pour chaque arrêt,
+        si son identifiant unique est \texttt{stopId}, alors \texttt{bestKnown}
+        à l'entrée \texttt{stopId} peut se lire comme "nous parvenons en
+        \texttt{stopId} à l'instant \texttt{bestKnown.get(stopId).getTArr()} en
+        empruntant un trajet se terminant par
+        \texttt{bestKnown.get(stopId).getMovement()}".
+
+    \item \texttt{Stack<BestKnownEntry>}~: utilisée pour reconstruire le chemin
+        optimal, afin d'afficher les instructions dans l’ordre.
+
 \end{itemize}
 
 %-------------------------------------------------------------------
@@ -912,6 +921,8 @@ le cas 2 commenté, pour ne pas impacter les performances.\\
 %-------------------------------------------------------------------
 
 \subsection{Structure de données}
+
+
 
 % - Expliquer à quoi sert et comment est implémentée une profile function
 % - Expliquer "dominer" "optimisation pareto"
