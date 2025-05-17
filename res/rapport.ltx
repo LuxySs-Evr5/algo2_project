@@ -321,7 +321,7 @@ Le CSA de base permet de résoudre le problème suivant :
 	$tDep$.
 \end{quote}
 
-Notre version du CSA basique accepte des noms d’arrêts, qui ne sont pas
+Notre version du CSA de base accepte des noms d’arrêts, qui ne sont pas
 forcément uniques, au lieu des identifiants uniques. Elle considère tous les
 arrêts correspondant au nom de départ et au nom d’arrivée, supposés proches les
 uns des autres, et calcule le plus court trajet parmi ceux qui partent d’un des
@@ -353,9 +353,9 @@ Notre programme utilise principalement des \texttt{hashmaps}, des \texttt{listes
 
 \subsection{Description de l'algorithme}
 
-Dans cette section, nous définissons les différentes notions cruciales pour
-comprendre l'algorithme, puis nous détaillons le fonctionnement de
-l'algorithme \texttt{Connection Scan Algorithm (CSA) basique}.
+Dans cette sous-section, nous définissons d'abord les différentes notions
+cruciales pour comprendre l'algorithme \texttt{CSA de base (arrivée la plus
+	tôt)}, puis nous détaillons son fonctionnement.
 
 %TODO: séparateur pour dire que ca c'est les notions importantes
 
@@ -518,11 +518,15 @@ l'algorithme \texttt{Connection Scan Algorithm (CSA) basique}.
 
 \subsection{Preuve d'exactitude}
 
-D'après ~\cite{critèresAlgoPlusCourtCheminDAG}, pour résoudre le problème du
-plus court chemin (\textit{chemin} au sens théorie des graphes, correspondant
-donc à un \textit{trajet} dans notre cas, à ne pas confondre avec les chemins
-au sens instances de \texttt{Footpath}) dans un graphe dirigé acyclique, notre
-algorithme doit :
+Dans cette sous-section, nous montrons que l'algorihme \texttt{CSA de base
+	(arrivée la plus tôt)} fournit une solution optimal (pour rappelle, en
+supposant que \texttt{maxDistKm} soit suffisament grand).
+
+Nous basons notre preuve sur ~\cite{critèresAlgoPlusCourtCheminDAG}, selon
+lequel, pour résoudre le problème du plus court chemin (\textit{chemin} au sens
+théorie des graphes, correspondant donc à un \textit{trajet} dans notre cas, à
+ne pas confondre avec les chemins au sens instances de \texttt{Footpath}) dans
+un graphe dirigé acyclique, notre algorithme doit :
 \label{item:dagcriteresshortestpath}
 \begin{itemize}
 
@@ -571,9 +575,10 @@ ne sont donc potentiellement plus atteignables. \\
 
 % -----------------------------
 
-Puisque nous avons un graphe dirigé acyclique, il nous suffit de vérifier que
-le CSA respecte bien les deux~\hyperref[item:dagcriteresshortestpath]{critères
-	pour les algorithmes de plus court chemin dans un DAG}:
+Étant donné que nous avons un graphe dirigé acyclique, il nous suffit de
+vérifier que le CSA respecte bien les
+deux~\hyperref[item:dagcriteresshortestpath]{critères pour les algorithmes de
+	plus court chemin dans un DAG}:
 
 \begin{itemize}
 
