@@ -105,6 +105,7 @@ du temps d'arrivée, et optimise ceux-ci au sens pareto.
 	\item \textbf{Connection}~: classe représentant un trajet direct entre deux arrêts, avec une heure de départ et d'arrivée ainsi que le point de départ et d'arrivée du trajet.
 
 	\item \textbf{Footpath}~: représente un chemin à pied entre deux arrêts proches avec le point de départ et d'arrivée.
+	      Celui-ci possède une distance ainsi qu'une durée de trajet. La durée de trajet est calculée en supposant que l'utilisateur marche à une vitesse de 5~km/h.
 
 	\item \textbf{Movement}~: sert d'abstraction pour \texttt{Footpath} et \texttt{Connection}.
 
@@ -140,8 +141,6 @@ du temps d'arrivée, et optimise ceux-ci au sens pareto.
 
 \end{itemize}
 
-% TODO: make a note to say that it is normal that there are two different genFootpaths 
-
 %-------------------------------------------------------------------
 
 \section{Chargement des données GTFS}
@@ -163,8 +162,8 @@ Le processus de chargement s'effectue en trois grandes étapes :
 	      % TODO: surtout pas oublier de dire qu'on doit trier les connections par heure de départ
 
 	\item Instanciation du \texttt{Solver} et/ou du \texttt{MultiCritSolver} à l’aide de l’objet \texttt{Data} (passé aux constructeurs).
-        Le constructeur \texttt{Solver} et de \texttt{MultiCritSolver} appellent leur méthode \texttt{genFootpaths} pour générer les chemins
-        à pied sur base des instances de \texttt{Stop}. % TODO: phrase bof
+	      Le constructeur \texttt{Solver} et de \texttt{MultiCritSolver} appellent leur méthode \texttt{genFootpaths} pour générer les chemins
+	      à pied sur base des instances de \texttt{Stop}. % TODO: phrase bof
 
 \end{enumerate}
 
@@ -193,18 +192,34 @@ ainsi. Toutefois, ceux-ci les parcourent dans des ordres opposés.\ % parler du 
 
 \subsection{Construction des chemins à pied (\texttt{Footpath})}
 
-Avant de pouvoir exécuter l'algorithme du plus court chemin, il est également nécessaire de construire les chemins à pied possibles (\texttt{Footpath}) entre arrêts proches. Pour notre programme, nous avons décidé de limiter la marche à pied à 500 mètres à vol d'oiseau. Ce chemin sera emprunté pour rejoindre un arrêt s'il est plus rapide ou nécessaire pour un changement de ligne.\\
+Afin de créer les objets représentant les chemins à pieds entre les arrêts proches efficacement, nous utilisons les méthodes \texttt{genFootpaths} de \texttt{Solver} et \texttt{MultiCritSolver}.
 
-Pour calculer ces \texttt{Footpath}, nous utilisons le \texttt{BallTree}. Celui-ci permet de réaliser des recherches de voisinage très rapides dans un espace à plusieurs dimensions (dans notre cas, deux : latitude/longitude). Concrètement, on procède ainsi :
+% TODO: tres moche l'histoire de distance max
+Celles-ci prennent en paramètre \texttt{maxDistKm}, la distance maximale (en kilomètres) qu'un chemin peut parcourir à pied. Les chemins plus longs sont exclus.
 
+Il existe deux implémentations distinctes de \texttt{genFootpaths} car les deux solveurs ont des structures de stockage différentes :
 \begin{itemize}
-	\item Tous les arrêts sont insérés dans un \texttt{BallTree}, avec leurs coordonnées GPS.
-	\item Pour chaque arrêt, le \texttt{BallTree} est interrogé pour trouver les arrêts situés dans un rayon de 500 mètres.
-	\item Un \texttt{Footpath} est alors créé entre l’arrêt source et chacun de ses voisins, avec une durée estimée basée sur une vitesse de marche moyenne (ici, 5 km/h).
+
+	\item \texttt{Solver} requiert une map associant chaque \texttt{stopId} à la liste des \texttt{Footpath} *partant* de cet arrêt.
+
+	\item \texttt{MultiCritSolver} requiert une map associant chaque \texttt{stopId} à la liste des \texttt{Footpath} *arrivant* à cet arrêt.
+
 \end{itemize}
 
-Ces chemins à pied sont ensuite ajoutés à l’ensemble des connexions disponibles pour l’algorithme, au même titre que les trajets en transport en commun. Cela permet à l’utilisateur de combiner marche et transports publics pour atteindre sa destination le plus rapidement possible.\\
+Malgré cette différence, le procédé de construction des chemins reste identique:
+Nous utilisons un \texttt{BallTree}, une structure permettant d'effectuer des recherches de voisinage efficaces dans un espace à plusieurs dimensions (dans notre cas, deux : latitude/longitude).
+L'algorithme de génération s'effectue ainsi :
+\begin{itemize}
 
+	\item Initialiser un \texttt{BallTree} avec tous les arrêts.
+
+	\item Pour chaque arrêt source, chercher tous les arrêts voisins dans un rayon \texttt{maxDistKm}.
+	      Pour chaque voisin trouvé, créer l'objet \texttt{Footpath} avec les deux arrêts et l’ajouter à la map liant les arrêts de départ ou d'arrivée aux instances de \texttt{Footpath} (en fonction de \texttt{Solver} ou \texttt{MultiCritSolver}).
+
+\end{itemize}
+
+% TODO: Expliquer comment fonctionne la recherche et la création du BallTree 
+% cite this https://www.cs.cornell.edu/courses/cs4780/2018fa/lectures/lecturenote16.html and explain what we changed
 
 % TODO: expliquer en quoi consiste la recherche naive des voisins
 % WARN: BallTree is not in O(n) in worst case, I fucked-up very bad
