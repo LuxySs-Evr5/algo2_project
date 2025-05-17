@@ -801,20 +801,20 @@ de l'algorithme, pour chaque arrêt $p$, l'algorithme doit maintenir un
 ensemble de trajets partiels $\mathcal{S}_p$ tel que :
 \label{item:defProfileFunctionContent}
 \[
-	\forall j \in \mathcal{S}_p, \quad \nexists j' \in \mathcal{S}_p \text{ tel que } j'_{tDep} > j_{tDep} \text{ et } j' \text{ domine } j
+	\forall j \in S_p, \quad \nexists j' \in S_p \text{ tel que } j'_{tDep} > j_{tDep} \text{ et } j' \text{ domine } j
 \]
 où :
 \begin{itemize}
 	\item $j_{tDep}$ désigne l'heure de départ du trajet $j$,
 \end{itemize}
 
-Nous appelons cet ensemble $\mathcal{S}_p$ la \textit{fonction de profil} de
+Nous appelons cet ensemble $S_p$ la \textit{fonction de profil} de
 l'arrêt $p$. L'algorithme ajoute et supprime des trajets partiels (jusqu'à
 destination) dans les fonctions de profil au fur et à mesure que celui-ci
 scanne les connections dans l'ordre de départ décroissant. À chaque connexion
 scannée $c$ nous tentons d'ajouter tous les trajets partiels qui peuvent être
 effectués à partir de la connection $c$ dans la fonction de profile l'arrêt
-$c_{pDep}$. Ceux dominés par un trajet partiel de $\mathcal{S}_{c_{pDep}}$
+$c_{pDep}$. Ceux dominés par un trajet partiel de $S_{c_{pDep}}$
 partant en $tDep$ ou plus tard, ne sont pas gardés.\\
 
 Afin de rendre le choix des critères de domination souple, nous introduisons la
@@ -853,38 +853,53 @@ $c$~:
 	\item L'utilisateur peut sortir du véhicule et marcher jusqu'à la destination (s'il n'y est pas déjà).
 	\item Il peut rester dans le même véhicule et prendre la prochaine connexion (si celle-ci existe).
 	\item Il peut sortir du véhicule et rentrer dans un autre véhicule.
-\end{enumerate}\\
+\end{enumerate}
 % TODO: find a better way to reference 1a/b/c etc
 
-Pour le cas 1, nous insérerons un nouveau trajet partiel démarrant en $tDep$
+Pour le cas 1, nous considérons un nouveau trajet partiel démarrant en $tDep$
 dans $S_{cPdep}$, celui-ci contient un chemin (le chemin final), et une
-connection. De plus, puisque nous utilisons ce chemin final, nous ajoutons le
-trajet composé d'uniquement celui-ci dans la fonction de profile de
-$S_{c_{PArr}}$.\\
+connection. De plus, puisque ce chemin final fait partie d'un candidat, nous
+ajoutons le trajet composé d'uniquement celui-ci dans la fonction de profile de
+$S_{c_{pArr}}$.\\
 
 Pour le cas 2, nous devons considérer les meilleurs trajets partiels pour
 chaque \texttt{CriteriaTracker} (chaque combinaison de valeurs des différents
 critères) empruntant la prochaine connexion de ce trip. Pour cela, nous
-stockons dans T, pour chaque trip, ces meilleurs trajets. Celui-ci est mis à
+stockons dans $T$, pour chaque trip, ces meilleurs trajets. Celui-ci est mis à
 jour après avoir considéré les trois cas.\\
 
 Pour le cas 3, il faut envisager les meilleurs trajets que nous pouvons
 effectuer à partir de $c_{pArr}$, à nouveau, pour chaque
 \texttt{CriteriaTracker} (chaque combinaison de valeurs des différents
-critères). C'est ce que nous appellons \textit{évaluer} $\mathcal{S}_{c_{pArr}}$ au temps
+critères). C'est ce que nous appellons \textit{évaluer} $S_{c_{pArr}}$ au temps
 $c_{tArr}$.\\
 
-première connexion est atteignable, .
+Nous regroupons les résultats de l'évaluation de ces trois cas. Pour ce faire,
+si deux \texttt{CriteriaTracker} contiennent les mêmes valeurs des différents
+critères, nous prenons le meilleur temps d'arrivée des deux trajets.
+Ce groupe représente donc les meilleurs trajets possibles à partir de $c$.\\
 
+Nous utilisons ce groupe pour mettre à jour l'entrée correspondant à
+$c_{tripId}$ dans $T$, et nous insérons ces différents trajets partiels dans la
+fonction de profile $S_{c_{pDep}}$, avec le temps de départ $c_{tDep}$.\\
 
-Insérer un trajet partiel partant de $S_{cArr}$ et content uniquement le chemin final.
+Pour chaque cas, nous calculons les nouveaux \texttt{CriteriaTracker} (e.g.
+ajouter un tram au compteur de trams).\\
 
-Pour chaque cas, nous calculons les nouveaux \texttt{CriteriaTracker} (e.g. ajouter un tram au compteur).
+Notre gestion du cas 1 ne permet que de gérer les chemins finaux, il reste nous
+à gérer les autres chemins. Nous devonc donc considérer le cas où l'utilisateur
+est arrivé au départ de $c$ en prenant un chemin.
 
+% TODO: parler du fait qu'on peut ne faire ca que quand ya eu au moins un non-dominé plus haut
+% et ca marche quand meme
+Pour ce faire, pour chaque chemin qui arrive en $c_{pDep}$, nous reutilisons le
+groupe des meilleurs trajets partiels et nous modifons chacun de ses
+\texttt{CriteriaTracker} pour que ceux-ci tiennent compte du chemin arrivant en
+$c_{pDep}$. Nous insérons chacun de ses groupes de meilleurs trajets paritels
+modifiés dans la fonction de profile du chemin correspondant.\\
 
-
-
-% l'utilisateur peut être arrivé dans la connection $c$ en prenant un footpath
+Avec ceci et le cas 1, nous tenons compte de tous les chemins excepté celui qui
+relie directemment $pDep$ à $pArr$.
 
 % Distinguons les critères de domination faisant usage des données associées aux
 % trips, e.g. le nombre de transferts, le nombre de connexions effectuées en bus
