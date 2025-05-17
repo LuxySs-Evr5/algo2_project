@@ -52,6 +52,9 @@
 
 %-------------------------------------------------------------------
 
+
+%TODO: pas oublier de dire qu'on a du restreindre le multicritère a un plus petit dataset
+
 %TODO: remplacer l'adjectif basique (pas formel)
 
 %TODO: parler du chargement des données
@@ -118,7 +121,7 @@ du temps d'arrivée, et optimise ceux-ci au sens pareto.
 		            % TODO: might wanna split this in two
 		      \item \texttt{reconstructSolution()} et \texttt{printInstructions()}~: reconstruisent le chemin optimal et affichent les instructions de trajet.
 
-		      \item \texttt{genFootPaths()} génère les chemins à pied en ne gardant que ceux dont la longueur est inférieur ou égale celle précisée, à l'aide de la classe \texttt{BallTree}.
+		      \item \texttt{genFootpaths()} génère les chemins à pied en ne gardant que ceux dont la longueur est inférieur ou égale celle précisée, à l'aide de la classe \texttt{BallTree}.
 	      \end{itemize}
 
 	\item \textbf{MultiCritSolver}~: classe regroupant la logique nécessaire pour le CSA multicritère. Les méthodes essentielles :
@@ -128,7 +131,7 @@ du temps d'arrivée, et optimise ceux-ci au sens pareto.
 
 		      \item \texttt{displayJourney()}~: affiche les instructions de trajet.
 
-		      \item \texttt{genFootPaths()} génère les chemins à pied en ne gardant que ceux dont la longueur est inférieur ou égale celle précisée, à l'aide de la classe \texttt{BallTree}.
+		      \item \texttt{genFootpaths()} génère les chemins à pied en ne gardant que ceux dont la longueur est inférieur ou égale celle précisée, à l'aide de la classe \texttt{BallTree}.
 	      \end{itemize}
 
 	\item \textbf{AbstractSolver}~: Regroupe les fonctions communes à Solver et AbstractSolver.
@@ -137,15 +140,33 @@ du temps d'arrivée, et optimise ceux-ci au sens pareto.
 
 \end{itemize}
 
+% TODO: make a note to say that it is normal that there are two different genFootpaths 
+
 %-------------------------------------------------------------------
 
 \section{Chargement des données GTFS}
 
-Avant que notre algorithme puisse déterminer le plus court chemin entre un arrêt de départ et un arrêt d'arrivée, notre programme doit d'abord charger les données nécessaires. Ces données, conformes au format \texttt{GTFS} (General Transit Feed Specification), contiennent toutes les informations liées aux arrêts, trajets, horaires et lignes de transport.\\
+
+Avant que nous puissons effectuer des requêtes de plus court chemin à l'aide de nos algorithmes, nous devons d'abord charger les données nécessaires dans les objets représentant les deux algorithmes, i.e. \texttt{Solver} et \texttt{MultiCritSolver}.
+Ces données, conformes au format \texttt{GTFS} (General Transit Feed Specification), contiennent toutes les informations liées aux arrêts, trajets, horaires et lignes de transport.\\
 
 Les données GTFS utilisées dans notre programme sont les données publiques fournies par \texttt{DE LIJN}, la \texttt{STIB}, le \texttt{TEC} et la \texttt{SNCB}.\\
 
-Le chargement des données est effectué via la fonction \texttt{loadOneCsvSet()} qui lit les fichiers suivants pour chaque opérateur :
+Le processus de chargement s'effectue en trois grandes étapes :
+\begin{enumerate}
+
+	\item Création, pour chaque opérateur, d’un objet \texttt{CsvSet} contenant les chemins vers les fichiers \texttt{csv} correspondants.
+
+	\item Création de l'objet \texttt{Data}, via la méthode statique \textttt{Data.loadFromCSVs(CsvSet... csvSets)}.
+
+	      % TODO: expliquer comment on charge les données (probablement réutiliser ce qu'il y a dans les paragraphes en dessous)
+	      % TODO: surtout pas oublier de dire qu'on doit trier les connections par heure de départ
+
+	\item Instanciation du \texttt{Solver} et/ou du \texttt{MultiCritSolver} à l’aide de l’objet \texttt{Data} (passé aux constructeurs).
+        Le constructeur \texttt{Solver} et de \texttt{MultiCritSolver} appellent leur méthode \texttt{genFootpaths} pour générer les chemins
+        à pied sur base des instances de \texttt{Stop}. % TODO: phrase bof
+
+\end{enumerate}
 
 \begin{itemize}
 	\item \textbf{\texttt{stops.csv}} : contient les identifiants, noms et coordonnées géographiques des arrêts. Chaque arrêt est stocké dans une structure \texttt{Stop}, identifiée par son \texttt{stop\_id}.
