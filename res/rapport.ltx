@@ -844,23 +844,47 @@ par les trajets partiels que nous venons d'ajouter, car il est préfèrable
 d'attendre et prendre ceux qui les dominent plutôt que de prendre ces trajets
 partielles dominés.\\
 
-Les trajets partiels que nous tentons d'ajouter à chaque connexion $c$ scannée peuvent résulter de trois cas \cite{ConnectionScanAlgorithmLong:2017}~:
+Les trajets partiels que nous tentons d'ajouter à chaque connexion $c$ scannée
+peuvent résulter de trois cas évalués
+successivement~\cite{ConnectionScanAlgorithmLong:2017}. En effet l'utilisateur
+n'a que trois possibilités pour continuer son trajet à partir de la connexion
+$c$~:
 \begin{enumerate}
-	\item l'utilisateur n'a que trois possibilités pour continuer son trajet à partir de la connexion $c$
-	      \begin{enumerate}
-		      \item L'utilisateur peut sortir du véhicule et marcher jusqu'à la destination (s'il n'y est pas déjà).
-		      \item Il peut rester dans le même véhicule et prendre la prochaine connexion (si celle-ci existe).
-		      \item Il peut sortir du véhicule et rentrer dans un autre véhicule.
-	      \end{enumerate}
+	\item L'utilisateur peut sortir du véhicule et marcher jusqu'à la destination (s'il n'y est pas déjà).
+	\item Il peut rester dans le même véhicule et prendre la prochaine connexion (si celle-ci existe).
+	\item Il peut sortir du véhicule et rentrer dans un autre véhicule.
+\end{enumerate}\\
+% TODO: find a better way to reference 1a/b/c etc
 
-	\item l'utilisateur ne peut être arrivé dans la connection $c$ que par deux moyens
-	      \begin{enumerate}
-		      \item Soit il était déjà dans le même trip que $c$ (si $c$ n'est pas la première connection de son trip),
-		      \item soit il est arrivé au départ de $c$ en prenant un chemin à pied.
-	      \end{enumerate}
-\end{enumerate}
+Pour le cas 1, nous insérerons un nouveau trajet partiel démarrant en $tDep$
+dans $S_{cPdep}$, celui-ci contient un chemin (le chemin final), et une
+connection. De plus, puisque nous utilisons ce chemin final, nous ajoutons le
+trajet composé d'uniquement celui-ci dans la fonction de profile de
+$S_{c_{PArr}}$.\\
+
+Pour le cas 2, nous devons considérer les meilleurs trajets partiels pour
+chaque \texttt{CriteriaTracker} (chaque combinaison de valeurs des différents
+critères) empruntant la prochaine connexion de ce trip. Pour cela, nous
+stockons dans T, pour chaque trip, ces meilleurs trajets. Celui-ci est mis à
+jour après avoir considéré les trois cas.\\
+
+Pour le cas 3, il faut envisager les meilleurs trajets que nous pouvons
+effectuer à partir de $c_{pArr}$, à nouveau, pour chaque
+\texttt{CriteriaTracker} (chaque combinaison de valeurs des différents
+critères). C'est ce que nous appellons \textit{évaluer} $\mathcal{S}_{c_{pArr}}$ au temps
+$c_{tArr}$.\\
+
+première connexion est atteignable, .
 
 
+Insérer un trajet partiel partant de $S_{cArr}$ et content uniquement le chemin final.
+
+Pour chaque cas, nous calculons les nouveaux \texttt{CriteriaTracker} (e.g. ajouter un tram au compteur).
+
+
+
+
+% l'utilisateur peut être arrivé dans la connection $c$ en prenant un footpath
 
 % Distinguons les critères de domination faisant usage des données associées aux
 % trips, e.g. le nombre de transferts, le nombre de connexions effectuées en bus
