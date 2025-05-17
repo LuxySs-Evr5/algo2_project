@@ -349,9 +349,9 @@ l'algorithme \texttt{Connection Scan Algorithm (CSA) basique}.
 	\item Un mouvement $m1$ est plus rapide qu'un autre mouvement $m2$ si $m1$
 	      et $m2$ ont la même destination et $m1$ atteint celle-ci avant $m2$.
 
-    \item Calcul du temps d'arrivé d'un chemin à pied : $f_{tArr} = f_{tDep} +
-        f_{travelTime}$ où $f_{tDep}$ correspond au meilleur temps connu pour
-        se rendre au point de départ de $f$, i.e. $f_{pDep}$.
+	\item Calcul du temps d'arrivé d'un chemin à pied : $f_{tArr} = f_{tDep} +
+		      f_{travelTime}$ où $f_{tDep}$ correspond au meilleur temps connu pour
+	      se rendre au point de départ de $f$, i.e. $f_{pDep}$.
 
 \end{itemize}
 
@@ -372,14 +372,10 @@ l'algorithme \texttt{Connection Scan Algorithm (CSA) basique}.
 
 	\item \textbf{Initialisation}~: Pour chaque arrêt de départ, nous
 	      initialisons \texttt{bestKnown} aux entrées correspondantes comme suit:
-
 	      \begin{itemize}
-
 		      \item Le temps d'arrivée \texttt{tArr = tDep} : Nous pouvons nous y rendre
 		            instantanément.
-
 		      \item Le mouvement emprunté \texttt{movement = null} : Aucun mouvement n'est nécessaire pour s'y rendre.
-
 	      \end{itemize}
 
 	      Nous explorons également chaque chemin accessible à pied $f$ partant
@@ -388,13 +384,9 @@ l'algorithme \texttt{Connection Scan Algorithm (CSA) basique}.
 	      $f_{tArr} < bestKnown_{tArr}(f_{pArr})$, alors nous mettons à jour le
 	      temps d'arrivée dans \texttt{bestKnown} à l'entrée $f_{pArr}$
 	      comme-suit:
-
 	      \begin{itemize}
-
 		      \item Le temps d'arrivée \texttt{tArr =} $f_{tArr}$
-
 		      \item Le mouvement emprunté \texttt{movement =} $f$
-
 	      \end{itemize}
 
 	\item \textbf{Scan des connections et chemins}~: Nous traitons les
@@ -414,7 +406,11 @@ l'algorithme \texttt{Connection Scan Algorithm (CSA) basique}.
 
 		      \item Alors, nous mettons à jour l'entrée de \texttt{bestKnown}
 		            correspondant à l’arrêt $c_{pArr}$ car nous venons de trouver
-		            un moyen de s'y rendre plus rapidement.
+		            un moyen de s'y rendre plus rapidement :
+		            \begin{itemize}
+			            \item Le temps d'arrivée \texttt{tArr =} $c_{tArr}$
+			            \item Le mouvement emprunté \texttt{movement =} $c$
+		            \end{itemize}
 
 		            Ensuite, pour chaque chemin $f$ sortant de $c_{pArr}$, nous
 		            calculons le temps d'arrivée de ce chemin
