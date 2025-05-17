@@ -92,6 +92,33 @@ du temps d'arrivée, et optimise ceux-ci au sens pareto.
 
 %-------------------------------------------------------------------
 
+% TODO: find a better title
+\section{Définitions générales}
+
+\begin{itemize}
+
+	\item \textbf{Arrêt (Stop)}~: Arrêt pour n'importe quel mode de transport en commun, e.g. arrêt de Bus.
+
+	\item \textbf{Connexion}~: Un trajet direct entre deux arrêts effectué par un
+	      véhicule, avec une heure de départ et d'arrivée ainsi qu'un point de
+	      départ et d'arrivée.
+
+	\item \textbf{Chemin (à pied)}~: Un chemin direct entre deux arrêts pouvant être effectué à pied, avec un point de départ et d'arrivée.
+
+	\item \textbf{Mouvement}~: Regroupe connexion et chemin à pied.
+
+	\item \textbf{Trip}~: Une instance d'un véhicule parcourant un trajet.
+
+	\item \textbf{Horaire (Timetable)}~\cite{ConnectionScanAlgorithmLong:2017} : L'horaire fait partie des paramètres des deux algorithmes.
+	      % TODO: faire qqch montrer que c'est une citation traduite
+	      Un horaire est un quadruplet $(\mathcal{S}, \mathcal{C}, \mathcal{T} , \mathcal{F})$
+	      d'arrêts (stops) $\mathcal{S}$, de connexions (connections) $\mathcal{C}$, de trips $\mathcal{T}$, et de chemin à pieds (footpaths) $\mathcal{F}$.
+
+\end{itemize}
+
+
+%-------------------------------------------------------------------
+
 \section{Principales classes et méthodes utilisées dans le programme java}
 
 \begin{itemize}
@@ -100,14 +127,15 @@ du temps d'arrivée, et optimise ceux-ci au sens pareto.
 
 	\item \textbf{Coord}~: représente des coordonnées géographiques. Permet de calculer la distance du grand cercle séparant séparant deux instances de \texttt{Coord} via la méthode \texttt{distanceTo()}. Pour ce faire, cette dernière utilise la formule de \texttt{Haversine} \cite{haversineFormula}.
 
-	\item \textbf{Stop}~: représente un arrêt. Cette classe contient essentiellement l’identifiant,le nom et les coordonnées géographiques de l'arrêt.
+	\item \textbf{Stop}~: représente un arrêt. Cette classe contient essentiellement l’identifiant, le nom et les coordonnées géographiques de l'arrêt.
 
-	\item \textbf{Connection}~: classe représentant un trajet direct entre deux arrêts, avec une heure de départ et d'arrivée ainsi que le point de départ et d'arrivée du trajet.
+	\item \textbf{Connection}~: classe représentant une connexion.
 
-	\item \textbf{Footpath}~: représente un chemin à pied entre deux arrêts proches avec le point de départ et d'arrivée.
-	      Celui-ci possède une distance ainsi qu'une durée de trajet. La durée de trajet est calculée en supposant que l'utilisateur marche à une vitesse de 5~km/h.
+	\item \textbf{Footpath}~: représente un chemin à pied. Celui-ci possède une
+	      distance ainsi qu'une durée de trajet. La durée de trajet est calculée
+	      en supposant que l'utilisateur marche à une vitesse de 5~km/h.
 
-	\item \textbf{Movement}~: sert d'abstraction pour \texttt{Footpath} et \texttt{Connection}.
+	\item \textbf{Movement}~: représente un mouvement, une interface pour \texttt{Footpath} et \texttt{Connection}.
 
 	\item \textbf{BallTree}~: % TODO
 
@@ -197,9 +225,9 @@ ainsi. Toutefois, ceux-ci les parcourent dans des ordres opposés.\ % parler du 
 Les algorithmes CSA~\cite{ConnectionScanAlgorithmLong:2017} requièrent que le graphe des chemins à pied
 \begin{itemize}
 
-    \item soit transitivement fermé
+	\item soit transitivement fermé
 
-    \item satisfasse l'inégalité triangulaire
+	\item satisfasse l'inégalité triangulaire
 
 \end{itemize}
 
@@ -242,10 +270,10 @@ L'algorithme de génération s'effectue ainsi :
 
 % TODO: expliquer en quoi consiste la recherche naive des voisins
 % WARN: BallTree is not in O(n) in worst case, I fucked-up very bad
-% TODO: fix this huge mistake
-L'avantage du \texttt{BallTree} réside dans sa complexité temporelle avantageuse pour la recherche des arrêts voisins d'un arrêt donné dans un certain rayon :
-alors qu’une recherche naïve des voisins aurait une complexité en $\mathcal{O}(n^2)$, celle du \texttt{BallTree} est en $\mathcal{O}(n)$ dans le pire des cas, grâce à sa structure hiérarchique.
-Cette amélioration permet de rendre l’étape de génération des chemins à pied plus rapide.\\
+% TODO: fix this huge mistake (worst case time complexity)
+% L'avantage du \texttt{BallTree} réside dans sa complexité temporelle avantageuse pour la recherche des arrêts voisins d'un arrêt donné dans un certain rayon :
+% alors qu’une recherche naïve des voisins aurait une complexité en $\mathcal{O}(n^2)$, celle du \texttt{BallTree} est en $\mathcal{O}(n)$ dans le pire des cas, grâce à sa structure hiérarchique.
+% Cette amélioration permet de rendre l’étape de génération des chemins à pied plus rapide.\\
 
 \subsection{Complexité du chargement}
 % TODO: complexité temporelle (balltree + tim sort)
@@ -262,12 +290,13 @@ Cette amélioration permet de rendre l’étape de génération des chemins à p
 % condition est respectée uniquement si on a la fermeture transitive du graphe
 % des footpaths, ce qui en pratique n'est pas le cas.
 
-Le CSA basique permet de résoudre le problème suivant :
+Le CSA de base permet de résoudre le problème suivant :
 
 \begin{quote}
-	Étant donné l'horaire des véhicules, un arrêt de départ $pDep$, un arrêt d'arrivée
-	$pArr$, et un temps de départ $tDep$, renvoyer les différents segments du trajets
-	arrivant le plus tôt possible en $pArr$ en partant de $pDep$ en $tDep$.
+	Étant donné l'horaire, un arrêt de départ $pDep$, un arrêt d'arrivée
+	$pArr$, et un temps de départ $tDep$, renvoyer les différents segments du
+	trajets arrivant le plus tôt possible en $pArr$ en partant de $pDep$ en
+	$tDep$.
 \end{quote}
 
 Notre version du CSA basique accepte des noms d’arrêts, qui ne sont pas
