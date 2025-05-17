@@ -150,7 +150,10 @@ Une fois tous les fichiers lus, les informations sont regroupées en \textbf{con
 	\item le temps de départ et le temps d’arrivée (en secondes).
 \end{itemize}
 
-Une fois toutes les connexions générées à partir des données GTFS des différents opérateurs, il reste à trier toutes les connexions par heure de départ croissante, ce qui permet à l’algorithme CSA de fonctionner correctement lors de la recherche du plus court chemin.
+Une fois toutes les connexions générées à partir des données GTFS des
+différents opérateurs, nous trions toutes les connexions par heure de départ
+croissante, les deux algorithmes nécessitent que les connections soient triées
+ainsi. Toutefois, ceux-ci les parcourent dans des ordres opposés.\ % parler du tri, de sa complexité temporelle
 
 \subsection{Construction des chemins à pied (\texttt{Footpath})}
 
@@ -168,7 +171,14 @@ Ces chemins à pied sont ensuite ajoutés à l’ensemble des connexions disponi
 
 
 % TODO: expliquer en quoi consiste la recherche naive des voisins
+% WARN: BallTree is not in O(n) in worst case, I fucked-up very bad
+% TODO: fix this huge mistake
 L'avantage du \texttt{BallTree} réside dans sa complexité de recherche : alors qu’une recherche naïve des voisins aurait une complexité en $\mathcal{O}(n^2)$, celle du \texttt{BallTree} est en $\mathcal{O}(n)$ dans le pire des cas, grâce à sa structure hiérarchique. Cette amélioration permet de rendre l’étape de génération des chemins à pied plus rapide.\\
+
+
+\subsection{Complexité du chargement}
+% TODO: complexité temporelle (balltree + tim sort)
+% TODO: complexité spatiale
 
 %-------------------------------------------------------------------
 
