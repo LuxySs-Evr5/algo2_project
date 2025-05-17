@@ -70,25 +70,27 @@
 
 \section{Introduction}
 
-% TODO: check que cette intro reprend bien toutes les grandes sections (et pas en trop)
+% TODO: check que cette intro reprend bien toutes les grandes sections (et pas
+% en trop)
 Les transports en commun jouent un rôle central dans la mobilité en Belgique,
 où de nombreux citoyens dépendent quotidiennement des bus, trams, métros et
 trains pour se déplacer. Déterminer l’itinéraire le plus rapide entre deux
-arrêts constitue un enjeu crucial. Ce rapport présente deux algorithmes de plus
-court chemin prenant en compte les trajets multimodaux, i.e. pouvant combiner
-différents modes de transport en commun. Ceux-ci prennent également en compte,
-des segments de marche à pied entre les arrêts. Les deux algorithmes sont
+arrêts constitue un enjeu crucial. Ce rapport présente nos implémentations de
+deux algorithmes de plus court chemin prenant en compte les trajets
+multimodaux, i.e. pouvant combiner différents modes de transport en commun.
+Ceux-ci prennent également en compte, des segments de marche à pied entre les
+arrêts, mais ne tiennent pas compte des temps de transfert (d'un véhicule à
+l'autre, ou transition entre véhicule et marche). Les deux algorithmes sont
 regroupés sous le nom de \textit{Connection Scan Algorithm (CSA)} et sont
 présentés dans \cite{ConnectionScanAlgorithmLong:2017}. Dans un premier temps,
 nous expliquons les notions générales associées aux problèmes de plus court
-chemin dans le contexte des
-transports en commun. % TODO: il faut rajouter une section pour parler de ca
-Dans un deuxième temps, nous détaillons le fonctionnement et notre
-implémentation du CSA de base qui optimise seulement le temps d'arrivée
-(\textit{earliest arrival CSA}). Dans un troisième temps, nous présentons une
-version fortement insipirée du \textit{Pareto Connection Scan profile
-	algorithm}. Ce dernier peut prendre en considération d'autres critères, en plus
-du temps d'arrivée, et optimise ceux-ci au sens pareto.
+chemin dans le contexte des transports en commun. Dans un deuxième temps, nous
+détaillons le fonctionnement et notre implémentation du CSA de base qui
+optimise seulement le temps d'arrivée (\textit{earliest arrival CSA}). Dans un
+troisième temps, nous présentons une version fortement insipirée du
+\textit{Pareto Connection Scan profile algorithm}. Ce dernier peut prendre en
+considération d'autres critères, en plus du temps d'arrivée, et optimise
+ceux-ci au sens pareto.
 
 %-------------------------------------------------------------------
 
