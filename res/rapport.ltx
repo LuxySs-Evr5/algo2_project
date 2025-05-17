@@ -176,28 +176,21 @@ ceux-ci au sens pareto.
 \section{Chargement des données GTFS}
 
 
-Avant que nous puissons effectuer des requêtes de plus court chemin à l'aide de nos algorithmes, nous devons d'abord charger les données nécessaires dans les objets représentant les deux algorithmes, i.e. \texttt{Solver} et \texttt{MultiCritSolver}.
-Ces données, conformes au format \texttt{GTFS} (General Transit Feed Specification), contiennent toutes les informations liées aux arrêts, trajets, horaires et lignes de transport.\\
+Avant que nous puissions effectuer des requêtes de plus court chemin à l'aide de nos algorithmes, nous devons d'abord charger les données nécessaires dans les objets représentant les deux algorithmes, i.e. \texttt{Solver} et \texttt{MultiCritSolver}.
+Ces données, conformes au format \texttt{GTFS} (General Transit Feed Specification), contiennent toutes les informations liées aux arrêts, trajets, horaires et lignes de transport.\newline
 
-Les données GTFS utilisées dans notre programme sont les données publiques fournies par \texttt{DE LIJN}, la \texttt{STIB}, le \texttt{TEC} et la \texttt{SNCB}.\\
+Les données GTFS utilisées dans notre programme sont les données publiques fournies par \texttt{DE LIJN}, la \texttt{STIB}, le \texttt{TEC} et la \texttt{SNCB}.\newline
 
 Le processus de chargement s'effectue en trois grandes étapes :
 \begin{enumerate}
 
 	\item Création, pour chaque opérateur, d’un objet \texttt{CsvSet} contenant les chemins vers les fichiers \texttt{csv} correspondants.
 
-	\item Création de l'objet \texttt{Data}, via la méthode statique \textttt{Data.loadFromCSVs(CsvSet... csvSets)}.
+	\item Création de l'objet \texttt{Data}, via la méthode statique \texttt{Data.loadFromCSVs(CsvSet... csvSets)} qui appellera la méthode \texttt{loadOneCsvSet}, qui pour chaque \texttt{CsvSet}, traitera les fichiers suivants :
 
 	      % TODO: expliquer comment on charge les données (probablement réutiliser ce qu'il y a dans les paragraphes en dessous)
 	      % TODO: surtout pas oublier de dire qu'on doit trier les connections par heure de départ
-
-	\item Instanciation du \texttt{Solver} et/ou du \texttt{MultiCritSolver} à l’aide de l’objet \texttt{Data} (passé aux constructeurs).
-	      Le constructeur \texttt{Solver} et de \texttt{MultiCritSolver} appellent leur méthode \texttt{genFootpaths} pour générer les chemins
-	      à pied sur base des instances de \texttt{Stop}. % TODO: phrase bof
-
-\end{enumerate}
-
-\begin{itemize}
+        \begin{itemize}
 	\item \textbf{\texttt{stops.csv}} : contient les identifiants, noms et coordonnées géographiques des arrêts. Chaque arrêt est stocké dans une structure \texttt{Stop}, identifiée par son \texttt{stop\_id}.
 
 	\item \textbf{\texttt{trips.csv}} : associe chaque \texttt{trip\_id} à une \texttt{route\_id}, représentant un parcours complet effectué par un véhicule.
@@ -205,20 +198,27 @@ Le processus de chargement s'effectue en trois grandes étapes :
 	\item \textbf{\texttt{routes.csv}} : fournit le nom de chaque ligne, ainsi que le type de transport, et est identifiable grâce au \texttt{route\_id}. Ces données sont enregistrées dans une structure \texttt{RouteInfo} contenant toutes ces informations.
 
 	\item \textbf{\texttt{stop\_times.csv}} : liste, pour chaque \texttt{trip}, les arrêts desservis dans l’ordre (\texttt{stop\_sequence}), avec l’heure de départ à chaque arrêt. Nous convertissons les horaires en secondes depuis minuit pour simplifier les comparaisons.
-\end{itemize}
+        \end{itemize}
 
-Une fois tous les fichiers lus, les informations sont regroupées en \textbf{connexions} représentant des trajets directs entre deux arrêts consécutifs d’un même trajet avec :
-\begin{itemize}
-	\item l’identifiant du trajet (\texttt{trip\_id}),
-	\item la ligne de transport concernée (\texttt{RouteInfo}),
-	\item l’arrêt de départ et d’arrivée (\texttt{Stop}),
-	\item le temps de départ et le temps d’arrivée (en secondes).
-\end{itemize}
+        La méthode \texttt{loadOneCsvSet} commence par regrouper les entrées par \texttt{trip\_id}, puis trie chacun de ces groupes par \texttt{stop\_sequence}, pour ensuite génèrer les \textbf{connexions}, c’est-à-dire les trajets directs entre deux arrêts consécutifs d’un même trajet avec :
+        \begin{itemize}
+        	\item l’identifiant du trajet (\texttt{trip\_id}),
+        	\item la ligne de transport concernée (\texttt{RouteInfo}),
+        	\item l’arrêt de départ et d’arrivée (\texttt{Stop}),
+        	\item le temps de départ et le temps d’arrivée (en secondes).
+        \end{itemize}
+        
+        Une fois toutes les connexions générées à partir des données GTFS des
+        différents opérateurs, nous trions toutes les connexions par heure de départ
+        croissante, les deux algorithmes nécessitent que les connections soient triées
+        ainsi. Toutefois, ceux-ci les parcourent dans des ordres opposés.\ % parler du tri, de sa complexité temporelle
+        
 
-Une fois toutes les connexions générées à partir des données GTFS des
-différents opérateurs, nous trions toutes les connexions par heure de départ
-croissante, les deux algorithmes nécessitent que les connections soient triées
-ainsi. Toutefois, ceux-ci les parcourent dans des ordres opposés.\ % parler du tri, de sa complexité temporelle
+	\item Instanciation du \texttt{Solver} et/ou du \texttt{MultiCritSolver} à l’aide de l’objet \texttt{Data} (passé aux constructeurs).
+	      Le constructeur \texttt{Solver} et de \texttt{MultiCritSolver} appellent leur méthode \texttt{genFootpaths} pour générer les chemins
+	      à pied sur base des instances de \texttt{Stop}. % TODO: phrase bof
+
+\end{enumerate}
 
 \subsection{Construction des chemins à pied (\texttt{Footpath})}
 
