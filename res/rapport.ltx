@@ -190,29 +190,29 @@ Le processus de chargement s'effectue en trois grandes étapes :
 
 	      % TODO: expliquer comment on charge les données (probablement réutiliser ce qu'il y a dans les paragraphes en dessous)
 	      % TODO: surtout pas oublier de dire qu'on doit trier les connections par heure de départ
-        \begin{itemize}
-	\item \textbf{\texttt{stops.csv}} : contient les identifiants, noms et coordonnées géographiques des arrêts. Chaque arrêt est stocké dans une structure \texttt{Stop}, identifiée par son \texttt{stop\_id}.
+	      \begin{itemize}
+		      \item \textbf{\texttt{stops.csv}} : contient les identifiants, noms et coordonnées géographiques des arrêts. Chaque arrêt est stocké dans une structure \texttt{Stop}, identifiée par son \texttt{stop\_id}.
 
-	\item \textbf{\texttt{trips.csv}} : associe chaque \texttt{trip\_id} à une \texttt{route\_id}, représentant un parcours complet effectué par un véhicule.
+		      \item \textbf{\texttt{trips.csv}} : associe chaque \texttt{trip\_id} à une \texttt{route\_id}, représentant un parcours complet effectué par un véhicule.
 
-	\item \textbf{\texttt{routes.csv}} : fournit le nom de chaque ligne, ainsi que le type de transport, et est identifiable grâce au \texttt{route\_id}. Ces données sont enregistrées dans une structure \texttt{RouteInfo} contenant toutes ces informations.
+		      \item \textbf{\texttt{routes.csv}} : fournit le nom de chaque ligne, ainsi que le type de transport, et est identifiable grâce au \texttt{route\_id}. Ces données sont enregistrées dans une structure \texttt{RouteInfo} contenant toutes ces informations.
 
-	\item \textbf{\texttt{stop\_times.csv}} : liste, pour chaque \texttt{trip}, les arrêts desservis dans l’ordre (\texttt{stop\_sequence}), avec l’heure de départ à chaque arrêt. Nous convertissons les horaires en secondes depuis minuit pour simplifier les comparaisons.
-        \end{itemize}
+		      \item \textbf{\texttt{stop\_times.csv}} : liste, pour chaque \texttt{trip}, les arrêts desservis dans l’ordre (\texttt{stop\_sequence}), avec l’heure de départ à chaque arrêt. Nous convertissons les horaires en secondes depuis minuit pour simplifier les comparaisons.
+	      \end{itemize}
 
-        La méthode \texttt{loadOneCsvSet} commence par regrouper les entrées par \texttt{trip\_id}, puis trie chacun de ces groupes par \texttt{stop\_sequence}, pour ensuite génèrer les \textbf{connexions}, c’est-à-dire les trajets directs entre deux arrêts consécutifs d’un même trajet avec :
-        \begin{itemize}
-        	\item l’identifiant du trajet (\texttt{trip\_id}),
-        	\item la ligne de transport concernée (\texttt{RouteInfo}),
-        	\item l’arrêt de départ et d’arrivée (\texttt{Stop}),
-        	\item le temps de départ et le temps d’arrivée (en secondes).
-        \end{itemize}
-        
-        Une fois toutes les connexions générées à partir des données GTFS des
-        différents opérateurs, nous trions toutes les connexions par heure de départ
-        croissante, les deux algorithmes nécessitent que les connections soient triées
-        ainsi. Toutefois, ceux-ci les parcourent dans des ordres opposés.\ % parler du tri, de sa complexité temporelle
-        
+	      La méthode \texttt{loadOneCsvSet} commence par regrouper les entrées par \texttt{trip\_id}, puis trie chacun de ces groupes par \texttt{stop\_sequence}, pour ensuite génèrer les \textbf{connexions}, c’est-à-dire les trajets directs entre deux arrêts consécutifs d’un même trajet avec :
+	      \begin{itemize}
+		      \item l’identifiant du trajet (\texttt{trip\_id}),
+		      \item la ligne de transport concernée (\texttt{RouteInfo}),
+		      \item l’arrêt de départ et d’arrivée (\texttt{Stop}),
+		      \item le temps de départ et le temps d’arrivée (en secondes).
+	      \end{itemize}
+
+	      Une fois toutes les connexions générées à partir des données GTFS des
+	      différents opérateurs, nous trions toutes les connexions par heure de départ
+	      croissante, les deux algorithmes nécessitent que les connections soient triées
+	      ainsi. Toutefois, ceux-ci les parcourent dans des ordres opposés.\ % parler du tri, de sa complexité temporelle
+
 
 	\item Instanciation du \texttt{Solver} et/ou du \texttt{MultiCritSolver} à l’aide de l’objet \texttt{Data} (passé aux constructeurs).
 	      Le constructeur \texttt{Solver} et de \texttt{MultiCritSolver} appellent leur méthode \texttt{genFootpaths} pour générer les chemins
@@ -236,17 +236,34 @@ Les algorithmes CSA~\cite{ConnectionScanAlgorithmLong:2017} requièrent que le g
 Une solution simple, qui respecte ces deux critères, consiste à parcourir les
 arrêts à l’aide de deux boucles for imbriquées, en considérant chaque paire de
 \texttt{Stop} appartenant à deux chemins différents (un dans chaque sens).
-Cette approche présente une complexité en $\Theta(n^2)$, ce qui entraîne des durées
-d’exécution particulièrement longue.
+Cette approche présente une complexité spatiale et temporelle en $\Theta(n^2)$,
+où $n$ est le nombre d'arrêts, ce qui entraîne des durées d’exécution
+particulièrement longue.
 
-Afin de réduire ces temps d'éxécution, nous offrons la possibilité de réduire
-le nombre de chemins à pied en ne tenant pas compte de ceux dépassant une
-certaine distance donnée. (Le graphe n'est alors plus transitivement fermé).
-Nous pouvons ajuster cette distance via le paramètre \texttt{maxDistKm} des
-méthodes \texttt{genFootpaths} de \texttt{Solver} et \texttt{MultiCritSolver},
-permettant de créer les instances de \texttt{Footpaths}.
+% TODO: reformuler ceci
+Pour les raisons suivantes :
+\begin{itemize}
+	\item très grand nombre d'arrêts
+	      dans nos données de test,
+	\item le grand nombre de chemins extrêmement
+	      longs, qu'aucun utiliateur ne voudrait emprunté en pratique puique certain
+	      traversent la belgique entière,
+	\item le fait que plus un chemin est long,
+	      moins il a de chance d'être le meilleur trajet reliant son arrêt de départ à
+	      son arrivée (dù à la vitesse de marche très lente par rapport aux autre moyens
+	      de tranport),
+\end{itemize}
+nous offrons la possibilité de réduire le nombre de chemins à pied en ne tenant
+pas compte de ceux dépassant une certaine distance donnée \texttt{maxDistKm}.
+Le graphe n'est alors plus transitivement fermé, les algorithmes ne donnent
+plus la/les solutions optimales. Dans la suite du rapport nous supposerons que
+\texttt{maxDistKm} est suffisament grand pour ne pas (trop) impacter
+l'optimalité de l'algorithme. Nous pouvons ajuster cette distance via le
+paramètre \texttt{maxDistKm} des méthodes \texttt{genFootpaths} de
+\texttt{Solver} et \texttt{MultiCritSolver}, permettant de créer les instances
+de \texttt{Footpaths}.
 
-Il existe deux implémentations distinctes de \texttt{genFootpaths} car les deux solveurs ont des structures de stockage différentes :
+Il existe deux implémentations distinctes de \texttt{genFootpaths} car \texttt{Solver} et \texttt{MultiCritSolver} stockent les chemins différemment :
 \begin{itemize}
 
 	\item \texttt{Solver} requiert une map associant chaque \texttt{stopId} à la liste des \texttt{Footpath} partant de cet arrêt.
@@ -255,8 +272,11 @@ Il existe deux implémentations distinctes de \texttt{genFootpaths} car les deux
 
 \end{itemize}
 
-Malgré cette différence, le procédé de construction des chemins reste identique:
-Nous utilisons un \texttt{BallTree}, une structure permettant d'effectuer des recherches de voisinage efficaces dans un espace à plusieurs dimensions (dans notre cas, deux : latitude/longitude).
+Malgré cette différence, le procédé de construction des chemins reste
+identique: Puique nous limitons les chemins à un certain rayon, nous utilisons
+un \texttt{BallTree}, une structure permettant d'effectuer des recherches de
+voisinage efficaces dans un espace à plusieurs dimensions (dans notre cas, deux
+: latitude/longitude).
 L'algorithme de génération s'effectue ainsi :
 \begin{itemize}
 
@@ -577,7 +597,10 @@ le CSA respecte bien les deux~\hyperref[item:dagcriteresshortestpath]{critères
 
 \subsection{Complexité}
 
-% TODO complexité temporelle
+% TODO complexité temporelle O(n - m), pas exactement à cause des footpaths ou
+% n = nombre de connections qui partent apres tdep, 
+% m = nombre de connections qui ne seront pas scannées à cause du stopping criterion
+
 % TODO complexité spatiale
 
 
