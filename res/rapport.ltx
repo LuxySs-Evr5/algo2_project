@@ -334,27 +334,27 @@ Notre implémentation utilise principalement des \texttt{HashMap}, des
 
 \begin{itemize}
 
-    \item \texttt{HashMap<String, Stop> stopIdToStop}~: permet d’associer
-        l'identifiant d'un arrêt à l'objet \texttt{Stop}.
+	\item \texttt{HashMap<String, Stop> stopIdToStop}~: permet d’associer
+	      l'identifiant d'un arrêt à l'objet \texttt{Stop}.
 
-    \item \texttt{HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths}~:
-        associe à chaque arrêt une liste contenant les différentes instances de
-        \texttt{Footpath} qui démarrent de cet arrêt.
+	\item \texttt{HashMap<String, List<Footpath>> stopIdToOutgoingFootpaths}~:
+	      associe à chaque arrêt une liste contenant les différentes instances de
+	      \texttt{Footpath} qui démarrent de cet arrêt.
 
-    \item \texttt{List<Connection> connections}~: liste des connexions triée
-        par heure de départ croissante.
+	\item \texttt{List<Connection> connections}~: liste des connexions triée
+	      par heure de départ croissante.
 
-    \item \texttt{Map<String, BestKnownEntry> bestKnown}~: permet de garder à
-        jour le meilleur temps d’arrivée connu pour chaque arrêt, ainsi que le
-        denier mouvement (trajet ou marche) qui nous y mène. Pour chaque arrêt,
-        si son identifiant unique est \texttt{stopId}, alors \texttt{bestKnown}
-        à l'entrée \texttt{stopId} peut se lire comme "nous parvenons en
-        \texttt{stopId} à l'instant \texttt{bestKnown.get(stopId).getTArr()} en
-        empruntant un trajet se terminant par
-        \texttt{bestKnown.get(stopId).getMovement()}".
+	\item \texttt{Map<String, BestKnownEntry> bestKnown}~: permet de garder à
+	      jour le meilleur temps d’arrivée connu pour chaque arrêt, ainsi que le
+	      denier mouvement (trajet ou marche) qui nous y mène. Pour chaque arrêt,
+	      si son identifiant unique est \texttt{stopId}, alors \texttt{bestKnown}
+	      à l'entrée \texttt{stopId} peut se lire comme "nous parvenons en
+	      \texttt{stopId} à l'instant \texttt{bestKnown.get(stopId).getTArr()} en
+	      empruntant un trajet se terminant par
+	      \texttt{bestKnown.get(stopId).getMovement()}".
 
-    \item \texttt{Stack<BestKnownEntry>}~: utilisée pour reconstruire le chemin
-        optimal, afin d'afficher les instructions dans l’ordre.
+	\item \texttt{Stack<BestKnownEntry>}~: utilisée pour reconstruire le chemin
+	      optimal, afin d'afficher les instructions dans l’ordre.
 
 \end{itemize}
 
@@ -922,7 +922,58 @@ le cas 2 commenté, pour ne pas impacter les performances.\\
 
 \subsection{Structure de données}
 
+Notre implémentation utilise principalement des \texttt{HashMap}, des
+\texttt{ArrayList} et des \texttt{Pair}.
 
+
+\begin{itemize}
+
+	\item \texttt{HashMap<String, Stop> stopIdToStop}~: permet d’associer
+	      l'identifiant d'un arrêt à l'objet \texttt{Stop}.
+
+	\item \texttt{HashMap<String, List<Footpath>> stopIdToIncomingFootpaths}~:
+	      associe à chaque arrêt une liste contenant les différentes instances de
+	      \texttt{Footpath} qui arrivent de cet arrêt.
+
+	\item \texttt{List<Connection> connections}~: liste des connexions triée
+	      par heure de départ croissante.
+
+	\item \texttt{Map<String, ProfileFunction> S}~: associe chaque arrêt à sa fonction de profile.
+
+    \item \texttt{Map<String, Footpath> D}~: associe chaque arrêt au chemin partant de cet arrêt et arrivant à destination.
+        (Celui-ci est utilisé pour le cas 1, les chemins finaux).
+
+\end{itemize}
+
+
+\subsubsection{Fonction de profile}
+
+La fonction de profile est composée d'un unique attribut~:
+\texttt{ArrayList<Pair<Integer, HashMap<CriteriaTracker, Pair<Integer, Movement>>>> entries;}
+
+Les paires se trouvant dans le \texttt{ArrayList} contiennent :
+\begin{enumerate}
+	\item Un temps de départ,
+    \item Une map contenant les trajets partiels partant à ce temps de départ.
+        Cette map stocke les trajets partiels en associant à chaque
+        \texttt{CriteriaTracker}, une paire contenant~:
+	      \begin{enumerate}
+              \item le temps d'arrivée de ce trajet partiel,
+              \item le prochain mouvement à emprunter pour suivre ce trajet,
+	      \end{enumerate}
+\end{enumerate}
+
+Celles-ci sont ordonnées par temps de départ décroissant afin de maximiser le
+nombre d'insertions en fin de listes (moins couteuses). Puisque nous scannons
+les connexions par ordre de départ décroissant, nous allons généralement
+insérer dans la fonction de profile des groupes de trajets partiels débutant de
+plus en plus tôt. Nous ne pouvons pas garantir que cela est toujours de plus en
+plus tôt à cause des chemins entre les arrêts~: Pour rappelle, pour chaque
+chemin non-final, nous devons insérer nos trajets partiels empruntant $f$ suivi
+d'une connexion $c$, au temps de départ $c_{tDep} - f_{travelTime}$. Ce temps
+de départ pourrait être avant le départ de la prochaine connexion scannée
+partant de $f$, appelons là $c'$. Dans ce cas, l'insertion dans le profile de
+$S_{c'_{pDep}}$ ne sera pas en fin de liste.
 
 % - Expliquer à quoi sert et comment est implémentée une profile function
 % - Expliquer "dominer" "optimisation pareto"
