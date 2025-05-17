@@ -734,7 +734,7 @@ arrive en $y$ à l'instant $t4$, nous ne pouvons plus atteindre $c2$ qui part de
 $y$ en $t2$.\\
 
 % TODO: check si ca serait pas mieux d'expliquer ca avant de mettre le
-% contre-exemple
+% contre-exemple 
 % TODO: pourquoi on repete le fait que c'et le seul a la fin ?
 Formellement, cela est dû fait que seul le critère de temps d'arrivée le plus
 tôt respecte \textit{la condition d'échangeabilité préfixe} :
@@ -743,7 +743,9 @@ $A@tDep \rightarrow B$, i.e. partant de $A$ en $tDep$ et arrivant en $B$.
 Considérons un préfixe quelconque $s_1, \dots, s_i$, un trajet complet arrivant
 en $C$. Remplacer le préfixe par un autre trajet optimal $A@tDep \rightarrow C$
 doit donner un autre trajet optimal $A@tDep \rightarrow B$. Cependant, seul le
-critère d'arrivée le plus tôt satisfait cette propriété.\\
+critère d'arrivée le plus tôt satisfait cette propriété, les autres critères ne
+garantissent pas que la connexion que nous avions prévu de prendre en $C$ soit
+toujours atteignable avec le nouveau préfixe.\\
 
 Similairement nous pouvons définir la \textit{condition d'échangeabilité
 	suffixe} \cite{ConnectionScanAccelerated} : Soit $s_1, \dots, s_n$ un trajet
@@ -762,9 +764,9 @@ point d'arrivée \cite{ConnectionScanAccelerated}.\\
 % fonction de cout comme plus haut
 
 Définissons le concept de \textit{domination}
-\cite{ConnectionScanAlgorithmLong:2017}: soient deux tuples $X = (x_1, \dots,
+\cite{ConnectionScanAlgorithmLong:2017} : soient deux tuples $X = (x_1, \dots,
 	x_n)$ et $Y = (y_1, \dots, y_n)$. Nous dirons que $X$ domine $Y$ si et
-seulement si :
+seulement si
 \[
 	\forall i \in \{1, \dots, n\},\ x_i \leq y_i \quad \land \quad \exists i \in \{1, \dots, n\},\ x_i < y_i.
 \] \label{item:defDomination}
@@ -806,7 +808,8 @@ où :
 
 Nous appelons cet ensemble $\mathcal{S}_p$ la \textit{fonction de profil} de
 l'arrêt $p$. L'algorithme ajoute et supprime des trajets partiels dans les
-fonctions de profil au fur et à mesure que celui-ci scanne les connections.\\
+fonctions de profil au fur et à mesure que celui-ci scanne les connections dans
+l'ordre de départ décroissant.\\
 
 Notons que ~\hyperref[item:defProfileFunctionContent]{la définition du contenu
 	d'une fonction de profil} nous autorise à conserver un trajet $j$ malgré le
