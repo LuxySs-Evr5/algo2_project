@@ -95,16 +95,17 @@ ceux-ci au sens Pareto.
 	\item \textbf{Arrêt (Stop)}~: Arrêt pour n'importe quel mode de transport
 	      en commun, e.g. arrêt de Bus.
 
-	\item \textbf{Connexion}~: Un trajet direct entre deux arrêts effectué par
-	      un véhicule, avec une heure de départ et d'arrivée ainsi qu'un point de
-	      départ et d'arrivée.
+    \item \textbf{Connexion}~: Un trajet direct entre deux arrêts consécutifs
+        effectué par un véhicule, avec une heure de départ et d'arrivée ainsi
+        qu'un point de départ et d'arrivée.
 
 	\item \textbf{Chemin (à pied)}~: Un chemin direct entre deux arrêts pouvant
 	      être effectué à pied, avec un point de départ et d'arrivée.
 
 	\item \textbf{Mouvement}~: Regroupe connexion et chemin à pied.
 
-	\item \textbf{Trip}~: Une instance d'un véhicule parcourant un trajet.
+    \item \textbf{Trip}~: Une instance d'un véhicule parcourant un trajet, et
+        couvrant généralement plusieurs stop.
 
 	\item \textbf{Horaire (Timetable)}~\cite{ConnectionScanAlgorithmLong:2017} :
 	      L'horaire fait partie des paramètres des deux algorithmes. \og Un horaire est un quadruplet
@@ -135,12 +136,13 @@ ceux-ci au sens Pareto.
 
 	\item \textbf{Movement}~: représente un mouvement, une interface pour \texttt{Footpath} et \texttt{Connection}.
 
+        %TODO: dire à quoi il sert vite fait
     \item \textbf{BallTree}~: notre implémentation de \texttt{BallTree}
         modifié. (Celui-ci n'est pas aussi efficace qu'un vrai \textit{balltree}).
 
 	\item \textbf{TransportType}~: énumérée contenant les différents moyens de déplacement.
 
-	\item \textbf{Solver}~: classe regroupant la logique nécessaire pour le CSA de base. Les méthodes essentielles :
+	\item \textbf{Solver}~: classe regroupant la logique nécessaire pour le CSA de base. Les méthodes essentielles sont~:
 
 	      \begin{itemize}
 		      \item \texttt{solve()}~: implémentation de l'algorithme CSA de base.
@@ -306,7 +308,7 @@ suivant~:
 \]
 
 Cela vaut exactement $n^2 - n$. La complexité spatiale du chargement est donc
-est en $\Theta(n^2 + m)$ (en utilisant uniquement deux boucles \textttt{for}
+est en $\Theta(n^2 + m)$ (en utilisant uniquement deux boucles \texttt{for}
 imbriquées pour générer les chemins).
 
 La complexité temporelle de la génération des chemins, en employant la méthode
@@ -470,7 +472,7 @@ cruciales pour comprendre l'algorithme \texttt{CSA de base (arrivée la plus
 
 	      \end{itemize}
 
-	\item \textbf{Critère d'arrêt}~: Selon
+      \item \textbf{Critère d'arrêt}~: \label{item:criterearret} Selon
 	      \cite{ConnectionScanAlgorithmLong:2017}, nous pouvons arrêter
 	      l'itération sur les connections dès que nous scannons une connexion
 	      $c$ telle que $c_{tDep} >= bestKnown_{tArr}(pArr)$.
@@ -624,6 +626,25 @@ deux~\hyperref[item:dagcriteresshortestpath]{critères pour les algorithmes de
 
 \subsection{Complexité}
 
+Notons $n$ le nombre d'arrêts et $m$ le nombre de connexions.
+
+La complexité spatiale est en $O(log(n))$, car la taille \texttt{BestKnown} est
+au plus $n$, puisqu'il y a, au plus, une entrée pour chaque arrêt.\\
+
+La complexité temporelle de la recherche dichotomique à l'étape
+\hyperref[item:criteredepart]{\textit{critère de départ}} est en
+$O(\log(m))$.\\
+
+La complexité temporelle du scan des connexions (la boucle \texttt{for}
+principale, itérant sur les connexions) est en $O(m * n)$, car nous itérons sur
+les $m$ connexions dans le pire des cas (si le
+\hyperref[item:criteredepart]{\textit{critère de départ}} et le
+\hyperref[item:criterearret]{\textit{critère d'arrêt}} ne permette pas
+d'élimier des connexions), et pour chacune d'elles, nous itérons sur les
+chemins partant de l'arrêt d'arrivée de la connexion. Le nombre de chemin
+reliant un arrêt à tous les autres étant $n-1$ si le graphe des chemins est
+transitivement fermé, la complexité de l'algorithme est en $O(m * n)$.
+
 % TODO complexité temporelle O(n - m), pas exactement à cause des footpaths ou
 % n = nombre de connections qui partent apres tdep, 
 % m = nombre de connections qui ne seront pas scannées à cause du stopping criterion
@@ -643,7 +664,7 @@ deux~\hyperref[item:dagcriteresshortestpath]{critères pour les algorithmes de
 
 % TODO: "qui pourrait laisser penser" pas fou
 
-% TODO: par sûr du "au sens pareto"
+% TODO: par sûr du "au sens Pareto"
 
 Dans cette section, nous présentons puis réfutons une idée intuitive selon
 laquelle une simple modification du CSA basique permettrait d’en faire un
@@ -794,9 +815,9 @@ seulement si
 \] \label{item:defDomination}
 
 Sur base de~\hyperref[item:defDomination]{la définition de la domination}, nous
-définissons le concept de \textit{pareto-optimal}
+définissons le concept de \textit{Pareto-optimal}
 \cite{ConnectionScanAlgorithmLong:2017}: Soit $P$ un ensemble de tuples à
-composantes scalaires, un tuple $x$ est pareto-optimal par rapport à $P$ s'il
+composantes scalaires, un tuple $x$ est Pareto-optimal par rapport à $P$ s'il
 n'existe aucun autre tuple $y \in P$ tel que $y$ domine $x$.\\
 
 Nous pouvons appliquer~\hyperref[item:defDomination]{la définition de la
@@ -809,7 +830,7 @@ Le mcCSA permet de résoudre le problème suivant :
 \begin{quote}
 	Étant donné l'horaire, un arrêt de départ $pDep$, un arrêt d'arrivée
 	$pArr$, et un temps de départ $tDep$, et des critères de domination,
-	renvoyer le sous-ensemble de trajets \textit{pareto-optimaux} par rapport
+	renvoyer le sous-ensemble de trajets \textit{Pareto-optimaux} par rapport
 	aux critères de domination imposés par l'utilisateur et à l'ensemble de
 	tous les trajets partant de $pDep$ à $tDep$ ou plus tard, et arrivant en
 	$pArr$.
@@ -944,7 +965,7 @@ plus tôt. Nous pouvons les retirer car nous avons maintenant la certitude que
 les meilleures alternatives sont atteignables puisque celles-ci démarrent en
 $tDep$ ou après. (Nous n'avions pas encore cette certitude lorsque nous
 construisions nos trajets partiels). Cet ensemble est le sous-ensemble de
-trajets \textit{pareto-optimaux} par rapport aux critères de domination imposés
+trajets \textit{Pareto-optimaux} par rapport aux critères de domination imposés
 par l'utilisateur et à l'ensemble de tous les trajets partant de $pDep$ à
 $tDep$ ou plus tard, et arrivant en $pArr$.\\
 
@@ -1030,7 +1051,7 @@ des trajets partiels empruntant $c$.
 %-------------------------------------------------------------------
 \subsection{Reconstruction de la solution}
 
-Nous reconstruisons les différents trajets pareto-optimaux à l'aide des
+Nous reconstruisons les différents trajets Pareto-optimaux à l'aide des
 \texttt{CriteriaTracker}, des fonctions de profile, et des temps de départ.
 
 Considérons le trajet $j$ démarrant en $j_{tDep}$ de l'arrêt $j_{pDep}$ et
