@@ -57,8 +57,6 @@
 
 %TODO: pas oublier de dire qu'on a du restreindre le multicritère a un plus petit dataset
 
-%TODO: parler du ballTree
-
 %TODO: parler du fait que l'algo du CSA normal nous fait faire des switch inutiles
 
 \section{Introduction}
@@ -136,9 +134,8 @@ ceux-ci au sens Pareto.
 
 	\item \textbf{Movement}~: représente un mouvement, une interface pour \texttt{Footpath} et \texttt{Connection}.
 
-        %TODO: dire à quoi il sert vite fait
-    \item \textbf{BallTree}~: notre implémentation de \texttt{BallTree}
-        modifié. (Celui-ci n'est pas aussi efficace qu'un vrai \textit{balltree}).
+    \item \textbf{BallTree}~: notre implémentation de \texttt{BallTree} utilisé
+        pour accélérer la création des chemins.
 
 	\item \textbf{TransportType}~: énumérée contenant les différents moyens de déplacement.
 
@@ -147,7 +144,6 @@ ceux-ci au sens Pareto.
 	      \begin{itemize}
 		      \item \texttt{solve()}~: implémentation de l'algorithme CSA de base.
 
-		            % TODO: might wanna split this in two
 		      \item \texttt{reconstructSolution()} et \texttt{printInstructions()}~: reconstruisent le chemin optimal et affichent les instructions de trajet.
 
 		      \item \texttt{genFootpaths()} génère les chemins à pied en ne gardant que ceux dont la longueur est inférieur ou égale celle précisée, à l'aide de la classe \texttt{BallTree}.
@@ -286,16 +282,6 @@ L'algorithme de génération s'effectue ainsi :
 	      Pour chaque voisin trouvé, créer l'objet \texttt{Footpath} avec les deux arrêts et l’ajouter à la map liant les arrêts de départ ou d'arrivée aux instances de \texttt{Footpath} (en fonction de \texttt{Solver} ou \texttt{MultiCritSolver}).
 
 \end{itemize}
-
-% TODO: Expliquer comment fonctionne la recherche et la création du BallTree 
-% cite this https://www.cs.cornell.edu/courses/cs4780/2018fa/lectures/lecturenote16.html and explain what we changed
-
-% TODO: expliquer en quoi consiste la recherche naive des voisins
-% WARN: BallTree is not in O(n) in worst case, I fucked-up very bad
-% TODO: fix this huge mistake (worst case time complexity)
-% L'avantage du \texttt{BallTree} réside dans sa complexité temporelle avantageuse pour la recherche des arrêts voisins d'un arrêt donné dans un certain rayon :
-% alors qu’une recherche naïve des voisins aurait une complexité en $\mathcal{O}(n^2)$, celle du \texttt{BallTree} est en $\mathcal{O}(n)$ dans le pire des cas, grâce à sa structure hiérarchique.
-% Cette amélioration permet de rendre l’étape de génération des chemins à pied plus rapide.\\
 
 \subsection{Complexité du chargement}
 
