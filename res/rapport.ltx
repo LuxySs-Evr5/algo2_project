@@ -304,7 +304,7 @@ suivant~:
 \]
 
 Cela vaut exactement $n^2 - n$. La complexité spatiale du chargement est donc
-est en $\Theta(n^2 + m)$ (en utilisant uniquement deux boucles \texttt{for}
+en $\Theta(n^2 + m)$ (en utilisant uniquement deux boucles \texttt{for}
 imbriquées pour générer les chemins).
 
 La complexité temporelle de la génération des chemins, en employant la méthode
@@ -314,7 +314,7 @@ heure de départ est en $O(n\log(n))$, car le tri de l'interface \texttt{List}
 de java est une version de \textit{tim-sort}~\cite{javaListSort}, dont la
 complexité temporelle est $O(n\log(n))$ ~\cite{timSortComplexity}. Comme
 expliqué dans \cite{complexitetris}, $\log_2(n!) \sim n\log(n)$ est la borne
-inférieure de complexité pour les algorithmes de tri par compaison, il n'est
+inférieure de complexité pour les algorithmes de tri par comparaison, il n'est
 donc pas possible de réellement faire asymptotiquement mieux que le
 \textit{tim-sort} de l'interface \texttt{List} en utilisant un tri par
 comparaison.
@@ -641,7 +641,7 @@ La complexité temporelle du scan des connexions (la boucle \texttt{for}
 principale, itérant sur les connexions) est en $O(m \cdot n)$ dans le pire des
 cas. En effet, si ni le \hyperref[item:criteredepart]{\textit{critère de
 départ}}, ni le \hyperref[item:criterearret]{\textit{critère d'arrêt}} ne
-permettent d'élimier des connexions, alors toutes les $m$ connexions sont
+permettent d'éliminer des connexions, alors toutes les $m$ connexions sont
 explorées. Pour chacune d’elles, l’algorithme parcourt les chemins partant de
 l’arrêt d’arrivée de la connexion. Or, si le graphe des chemins est
 transitivement fermé, un arrêt peut être relié à exactement $n - 1$ autres, ce
@@ -854,7 +854,7 @@ où :
 
 Nous appelons cet ensemble $S_p$ la \textit{fonction de profil} de l'arrêt $p$.
 L'algorithme ajoute et supprime des trajets partiels (jusqu'à destination) dans
-les fonctions de profil au fur et à mesure que celui-ci scanne les connexions
+les fonctions de profile au fur et à mesure que celui-ci scanne les connexions
 dans l'ordre de départ décroissant. À chaque connexion scannée $c$ nous tentons
 d'ajouter tous les trajets partiels qui peuvent être effectués à partir de la
 connexion $c$ dans la fonction de profile de l'arrêt $c_{pDep}$. Ceux dominés
@@ -878,7 +878,7 @@ est antérieure à celle de $j$, c'est-à-dire~: $j'_{tDep} < j_{tDep}$
 
 Nous devons conserver ces trajets car nous construisons les trajets en partant
 du point d'arrivée~: Lorsque nous ajoutons un trajet $j$ dans la fonction de
-profil de l'arrêt $p$, nous n'avons aucune garantie qu'une autre connexion
+profile de l'arrêt $p$, nous n'avons aucune garantie qu'une autre connexion
 arrivant en $p$ et rendant la première connexion de $j$ atteignable existe.
 Nous devons donc conserver des alternatives à $j$, partant plus tard, celles-ci
 peuvent être dominées par $j$.\\
@@ -935,7 +935,7 @@ Notre gestion du cas 1 ne permet que de gérer les chemins finaux, il nous reste
 est arrivé au départ de $c$ en prenant un chemin.
 
 Pour ce faire, pour chaque chemin qui arrive en $c_{pDep}$, nous réutilisons le
-groupe des meilleurs trajets partiels et nous modifons chacun de ses
+groupe des meilleurs trajets partiels et nous modifions chacun de ses
 \texttt{CriteriaTracker} pour que ceux-ci tiennent compte du chemin arrivant en
 $c_{pDep}$. Nous insérons chacun de ces groupes de meilleurs trajets partiels
 modifiés dans la fonction de profile de $c_{pDep}$, avec le temps de départ
@@ -974,7 +974,7 @@ $tDep$ ou plus tard, et arrivant en $pArr$.\\
 %-------------------------------------------------------------------
 % section PseudoCode
 
-Le pseudocode \autoref{alg:Solve} renvoie les fonctions de profil de tous les
+Le pseudo-code \autoref{alg:Solve} renvoie les fonctions de profile de tous les
 arrêts, $S$, en considérant tous les trajets arrivant en $pArr$ et empruntant
 uniquement des connexions partant en $tDep$ ou plus tard. (Les trajets partant
 d'autres arrêts différents de $pDep$ sont également pris en compte, car cet
@@ -1127,8 +1127,6 @@ de cette induction pour reconstruire la solution.
 	\label{alg:DisplayJourney}
 \end{algorithm}
 
-\end{document}
-
 %-------------------------------------------------------------------
 
 \subsection{Structure de données}
@@ -1175,7 +1173,7 @@ Les paires se trouvant dans le \texttt{ArrayList} contiennent :
 \end{enumerate}
 
 Celles-ci sont ordonnées par temps de départ décroissant afin de maximiser le
-nombre d'insertions en fin de liste (moins couteuses). Puisque nous scannons
+nombre d'insertions en fin de liste (moins couteûses). Puisque nous scannons
 les connexions par ordre de départ décroissant, nous allons généralement
 insérer dans la fonction de profile des groupes de trajets partiels débutant de
 plus en plus tôt. Nous ne pouvons pas garantir que cela est toujours de plus en
@@ -1183,9 +1181,9 @@ plus tôt à cause des chemins entre les arrêts~: Pour rappel, pour chaque
 chemin non-final, nous devons insérer nos trajets partiels empruntant $f$ suivi
 d'une connexion $c$, au temps de départ $c_{tDep} - f_{travelTime}$. Ce temps
 de départ pourrait être avant le départ de la prochaine connexion scannée
-partant de $f_{pDep}$, appelons là $c'$. Dans ce cas, l'insertion dans le
+partant de $f_{pDep}$, appelons-la $c'$. Dans ce cas, l'insertion dans le
 profile de $S_{c'_{pDep}}$ ne sera pas en fin de liste car il existe déjà les
-trajets partiels partant plus tôtdans le profile~: ceux partant en $c_{tDep} -
+trajets partiels partant plus tôt dans le profile~: ceux partant en $c_{tDep} -
 	f_{travelTime}$.\\
 
 \subsection{Complexité du CSA profile multicritère pareto}
@@ -1205,7 +1203,7 @@ bornes pour les différentes fonctions.
 
             \item ignorer celui-ci s'il est dominé par un autre autre trajet
                 partiel au sein des $m$ nouveaux trajets partiels. Cette
-                vérifiaction a une complexité temporelle en $O(m)$.
+                vérification a une complexité temporelle en $O(m)$.
 
             \item vérifier si celui-ci est dominé par un autre des $n$ trajets
                 partiels déjà présents et partant plus tard, auquel cas nous
@@ -1218,7 +1216,7 @@ bornes pour les différentes fonctions.
         \end{itemize}
 
     \item \textbf{boucle principale}
-        En considérant les itérations sur les trajet partils en temps constant
+        En considérant les itérations sur les trajet partiels en temps constant
         (ce qui en pratique n'est évidemment pas le cas), et qu'il y a $n$
         arrêts et $m$ connexions, nous pouvons dire que la complexité de
         l'algorithme est en $O(m \cdot n)$.
@@ -1226,12 +1224,12 @@ bornes pour les différentes fonctions.
         La complexité temporelle du scan des connexions (la boucle \texttt{for}
         principale, itérant sur les connexions) est en $O(m \cdot n)$ dans le pire des
         cas. En effet, si ni le \hyperref[item:criteredepart]{\textit{critère de
-        départ}} ne permet pas d'élimier des connexions, alors toutes les $m$
+        départ}} ne permet pas d'éliminer des connexions, alors toutes les $m$
         connexions sont explorées. Pour chacune d’elles, l’algorithme parcourt les
         chemins arrivant à l’arrêt d’arrivée de la connexion. Or, si le graphe des
         chemins est transitivement fermé, un arrêt peut être relié à exactement $n - 1$
         autres, ce qui donne au total une complexité de $O(m \cdot n)$\\
-        (Comme pour le CSA de base la recherche dichotomique pour le
+        (Comme pour le CSA de base, la recherche dichotomique pour le
         \hyperref[item:criteredepart]{\textit{critère de départ}} est en
         $O(\log(m)) \in O(m)$).
 
