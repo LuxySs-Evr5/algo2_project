@@ -938,17 +938,13 @@ $tDep$ ou plus tard, et arrivant en $pArr$.\\
 %-------------------------------------------------------------------
 % section PseudoCode
 
-% TODO: peut etre que c'est mieux d'expliquer ce pseudo code et a quoi
-% correspond chaque truc avant de parler de la structure de données.
 %TODO: expliquer les différents trucs du pseudo code genre tauC etc
 
 %TODO: enlever le mix francais anglais
 
 %TODO: décrire les inputs de l'algorithme
 
-%TODO: parler du starting criterion pour le multicritère aussi
-
-Le pseudocode \autoref{alg:Solve} renvoit les fonctions de profil de tous les
+Le pseudocode \autoref{alg:Solve} renvoie les fonctions de profil de tous les
 arrêts, $S$, en considérant tous trajets arrivant en $pArr$ et empruntant
 uniquement des connexions partant en $tDep$ ou plus tard. (Les trajets partant
 d'autres arrêts différent de $pDep$ sont également pris en compte, car cet
@@ -966,7 +962,7 @@ résout pour tous les arrêts de départ).
 	initialiser Map $S$\;
 	initialiser Map $D$\;
 
-	\For{connexions $c$ par $c_{tDep}$ décroissant}{
+	\For{connexions $c$ par $c_{tDep}$ décroissant dans connexions partant après $tDep$}{
 
 	initialiser Map $\tau_c$\;
 
@@ -1016,8 +1012,13 @@ résout pour tous les arrêts de départ).
 
     \caption{Calcul de toutes les fonctions de profile pour une requête}
     \label{alg:Solve}
-\end{algorithm}
+\end{algorithm}\\
 
+Notons que, comme pour le CSA de base, nous pouvons à nouveau appliquer
+l'optimisation~\hyperref[item:criteredepart]{\textit{critère de départ}}, c'est
+pourquoi nous n'itérons pas sur toutes les connexions. Notons également que
+$\tau_c$ correspond est la structure dans laquelle nous procédons au groupement
+des trajets partiels empruntant $c$.
 
 %-------------------------------------------------------------------
 \subsection{Reconstruction de la solution}
