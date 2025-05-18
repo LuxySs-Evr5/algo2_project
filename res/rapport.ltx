@@ -912,12 +912,12 @@ appelée \textit{limited walking}~\cite{ConnectionScanAlgorithmLong:2017}.
 Avec ceci et le cas 1, nous tenons compte de tous les chemins, excepté celui qui
 relie directemment $pDep$ à $pArr$.\\
 
-Le cas 2 peut servir pour ajouter des critères liés aux trips tels que le
-nombre de transferts. Toutefois, notre implémentation ne supporte pas ce type
-de critères, celle-ci supporte seulement les critères liés aux mouvements
-individuels (e.g. nombre de connexions en bus). Nous laissons donc le code pour
-le cas 2 commenté, pour ne pas impacter les performances, et nous ne tenons pas
-compte de celui-ci (et de $T$) pour la suite.\\
+Il n'est nécessaire de distinguer le cas 2 du cas 3 que si des critères sont
+liés aux trips, e.g. le nombre de transferts. Notre implémentation ne supporte
+pas ce type de critères, celle-ci supporte seulement les critères liés aux
+mouvements individuels (e.g. nombre de connexions en bus). Nous laissons donc
+le code pour le cas 2 commenté, pour ne pas impacter les performances, et nous
+ne tenons pas compte de celui-ci (et de $T$) pour la suite.\\
 
 %-------------------------------------------------------------------
 
