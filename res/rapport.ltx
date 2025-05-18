@@ -506,7 +506,7 @@ cruciales pour comprendre l'algorithme \texttt{CSA de base (arrivée la plus
 		      \DontPrintSemicolon
 		      \SetAlgoLined
 
-		      initialize empty stack $finalPath$ \;
+		      initialiser stack $finalPath$ \;
 		      $currentStopId \leftarrow pArrIdEarliest$ \;
 
 		      \While{$currentStopId \notin pDepIds$}{
@@ -916,7 +916,8 @@ Le cas 2 peut servir pour ajouter des critères liés aux trips tels que le
 nombre de transferts. Toutefois, notre implémentation ne supporte pas ce type
 de critères, celle-ci supporte seulement les critères liés aux mouvements
 individuels (e.g. nombre de connexions en bus). Nous laissons donc le code pour
-le cas 2 commenté, pour ne pas impacter les performances.\\
+le cas 2 commenté, pour ne pas impacter les performances, et nous ne tenons pas
+compte de celui-ci (et de $T$) pour la suite.\\
 
 %-------------------------------------------------------------------
 
@@ -940,8 +941,8 @@ Notre implémentation utilise principalement des \texttt{HashMap}, des
 
 	\item \texttt{Map<String, ProfileFunction> S}~: associe chaque arrêt à sa fonction de profile.
 
-    \item \texttt{Map<String, Footpath> D}~: associe chaque arrêt au chemin partant de cet arrêt et arrivant à destination.
-        (Celui-ci est utilisé pour le cas 1, les chemins finaux).
+	\item \texttt{Map<String, Footpath> D}~: associe chaque arrêt au chemin partant de cet arrêt et arrivant à destination.
+	      (Celui-ci est utilisé pour le cas 1, les chemins finaux).
 
 \end{itemize}
 
@@ -954,12 +955,12 @@ La fonction de profile est composée d'un unique attribut~:
 Les paires se trouvant dans le \texttt{ArrayList} contiennent :
 \begin{enumerate}
 	\item Un temps de départ,
-    \item Une map contenant les trajets partiels partant à ce temps de départ.
-        Cette map stocke les trajets partiels en associant à chaque
-        \texttt{CriteriaTracker}, une paire contenant~:
+	\item Une map contenant les trajets partiels partant à ce temps de départ.
+	      Cette map stocke les trajets partiels en associant à chaque
+	      \texttt{CriteriaTracker}, une paire contenant~:
 	      \begin{enumerate}
-              \item le temps d'arrivée de ce trajet partiel,
-              \item le prochain mouvement à emprunter pour suivre ce trajet,
+		      \item le temps d'arrivée de ce trajet partiel,
+		      \item le prochain mouvement à emprunter pour suivre ce trajet,
 	      \end{enumerate}
 \end{enumerate}
 
@@ -975,12 +976,85 @@ de départ pourrait être avant le départ de la prochaine connexion scannée
 partant de $f_{pDep}$, appelons là $c'$. Dans ce cas, l'insertion dans le
 profile de $S_{c'_{pDep}}$ ne sera pas en fin de liste car il existe déjà les
 trajets partiels partant plus tôtdans le profile~: ceux partant en $c_{tDep} -
-f_{travelTime}$.
+	f_{travelTime}$.
 
 % - Expliquer à quoi sert et comment est implémentée une profile function
 % - Expliquer "dominer" "optimisation pareto"
 % - Expliquer pourquoi les final footpaths sont gérés différement des interstop footpaths
 % - Parler du fait qu'on peut à nouveau faire l'opti de "critère de départ"
+
+
+%-------------------------------------------------------------------
+% section PseudoCode
+
+% TODO: peut etre que c'est mieux d'expliquer ce pseudo code et a quoi
+% correspond chaque truc avant de parler de la structure de données.
+%TODO: expliquer les différents trucs du pseudo code genre tauC etc
+
+%TODO: enlever le mix francais anglais
+
+%TODO: décrire les inputs de l'algorithme
+\begin{algorithm}[H]
+  \DontPrintSemicolon
+  \SetAlgoLined
+
+  initialiser Map $S$\;
+  initialiser Map $D$\;
+
+  \For{connexions $c$ par $c_{tDep}$ décroissant}{
+
+    initialiser Map $\tau_c$\;
+
+    % Cas 1 : si la connexion arrive directement à la station d'arrivée
+    \If{$c$ arrive en $p_{Arr}$}{
+      initaliser newTracker et lui faire tenir compte de $c$\;
+      mettre à jour $\tau_c$ avec (newTracker, $(c_{tArr}, c)$)\;
+    }
+    \Else{ % Cas 2 : sinon, il faut prendre un chemin à pied
+      finalFootpath $\leftarrow D[c_{pArr}]$\;
+      $\text{tArrWithFootpath} \leftarrow c_{tArr} + \text{finalFootpath}_{\text{travelTime}}$\;
+      initaliser newTracker et lui faire tenir compte de $c$ et finalFootpath\;
+      mettre à jour $\tau_c$ avec (newTracker, $(\text{tArrWithFootpath}, c)$)\;
+
+      foopathTDep $\leftarrow c_{tArr}$ \;
+      initaliser finalFootpathNewTracker et lui faire tenir compte de finalFootpath \;
+
+      insérer (tArrWithFootpath, finalFootpath) au temps de départ foopathTDep, au tracker finalFootpathNewTracker, dans S[$c_{pArr}$]  \;
+    }
+
+    $\text{SCpArrEvaluatedAtCtArr} \leftarrow$ S[$c_{pArr}$] évalué en $c_{tArr}$ \;
+
+    \For{trajetPartiel dans SCpArrEvaluatedAtCtArr}{
+        $\text{newTracker} \leftarrow trajetPartiel_{tracker}~\text{qui tient compte de}~c$ \;
+        mettre à jour $\tau_c$ avec (newTracker, $(trajetPartiel_{tArr}, c)$)\;
+    } 
+
+    insérer tout $\tau_c$ au temps de départ $c_{tDep}$, dans S[$c_{pDep}$] \;
+    $\text{auMoinsUnNonDominé} \leftarrow$ true si au moins un trajet partiel de $\tau_c$ a été gardé dans S[$c_{pDep}$] \;
+
+    \If{auMoinsUnNonDominé}{
+
+        $\text{SCpDepEvaluatedAtCtDep} \leftarrow$ S[$c_{pDep}$] évalué en $c_{tDep}$ \;
+
+        \For{f dans chemins qui arrive en $c_{pDep}$}{
+            $\text{fTDep} \leftarrow c_{tDep} - f_{travelTime}$ \;
+
+            \For{trajetPartiel dans SCpDepEvaluatedAtCtDep}{
+                $\text{newTracker} \leftarrow \text{trajetPartiel}_{CriteriaTracker}~\text{tenant compte de}~f$ \;
+                insérer ($\text{trajetPartiel}_{tArr}, f$) au temps de départ fTDep, au tracker newTracker \;
+
+      % WRONG : insérer (tArrWithFootpath, finalFootpath) au temps de départ foopathTDep, au tracker finalFootpathNewTracker, dans S[$c_{pArr}$]  \;
+            }
+
+
+        }
+
+    }
+
+  }
+
+\end{algorithm}
+
 
 
 %-------------------------------------------------------------------
