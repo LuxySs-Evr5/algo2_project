@@ -462,10 +462,11 @@ cruciales pour comprendre l'algorithme \texttt{CSA de base (arrivée la plus
 			            bestKnown_{tArr}(f_{pArr})$
 		            Si c'est le cas, nous mettons à jour bestKnown correspondant à $f_{pArr}$.
 
-		            % TODO: expliquer pourquoi on a le droit de restreindre
-		            % l'update les footpaths à seulement quand on a trouvé une
-		            % meilleur connection (expliqué a la page 8: "Limited
-		            % Walking")
+                    Nous pouvons ne pas faire cette dernière étape liés aux
+                    chemins si $c$ n'était pas atteignable et plus rapide,
+                    cette optimisation est appelée \textit{limited walking}, et
+                    est expliquée dans \cite{ConnectionScanAlgorithmLong:2017}.
+
 
 	      \end{itemize}
 
