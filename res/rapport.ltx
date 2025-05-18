@@ -972,8 +972,10 @@ plus tôt à cause des chemins entre les arrêts~: Pour rappelle, pour chaque
 chemin non-final, nous devons insérer nos trajets partiels empruntant $f$ suivi
 d'une connexion $c$, au temps de départ $c_{tDep} - f_{travelTime}$. Ce temps
 de départ pourrait être avant le départ de la prochaine connexion scannée
-partant de $f$, appelons là $c'$. Dans ce cas, l'insertion dans le profile de
-$S_{c'_{pDep}}$ ne sera pas en fin de liste.
+partant de $f_{pDep}$, appelons là $c'$. Dans ce cas, l'insertion dans le
+profile de $S_{c'_{pDep}}$ ne sera pas en fin de liste car il existe déjà les
+trajets partiels partant plus tôtdans le profile~: ceux partant en $c_{tDep} -
+f_{travelTime}$.
 
 % - Expliquer à quoi sert et comment est implémentée une profile function
 % - Expliquer "dominer" "optimisation pareto"
