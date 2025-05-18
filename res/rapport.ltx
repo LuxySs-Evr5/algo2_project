@@ -985,13 +985,8 @@ ne tenons pas compte de celui-ci (et de $T$) pour la suite.\\
 			\For{trajetPartiel dans SCpDepEvaluatedAtCtDep}{
 				$\text{newTracker} \leftarrow \text{trajetPartiel}_{CriteriaTracker}~\text{tenant compte de}~f$ \;
 				insérer ($\text{trajetPartiel}_{tArr}, f$) au temps de départ fTDep, au tracker newTracker \;
-
-				% WRONG : insérer (tArrWithFootpath, finalFootpath) au temps de départ foopathTDep, au tracker finalFootpathNewTracker, dans S[$c_{pArr}$]  \;
 			}
-
-
 		}
-
 	}
 
 	}
@@ -1056,7 +1051,29 @@ de départ pourrait être avant le départ de la prochaine connexion scannée
 partant de $f_{pDep}$, appelons là $c'$. Dans ce cas, l'insertion dans le
 profile de $S_{c'_{pDep}}$ ne sera pas en fin de liste car il existe déjà les
 trajets partiels partant plus tôtdans le profile~: ceux partant en $c_{tDep} -
-	f_{travelTime}$.
+	f_{travelTime}$.\\
+
+
+%-------------------------------------------------------------------
+% TODO: decide whether this should go here or below pseudo code
+
+Une fois l'ensemble des connexions scannées, $S_{pDep}$ doit contenir
+l'ensemble de tous les trajets partiels partant de $pDep$ en $tDep$ ou plus
+tard, arrivant en $pArr$ et n'étant pas dominé par un autre trajet partant plus
+tard. Connaissant notre heure de départ $tDep$, il suffit d'extraire de
+$S_{pDep}$ tous les trajets non-dominés partant en $tDep$ ou plus tard. Nous ne
+conservons donc plus les trajets qui sont dominés par d'autre tarjets partant
+plus tôt. Nous pouvons les retirer car nous avons maintenant la certitude que
+les meilleures alternatives sont atteignables puisque celles-ci démarrent en
+$tDep$ ou après. (Nous n'avions pas encore cette certitude lorsque nous
+construisions nos trajets partiels). Cet ensemble est le sous-ensemble de
+trajets \textit{pareto-optimaux} par rapport aux critères de domination imposés
+par l'utilisateur et à l'ensemble de tous les trajets partant de $pDep$ à
+$tDep$ ou plus tard, et arrivant en $pArr$.\\
+
+
+%-------------------------------------------------------------------
+
 
 
 %-------------------------------------------------------------------
