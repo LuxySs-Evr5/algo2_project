@@ -1207,6 +1207,24 @@ bornes pour les différentes fonctions.
 
         \end{itemize}
 
+    \item \textbf{boucle principale}
+        En considérant les itérations sur les trajet partils en temps constant
+        (ce qui en pratique n'est évidemment pas le cas), et qu'il y a $n$
+        arrêts et $m$ connexions, nous pouvons dire que la complexité de
+        l'algorithme est en $O(m \cdot n)$.
+
+        La complexité temporelle du scan des connexions (la boucle \texttt{for}
+        principale, itérant sur les connexions) est en $O(m \cdot n)$ dans le pire des
+        cas. En effet, si ni le \hyperref[item:criteredepart]{\textit{critère de
+        départ}} ne permet pas d'élimier des connexions, alors toutes les $m$
+        connexions sont explorées. Pour chacune d’elles, l’algorithme parcourt les
+        chemins arrivant à l’arrêt d’arrivée de la connexion. Or, si le graphe des
+        chemins est transitivement fermé, un arrêt peut être relié à exactement $n - 1$
+        autres, ce qui donne au total une complexité de $O(m \cdot n)$\\
+        (Comme pour le CSA de base la recherche dichotomique pour le
+        \hyperref[item:criteredepart]{\textit{critère de départ}} est en
+        $O(\log(m)) \in O(m)$).
+
 \end{itemize}
 
 
