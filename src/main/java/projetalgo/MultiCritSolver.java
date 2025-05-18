@@ -10,30 +10,22 @@ import java.util.stream.Collectors;
 
 import javafx.util.Pair;
 
-// TODO: doc pour template args etc
 public class MultiCritSolver extends AbstractSolver {
     private final HashMap<String, List<Footpath>> stopIdToIncomingFootpaths;
-
-    // TODO: not necessary since we don't use tau2
-    private final List<String> tripIds;
+    // not necessary since we don't use tau2
+    // private final List<String> tripIds;
 
     private static final List<Footpath> EMPTY_FOOTPATH_LIST = List.of();
 
     public MultiCritSolver(Data data) {
         super(data);
 
-        // TODO: not necessary since we don't use tau2
-        this.tripIds = new ArrayList<>();
+        // not necessary since we don't use tau2
+        // this.tripIds = new ArrayList<>();
 
         double maxFootpathDistKm = 0.5;
         this.stopIdToIncomingFootpaths = new HashMap<>();
         this.genFootpaths(maxFootpathDistKm);
-
-        // TODO: remove this
-        // System.out.println("stopIdToIncomingFootpaths: " +
-        // stopIdToIncomingFootpaths);
-        // System.out.println("connections: " + connections);
-        // System.out.println("stopIdToStop: " + stopIdToStop);
     }
 
     /**
@@ -61,7 +53,6 @@ public class MultiCritSolver extends AbstractSolver {
                 tDep = connection.getTArr();
                 tripId = connection.getTripId();
 
-                // TODO: find a better way of doing this
                 switch (connection.getTransportType()) {
                     case BUS:
                         criteriaTracker.decBusesCount();
@@ -211,10 +202,8 @@ public class MultiCritSolver extends AbstractSolver {
      *
      * Similarities & differences to the original pseudocodes are noted with
      * comments. Due to differences in data structures and optimization goals, some
-     * lines differ slightly and some have been removed as they are irreleveant for
+     * lines differ slightly and some have been removed as they are irrelevant for
      * our optimization goals (see τ2 below).
-     *
-     * TODO: check that those doc parameters are still correct
      *
      * @param criteriaTrackerFactory the criteriaTracker factory (depends on the
      *                               criteria that the caller wants to use)
@@ -230,8 +219,6 @@ public class MultiCritSolver extends AbstractSolver {
             return;
         }
 
-        // TODO: comment out the tau2 and T stuff.
-
         // ### init data structure
 
         // stopId -> stop's ProfileFunction
@@ -239,7 +226,8 @@ public class MultiCritSolver extends AbstractSolver {
 
         // tripId -> Map<CriteriaTracker -> (tArr for this journey + last Movement
         // taken)>
-        Map<String, Map<CriteriaTracker, Pair<Integer, Movement>>> T = new HashMap<>();
+        // Map<String, Map<CriteriaTracker, Pair<Integer, Movement>>> T = new
+        // HashMap<>();
 
         // stopId -> footpath to pArr (dest)
         // In the original pseudocode (figure 11), D only stores the footpath's
@@ -262,13 +250,12 @@ public class MultiCritSolver extends AbstractSolver {
         });
 
         // for all trips x do T [x] ← ∞;
-        tripIds.forEach(tripId -> {
-            T.put(tripId, new HashMap<>());
-        });
+        // tripIds.forEach(tripId -> {
+        // T.put(tripId, new HashMap<>());
+        // });
 
         // ### Actual algorithm
 
-        // TODO: do not forget to reverse the order if using connections from Data class
         for (Connection c : getFilteredConnections(tDep).reversed()) {
             if (c.getPDep().getId().equals(pArrId)) {
                 // avoid stupid loops, e.g. if our dest is A and the algorithm scans a
@@ -367,12 +354,12 @@ public class MultiCritSolver extends AbstractSolver {
                         updateTauC(tauC, newTracker, new Pair<>(tArr, c));
                     });
 
-            // insert a copy of tauC into T[ctrip]
-            T.put(c.getTripId(),
-                    tauC.entrySet().stream()
-                            .collect(Collectors.toMap(
-                                    e -> e.getKey().copy(),
-                                    e -> new Pair<>(e.getValue().getKey(), e.getValue().getValue()))));
+            // insert a copy of tauC into T[ctrip] (not necessary since we don't use tau2)
+            // T.put(c.getTripId(),
+            // tauC.entrySet().stream()
+            // .collect(Collectors.toMap(
+            // e -> e.getKey().copy(),
+            // e -> new Pair<>(e.getValue().getKey(), e.getValue().getValue()))));
 
             ProfileFunction sCPDep = S.get(c.getPDep().getId());
             boolean atLeastOneNotDominated = sCPDep.insert(c.getTDep(), tauC);
@@ -382,7 +369,6 @@ public class MultiCritSolver extends AbstractSolver {
             // dominated in c.pDep implies that it is also dominated in incoming footpaths
             // of c.pDep).
             if (atLeastOneNotDominated) {
-                // in c.PDep as they would also be dominated in incomin footpaths.
                 Map<CriteriaTracker, Pair<Integer, Movement>> sCPDepEvaluatedAtCTDep = sCPDep.evaluateAt(c.getTDep());
 
                 for (Footpath f : stopIdToIncomingFootpaths.getOrDefault(c.getPDep().getId(), EMPTY_FOOTPATH_LIST)) {
@@ -412,7 +398,6 @@ public class MultiCritSolver extends AbstractSolver {
         optCriteriaTracker.ifPresentOrElse(
                 criteriaTracker -> displayJourney(S, pDepId, pArrId, tDep, criteriaTracker),
                 () -> System.out.println("no journey found"));
-
     }
 
     /**
@@ -420,10 +405,9 @@ public class MultiCritSolver extends AbstractSolver {
      */
     private void genFootpaths(double maxDistKm) {
         BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
-        double maxDistanceKm = maxDistKm; // TODO: replace by the actual value
         for (Stop sourceStop : stopIdToStop.values()) {
 
-            List<Stop> nearbyStops = ballTree.findStopsWithinRadius(sourceStop, maxDistanceKm);
+            List<Stop> nearbyStops = ballTree.findStopsWithinRadius(sourceStop, maxDistKm);
 
             for (Stop arrStop : nearbyStops) {
                 if (!sourceStop.equals(arrStop)) {

@@ -56,7 +56,6 @@ public class Solver extends AbstractSolver {
     Stack<BestKnownEntry> reconstructSolution(Map<String, BestKnownEntry> bestKnown, List<String> pDepIds,
             String pArrIdEarliest) {
         // Reconstruct the solution backwards (from pArr to one of pDeps)
-        // TODO: path isn't a good name because (could be confused with footpath)
         Stack<BestKnownEntry> finalPath = new Stack<>();
         String currentStopId = pArrIdEarliest;
         while (!pDepIds.contains(currentStopId)) {
@@ -291,9 +290,8 @@ public class Solver extends AbstractSolver {
      */
     private void genFootpaths(double maxDistKm) {
         BallTree ballTree = new BallTree(new ArrayList<>(stopIdToStop.values()));
-        double maxDistanceKm = maxDistKm;
         for (Stop sourceStop : stopIdToStop.values()) {
-            List<Stop> nearbyStops = ballTree.findStopsWithinRadius(sourceStop, maxDistanceKm);
+            List<Stop> nearbyStops = ballTree.findStopsWithinRadius(sourceStop, maxDistKm);
 
             for (Stop arrStop : nearbyStops) {
                 if (!sourceStop.equals(arrStop)) {
