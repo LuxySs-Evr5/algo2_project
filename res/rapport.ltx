@@ -61,10 +61,6 @@
 
 %TODO: parler du fait que l'algo du CSA normal nous fait faire des switch inutiles
 
-%TODO: parler du "limited walking optimization" et que ca a besoin que nos
-%footpaths soient transitivement fermés + inégalité triangulaire ce qui en
-%pratique n'est pas du tout le cas (voir https://arxiv.org/pdf/1703.05997 page 4)
-
 \section{Introduction}
 
 % TODO: check que cette intro reprend bien toutes les grandes sections (et pas
@@ -221,7 +217,6 @@ Le processus de chargement s'effectue en trois grandes étapes :
 \subsection{Construction des chemins à pied (\texttt{Footpath})}
 
 % voir page 4
-% TODO: expliquer pourquoi c'est nécessaire
 Les algorithmes CSA~\cite{ConnectionScanAlgorithmLong:2017} requièrent que le graphe des chemins à pied
 \begin{itemize}
 
@@ -244,7 +239,6 @@ Cette approche présente une complexité spatiale et temporelle en $\Theta(n^2)$
 où $n$ est le nombre d'arrêts, ce qui entraîne des durées d’exécution
 particulièrement longues.
 
-% TODO: reformuler ceci
 Pour les raisons suivantes :
 \begin{itemize}
 	\item très grand nombre d'arrêts
@@ -302,8 +296,6 @@ L'algorithme de génération s'effectue ainsi :
 % Cette amélioration permet de rendre l’étape de génération des chemins à pied plus rapide.\\
 
 \subsection{Complexité du chargement}
-% TODO: complexité temporelle (balltree + tim sort)
-% TODO: complexité spatiale
 
 Notons $n$ le nombre d'arrêts et $m$ le nombre de connexions. Le nombre de
 chemins, si nous les générons tous (fermeture transitive) correspond au nombre
@@ -334,13 +326,6 @@ La complexité du chargement est donc en $O(n\log(n) + n^2) = O(n^2)$.
 %-------------------------------------------------------------------
 
 \section{CSA de base (arrivée la plus tôt)}
-
-% TODO: expliquer la big flaw du CSA basique, comme on update seulement les
-% footpaths directement connectés au connexions scannées, (on progpage pas plus
-% qu'un seul footpath, jamais on propagera 2+ footpaths plus loin), ca repose
-% sur le fait qu'on ne marche jamais 2 fois d'affilé. Cependant, cette
-% condition est respectée uniquement si on a la fermeture transitive du graphe
-% des footpaths, ce qui en pratique n'est pas le cas.
 
 Le CSA de base permet de résoudre le problème suivant :
 
@@ -403,10 +388,6 @@ cruciales pour comprendre l'algorithme \texttt{CSA de base (arrivée la plus
 	\item Une connexion est dite \textit{atteignable} si nous sommes en
 	      mesures de nous trouver à son arrêt de départ au moment auquel celle-ci
 	      ne démarre, i.e. $bestKnown_{tArr}(c_{pDep}) \leq c_{tDep}$.
-
-	      %TODO: vérifier que ce truc est nécessaire à définir
-	\item Un mouvement $m1$ est plus rapide qu'un autre mouvement $m2$ si $m1$
-	      et $m2$ ont la même destination et $m1$ atteint celle-ci avant $m2$.
 
 	\item Calcul du temps d'arrivé d'un chemin à pied : $f_{tArr} = f_{tDep} +
 		      f_{travelTime}$ où $f_{tDep}$ correspond au meilleur temps connu pour
