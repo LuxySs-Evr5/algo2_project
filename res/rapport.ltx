@@ -921,6 +921,86 @@ ne tenons pas compte de celui-ci (et de $T$) pour la suite.\\
 
 %-------------------------------------------------------------------
 
+% - Expliquer à quoi sert et comment est implémentée une profile function
+% - Expliquer "dominer" "optimisation pareto"
+% - Expliquer pourquoi les final footpaths sont gérés différement des interstop footpaths
+% - Parler du fait qu'on peut à nouveau faire l'opti de "critère de départ"
+
+
+%-------------------------------------------------------------------
+% section PseudoCode
+
+% TODO: peut etre que c'est mieux d'expliquer ce pseudo code et a quoi
+% correspond chaque truc avant de parler de la structure de données.
+%TODO: expliquer les différents trucs du pseudo code genre tauC etc
+
+%TODO: enlever le mix francais anglais
+
+%TODO: décrire les inputs de l'algorithme
+\begin{algorithm}[H]
+	\DontPrintSemicolon
+	\SetAlgoLined
+
+	initialiser Map $S$\;
+	initialiser Map $D$\;
+
+	\For{connexions $c$ par $c_{tDep}$ décroissant}{
+
+	initialiser Map $\tau_c$\;
+
+	% Cas 1 : si la connexion arrive directement à la station d'arrivée
+	\If{$c$ arrive en $p_{Arr}$}{
+		initaliser newTracker et lui faire tenir compte de $c$\;
+		mettre à jour $\tau_c$ avec (newTracker, $(c_{tArr}, c)$)\;
+	}
+	\Else{ % Cas 2 : sinon, il faut prendre un chemin à pied
+	finalFootpath $\leftarrow D[c_{pArr}]$\;
+	$\text{tArrWithFootpath} \leftarrow c_{tArr} + \text{finalFootpath}_{\text{travelTime}}$\;
+	initaliser newTracker et lui faire tenir compte de $c$ et finalFootpath\;
+	mettre à jour $\tau_c$ avec (newTracker, $(\text{tArrWithFootpath}, c)$)\;
+
+	foopathTDep $\leftarrow c_{tArr}$ \;
+	initaliser finalFootpathNewTracker et lui faire tenir compte de finalFootpath \;
+
+	insérer (tArrWithFootpath, finalFootpath) au temps de départ foopathTDep, au tracker finalFootpathNewTracker, dans S[$c_{pArr}$]  \;
+	}
+
+	$\text{SCpArrEvaluatedAtCtArr} \leftarrow$ S[$c_{pArr}$] évalué en $c_{tArr}$ \;
+
+	\For{trajetPartiel dans SCpArrEvaluatedAtCtArr}{
+		$\text{newTracker} \leftarrow trajetPartiel_{tracker}~\text{qui tient compte de}~c$ \;
+		mettre à jour $\tau_c$ avec (newTracker, $(trajetPartiel_{tArr}, c)$)\;
+	}
+
+	insérer tout $\tau_c$ au temps de départ $c_{tDep}$, dans S[$c_{pDep}$] \;
+	$\text{auMoinsUnNonDominé} \leftarrow$ true si au moins un trajet partiel de $\tau_c$ a été gardé dans S[$c_{pDep}$] \;
+
+	\If{auMoinsUnNonDominé}{
+
+		$\text{SCpDepEvaluatedAtCtDep} \leftarrow$ S[$c_{pDep}$] évalué en $c_{tDep}$ \;
+
+		\For{f dans chemins qui arrive en $c_{pDep}$}{
+			$\text{fTDep} \leftarrow c_{tDep} - f_{travelTime}$ \;
+
+			\For{trajetPartiel dans SCpDepEvaluatedAtCtDep}{
+				$\text{newTracker} \leftarrow \text{trajetPartiel}_{CriteriaTracker}~\text{tenant compte de}~f$ \;
+				insérer ($\text{trajetPartiel}_{tArr}, f$) au temps de départ fTDep, au tracker newTracker \;
+
+				% WRONG : insérer (tArrWithFootpath, finalFootpath) au temps de départ foopathTDep, au tracker finalFootpathNewTracker, dans S[$c_{pArr}$]  \;
+			}
+
+
+		}
+
+	}
+
+	}
+
+\end{algorithm}
+
+
+%-------------------------------------------------------------------
+
 \subsection{Structure de données}
 
 Notre implémentation utilise principalement des \texttt{HashMap}, des
@@ -977,84 +1057,6 @@ partant de $f_{pDep}$, appelons là $c'$. Dans ce cas, l'insertion dans le
 profile de $S_{c'_{pDep}}$ ne sera pas en fin de liste car il existe déjà les
 trajets partiels partant plus tôtdans le profile~: ceux partant en $c_{tDep} -
 	f_{travelTime}$.
-
-% - Expliquer à quoi sert et comment est implémentée une profile function
-% - Expliquer "dominer" "optimisation pareto"
-% - Expliquer pourquoi les final footpaths sont gérés différement des interstop footpaths
-% - Parler du fait qu'on peut à nouveau faire l'opti de "critère de départ"
-
-
-%-------------------------------------------------------------------
-% section PseudoCode
-
-% TODO: peut etre que c'est mieux d'expliquer ce pseudo code et a quoi
-% correspond chaque truc avant de parler de la structure de données.
-%TODO: expliquer les différents trucs du pseudo code genre tauC etc
-
-%TODO: enlever le mix francais anglais
-
-%TODO: décrire les inputs de l'algorithme
-\begin{algorithm}[H]
-  \DontPrintSemicolon
-  \SetAlgoLined
-
-  initialiser Map $S$\;
-  initialiser Map $D$\;
-
-  \For{connexions $c$ par $c_{tDep}$ décroissant}{
-
-    initialiser Map $\tau_c$\;
-
-    % Cas 1 : si la connexion arrive directement à la station d'arrivée
-    \If{$c$ arrive en $p_{Arr}$}{
-      initaliser newTracker et lui faire tenir compte de $c$\;
-      mettre à jour $\tau_c$ avec (newTracker, $(c_{tArr}, c)$)\;
-    }
-    \Else{ % Cas 2 : sinon, il faut prendre un chemin à pied
-      finalFootpath $\leftarrow D[c_{pArr}]$\;
-      $\text{tArrWithFootpath} \leftarrow c_{tArr} + \text{finalFootpath}_{\text{travelTime}}$\;
-      initaliser newTracker et lui faire tenir compte de $c$ et finalFootpath\;
-      mettre à jour $\tau_c$ avec (newTracker, $(\text{tArrWithFootpath}, c)$)\;
-
-      foopathTDep $\leftarrow c_{tArr}$ \;
-      initaliser finalFootpathNewTracker et lui faire tenir compte de finalFootpath \;
-
-      insérer (tArrWithFootpath, finalFootpath) au temps de départ foopathTDep, au tracker finalFootpathNewTracker, dans S[$c_{pArr}$]  \;
-    }
-
-    $\text{SCpArrEvaluatedAtCtArr} \leftarrow$ S[$c_{pArr}$] évalué en $c_{tArr}$ \;
-
-    \For{trajetPartiel dans SCpArrEvaluatedAtCtArr}{
-        $\text{newTracker} \leftarrow trajetPartiel_{tracker}~\text{qui tient compte de}~c$ \;
-        mettre à jour $\tau_c$ avec (newTracker, $(trajetPartiel_{tArr}, c)$)\;
-    } 
-
-    insérer tout $\tau_c$ au temps de départ $c_{tDep}$, dans S[$c_{pDep}$] \;
-    $\text{auMoinsUnNonDominé} \leftarrow$ true si au moins un trajet partiel de $\tau_c$ a été gardé dans S[$c_{pDep}$] \;
-
-    \If{auMoinsUnNonDominé}{
-
-        $\text{SCpDepEvaluatedAtCtDep} \leftarrow$ S[$c_{pDep}$] évalué en $c_{tDep}$ \;
-
-        \For{f dans chemins qui arrive en $c_{pDep}$}{
-            $\text{fTDep} \leftarrow c_{tDep} - f_{travelTime}$ \;
-
-            \For{trajetPartiel dans SCpDepEvaluatedAtCtDep}{
-                $\text{newTracker} \leftarrow \text{trajetPartiel}_{CriteriaTracker}~\text{tenant compte de}~f$ \;
-                insérer ($\text{trajetPartiel}_{tArr}, f$) au temps de départ fTDep, au tracker newTracker \;
-
-      % WRONG : insérer (tArrWithFootpath, finalFootpath) au temps de départ foopathTDep, au tracker finalFootpathNewTracker, dans S[$c_{pArr}$]  \;
-            }
-
-
-        }
-
-    }
-
-  }
-
-\end{algorithm}
-
 
 
 %-------------------------------------------------------------------
