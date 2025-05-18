@@ -1030,12 +1030,15 @@ procédure \texttt{getFirstMatch}.
 Connaissant également le mouvement à emprunter $m_i$, nous pouvons déterminer~:
 \begin{itemize}
    \item $j_{{i+1}_{pDep}} = m_{i_{pArr}}$
-       % TODO: rentre ca plus joli avec une accolade
-   \item $j_{{i+1}_{tDep}}$, en fonction du type de mouvement qu'est $m_i$:
-    \begin{itemize}
-        \item $c_{tArr}$ si $m_i$ est une connexion $c$, 
-        \item $j_{{i-1}_{tDep}} + f_{travelTime}$ si $m_i$ est un chemin $f$.
-    \end{itemize}
+
+   \item \[
+       j_{{i+1}_{tDep}} = \left\{
+       \begin{array}{ll}
+           c_{tArr} \text{ si } m_i \text { est une connexion } c, \\
+           j_{{i-1}_{tDep}} + f_{travelTime} \text{ si } m_i \text{ est un chemin f.}
+       \end{array}
+       \right.
+   \]
 
    \item $j_{{i+1}_{\text{CriteriaTracker}}}$, en décrémentant le compteur de
        bus/tram/train/metro/chemin de $j_{i_{\text{CriteriaTracker}}}$, en
