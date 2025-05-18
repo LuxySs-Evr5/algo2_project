@@ -742,7 +742,7 @@ contre-exemple suivant le montre :
 
 % TODO: qqch pour expliquer ce qui est quoi dans ce graphe, expliquer que t1<t2<t3<t4
 
-Notons pour toute connection $c$:
+Notons pour toute connexion $c$:
 \[
 	\operatorname{cost}(c) = \operatorname{cost}(pDep \rightarrow c_{pDep} + c)
 \]
@@ -765,7 +765,7 @@ Il en va de même pour le scan de $c2$ :
 	\texttt{bestKnown}_{cost}(z) \leq \operatorname{cost}(c2)
 \]
 
-Et enfin, nous scannons la connection $c3$.
+Et enfin, nous scannons la connexion $c3$.
 Supposons que:
 \[
 	\texttt{bestKnown}_{cost}(z) > \operatorname{cost}(c3)
@@ -781,7 +781,7 @@ $y$ en $t2$.\\
 % TODO: check si ca serait pas mieux d'expliquer ca avant de mettre le
 % contre-exemple 
 % TODO: pourquoi on repete le fait que c'et le seul a la fin ?
-Formellement, cela est dû fait que seul le critère de temps d'arrivée le plus
+Formellement, cela est dû au fait que seul le critère de temps d'arrivée le plus
 tôt respecte \textit{la condition d'échangeabilité préfixe} :
 \cite{ConnectionScanAccelerated} Soit $s_1, s_2, \dots, s_n$ un trajet optimal
 $A@tDep \rightarrow B$, i.e. partant de $A$ en $tDep$ et arrivant en $B$.
@@ -840,7 +840,7 @@ Le mcCSA permet de résoudre le problème suivant :
 \end{quote}
 
 Puisque nous construisons notre trajet en partant de l'arrivée, nous scannons
-les connections par ordre de départ décroissant. À chaque étape de l'exécution
+les connexions par ordre de départ décroissant. À chaque étape de l'exécution
 de l'algorithme, pour chaque arrêt $p$, l'algorithme doit maintenir un
 ensemble de trajets partiels $\mathcal{S}_p$ tel que :
 \label{item:defProfileFunctionContent}
@@ -902,8 +902,8 @@ $c$~:
 
 Pour le cas 1, nous considérons un nouveau trajet partiel démarrant en $tDep$
 dans $S_{cPdep}$, celui-ci contient un chemin (le chemin final), et une
-connection. De plus, puisque ce chemin final fait partie d'un candidat, nous
-ajoutons le trajet composé d'uniquement celui-ci dans la fonction de profile de
+connexion. De plus, puisque ce chemin final fait partie d'un candidat, nous
+ajoutons le trajet composé d'uniquement celui-ci dans la fonction de profil de
 $S_{c_{pArr}}$.\\
 
 Pour le cas 2, nous devons considérer les meilleurs trajets partiels pour
@@ -925,7 +925,7 @@ Ce groupe représente donc les meilleurs trajets possibles à partir de $c$.\\
 
 Nous utilisons ce groupe pour mettre à jour l'entrée correspondant à
 $c_{tripId}$ dans $T$, et nous insérons ces différents trajets partiels dans la
-fonction de profile $S_{c_{pDep}}$, avec le temps de départ $c_{tDep}$.\\
+fonction de profil $S_{c_{pDep}}$, avec le temps de départ $c_{tDep}$.\\
 
 Pour chaque cas, nous calculons les nouveaux \texttt{CriteriaTracker} (e.g.
 ajouter un tram au compteur de trams).\\
@@ -1054,7 +1054,7 @@ des trajets partiels empruntant $c$.
 \subsection{Reconstruction de la solution}
 
 Nous reconstruisons les différents trajets Pareto-optimaux à l'aide des
-\texttt{CriteriaTracker}, des fonctions de profile, et des temps de départ.
+\texttt{CriteriaTracker}, des fonctions de profil et des temps de départ.
 
 Considérons le trajet $j$ démarrant en $j_{tDep}$ de l'arrêt $j_{pDep}$ et
 arrivant en $j_{pArr}$, composé des mouvements $m_1, \dots, m_n$. Notons $j_1,
@@ -1094,7 +1094,7 @@ Connaissant également le mouvement à emprunter $m_i$, nous pouvons déterminer
 Le cas de départ utilise le \texttt{CriteriaTracker} et le temps de départ du
 trajet complet (partant de $pDep$) que nous voulons reconstruire. L'algorithme
 s'arrête à l'étape à laquelle l'arrêt de départ du trajet partiel considéré est
-l'arrêt de destination, c'est à dire quand $j_{i_{pDep}} = pArr$.\\
+l'arrêt de destination, c'est-à-dire quand $j_{i_{pDep}} = pArr$.\\
 
 Le pseudo-code \autoref{alg:DisplayJourney} illustre comment nous tirons parti
 de cette induction pour reconstruire la solution.
@@ -1157,7 +1157,7 @@ Notre implémentation utilise principalement des \texttt{HashMap}, des
 
 \subsubsection{Fonction de profile}
 
-La fonction de profile est composée d'un unique attribut~:
+La fonction de profil est composée d'un unique attribut~:
 \texttt{ArrayList<Pair<Integer, HashMap<CriteriaTracker, Pair<Integer, Movement>>>> entries;}
 
 Les paires se trouvant dans le \texttt{ArrayList} contiennent :
@@ -1173,7 +1173,7 @@ Les paires se trouvant dans le \texttt{ArrayList} contiennent :
 \end{enumerate}
 
 Celles-ci sont ordonnées par temps de départ décroissant afin de maximiser le
-nombre d'insertions en fin de liste (moins couteûses). Puisque nous scannons
+nombre d'insertions en fin de liste (moins coûteuses). Puisque nous scannons
 les connexions par ordre de départ décroissant, nous allons généralement
 insérer dans la fonction de profile des groupes de trajets partiels débutant de
 plus en plus tôt. Nous ne pouvons pas garantir que cela est toujours de plus en
@@ -1186,7 +1186,7 @@ profile de $S_{c'_{pDep}}$ ne sera pas en fin de liste car il existe déjà les
 trajets partiels partant plus tôt dans le profile~: ceux partant en $c_{tDep} -
 	f_{travelTime}$.\\
 
-\subsection{Complexité du CSA profile multicritère pareto}
+\subsection{Complexité du CSA profile multicritère Pareto}
 
 Nous ne sommes pas parvenus à trouver une expression de la complexité de
 l'algorithme dans son ensemble, dans le pire cas. Toutefois, nous donnons des
