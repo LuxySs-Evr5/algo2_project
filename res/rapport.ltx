@@ -628,28 +628,40 @@ deux~\hyperref[item:dagcriteresshortestpath]{critères pour les algorithmes de
 
 Notons $n$ le nombre d'arrêts et $m$ le nombre de connexions.
 
-La complexité spatiale est en $O(log(n))$, car la taille \texttt{BestKnown} est
-au plus $n$, puisqu'il y a, au plus, une entrée pour chaque arrêt.\\
+%TODO: find a better way to say it
+La complexité spatiale est en $O(n)$, car les seules structures de données
+utilisées sont \texttt{bestKnown} et \texttt{finalPath}.
+\begin{itemize}
+    \item La taille de \texttt{bestKnown} est bornée par le nombre d’arrêts $n$, car elle contient au plus une entrée par arrêt.
+    \item La taille de \texttt{finalPath} correspond au nombre de mouvements
+        constituant le plus long des plus courts trajets considérés à un
+        instant donné. Dans un graphe connexe à $n$ sommets, la longueur d’un
+        plus court chemin entre deux sommets est au plus $n - 1$, ce qui
+        correspond à un chemin simple visitant chaque sommet au plus une fois.
+        En effet, tout chemin de longueur strictement supérieure à $n - 1$
+        contient nécessairement un cycle, que l’on peut éliminer pour obtenir
+        un chemin plus court. Ainsi, finalPath est également borné par $O(n)$.\\
+\end{itemize}
 
 La complexité temporelle de la recherche dichotomique à l'étape
 \hyperref[item:criteredepart]{\textit{critère de départ}} est en
 $O(\log(m))$.\\
 
 La complexité temporelle du scan des connexions (la boucle \texttt{for}
-principale, itérant sur les connexions) est en $O(m * n)$, car nous itérons sur
-les $m$ connexions dans le pire des cas (si le
-\hyperref[item:criteredepart]{\textit{critère de départ}} et le
-\hyperref[item:criterearret]{\textit{critère d'arrêt}} ne permette pas
-d'élimier des connexions), et pour chacune d'elles, nous itérons sur les
-chemins partant de l'arrêt d'arrivée de la connexion. Le nombre de chemin
-reliant un arrêt à tous les autres étant $n-1$ si le graphe des chemins est
-transitivement fermé, la complexité de l'algorithme est en $O(m * n)$.
+principale, itérant sur les connexions) est en $O(m \cdot n)$ dans le pire des
+cas. En effet, si ni le \hyperref[item:criteredepart]{\textit{critère de
+départ}}, ni le \hyperref[item:criterearret]{\textit{critère d'arrêt}} ne
+permettent d'élimier des connexions, alors toutes les $m$ connexions sont
+explorées. Pour chacune d’elles, l’algorithme parcourt les chemins partant de
+l’arrêt d’arrivée de la connexion. Or, si le graphe des chemins est
+transitivement fermé, un arrêt peut être relié à exactement $n - 1$ autres, ce
+qui donne au total une complexité de $O(m \cdot n)$\\
 
-% TODO complexité temporelle O(n - m), pas exactement à cause des footpaths ou
-% n = nombre de connections qui partent apres tdep, 
-% m = nombre de connections qui ne seront pas scannées à cause du stopping criterion
+La complexité temporelle d'une requête comprenant la recherche dichotomique est
+donc de l'ordre de $O(\log(m) + n \cdot m)$ dans le pire cas. Notons que comme
+$O(\log(m)) \in O(m)$, nous pouvons conclure que $O(\log(m) + n \cdot m) = O(n
+\cdot m)$.
 
-% TODO complexité spatiale
 
 
 %-------------------------------------------------------------------
