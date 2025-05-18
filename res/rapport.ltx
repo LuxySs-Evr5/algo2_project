@@ -946,9 +946,14 @@ $tDep$ ou plus tard, et arrivant en $pArr$.\\
 %TODO: enlever le mix francais anglais
 
 %TODO: décrire les inputs de l'algorithme
+
 \begin{algorithm}[H]
-	\DontPrintSemicolon
 	\SetAlgoLined
+	\DontPrintSemicolon
+	\SetKwFunction{Solve}{solve}
+	\SetKwProg{Fn}{Function}{:}{}
+
+	\Fn{\Solve{$pDepId$, $pArrId$, $tDep$} \textbf{return} $S$}{
 
 	initialiser Map $S$\;
 	initialiser Map $D$\;
@@ -997,10 +1002,12 @@ $tDep$ ou plus tard, et arrivant en $pArr$.\\
 			}
 		}
 	}
-
+	}
+    \Return{$S$}
 	}
 
-	% TODO: caption
+    \caption{Calcul de toutes les fonctions de profile pour une requête}
+    \label{alg:Solve}
 \end{algorithm}
 
 
@@ -1012,14 +1019,14 @@ Nous reconstruisons les différents trajets pareto-optimaux à l'aide des
 
 Considérons le trajet $j$ démarrant en $j_{tDep}$ de l'arrêt $j_{pDep}$ et
 arrivant en $j_{pArr}$, composé des mouvements $m_1, \dots, m_n$. Notons $j_1,
-\dots, j_n$, les trajets partiels suffixes de $j$~: $j_i$ correspond au
+	\dots, j_n$, les trajets partiels suffixes de $j$~: $j_i$ correspond au
 sous-trajet partiel composé de $m_i, \dots, m_n$.\\
 
-Pour tout sous-trajet $j_i$, connaissant 
+Pour tout sous-trajet $j_i$, connaissant
 \begin{itemize}
-    \item l'arrêt de départ $j_{i_{pDep}}$,
-    \item le temps de départ $j_{i_{tDep}}$,
-    \item $j_{i_{\text{CriteriaTracker}}}$, le CriteriaTracker en $j_{i_{pDep}}$
+	\item l'arrêt de départ $j_{i_{pDep}}$,
+	\item le temps de départ $j_{i_{tDep}}$,
+	\item $j_{i_{\text{CriteriaTracker}}}$, le CriteriaTracker en $j_{i_{pDep}}$
 \end{itemize}
 nous pouvons retrouver le prochain mouvement à emprunter $m_{i}$~: Il s'agit du
 mouvement se trouvant dans $S_{j_{i_{pDep}}}$, partant de $j_{i_{pDep}}$ en
@@ -1029,20 +1036,20 @@ procédure \texttt{getFirstMatch}.
 
 Connaissant également le mouvement à emprunter $m_i$, nous pouvons déterminer~:
 \begin{itemize}
-   \item $j_{{i+1}_{pDep}} = m_{i_{pArr}}$
+	\item $j_{{i+1}_{pDep}} = m_{i_{pArr}}$
 
-   \item \[
-       j_{{i+1}_{tDep}} = \left\{
-       \begin{array}{ll}
-           c_{tArr} \text{ si } m_i \text { est une connexion } c, \\
-           j_{{i-1}_{tDep}} + f_{travelTime} \text{ si } m_i \text{ est un chemin f.}
-       \end{array}
-       \right.
-   \]
+	\item \[
+		      j_{{i+1}_{tDep}} = \left\{
+		      \begin{array}{ll}
+			      c_{tArr} \text{ si } m_i \text { est une connexion } c, \\
+			      j_{{i-1}_{tDep}} + f_{travelTime} \text{ si } m_i \text{ est un chemin f.}
+		      \end{array}
+		      \right.
+	      \]
 
-   \item $j_{{i+1}_{\text{CriteriaTracker}}}$, en décrémentant le compteur de
-       bus/tram/train/metro/chemin de $j_{i_{\text{CriteriaTracker}}}$, en
-       fonction du type de mouvement de $m_i$.
+	\item $j_{{i+1}_{\text{CriteriaTracker}}}$, en décrémentant le compteur de
+	      bus/tram/train/metro/chemin de $j_{i_{\text{CriteriaTracker}}}$, en
+	      fonction du type de mouvement de $m_i$.
 \end{itemize}
 
 Le cas de départ utilise le \texttt{CriteriaTracker} et le temps de départ du
@@ -1050,33 +1057,35 @@ trajet complet (partant de $pDep$) que nous voulons reconstruire. L'algorithme
 s'arrête à l'étape à laquelle l'arrêt de départ du trajet partiel considéré est
 l'arrêt de destination, c'est à dire quand $j_{i_{pDep}} = pArr$.\\
 
-Le pseudocode suivant illustre comment nous tirons parti de cette induction~:
+Le pseudocode \autoref{alg:DisplayJourney} illustre comment nous tirons parti
+de cette induction pour reconstruire la solution.
 
 \begin{algorithm}[H]
-\SetAlgoLined
-\DontPrintSemicolon
-\SetKwFunction{DisplayJourney}{displayJourney}
-\SetKwProg{Fn}{Function}{:}{}
+	\SetAlgoLined
+	\DontPrintSemicolon
+	\SetKwFunction{DisplayJourney}{displayJourney}
+	\SetKwProg{Fn}{Function}{:}{}
 
-\Fn{\DisplayJourney{$S$, $pDepId$, $pArrId$, $tDep$, $criteriaTracker$}}{
-    $stopId \leftarrow pDepId$\;
+	\Fn{\DisplayJourney{$S$, $pDepId$, $pArrId$, $tDep$, $criteriaTracker$}}{
+		$stopId \leftarrow pDepId$\;
 
-    \While{$stopId \neq pArrId$}{
-        $movement \leftarrow S[stopId].\texttt{getFirstMatch}(tDep, criteriaTracker)$\;
-        \texttt{print} ``taking'' $movement$\;
-        
-        $stopId \leftarrow movement.pArr.id$\;
+		\While{$stopId \neq pArrId$}{
+			$movement \leftarrow S[stopId].\texttt{getFirstMatch}(tDep, criteriaTracker)$\;
+			\texttt{print} ``taking'' $movement$\;
 
-        $criteriaTracker \leftarrow criteriaTracker~\text{ajusté en fonction du type de transport de}~movement$\;
+			$stopId \leftarrow movement.pArr.id$\;
 
-        \eIf{$movement$ est un \texttt{Footpath}}{
-            $tDep \leftarrow tDep + movement_{travelTime}$\;
-        }{
-            $tDep \leftarrow movement_{tArr}$\;
-        }
-    }
-}
-\caption{Reconstruction d'un trajet solution}
+			$criteriaTracker \leftarrow criteriaTracker~\text{ajusté en fonction du type de transport de}~movement$\;
+
+			\eIf{$movement$ est un \texttt{Footpath}}{
+				$tDep \leftarrow tDep + movement_{travelTime}$\;
+			}{
+				$tDep \leftarrow movement_{tArr}$\;
+			}
+		}
+	}
+	\caption{Reconstruction d'un trajet solution}
+    \label{alg:DisplayJourney}
 \end{algorithm}
 
 \end{document}
