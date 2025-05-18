@@ -6,6 +6,7 @@
 \setlength{\parindent}{0pt}
 \usepackage[table]{xcolor}
 \usepackage{booktabs}
+\usepackage[french]{babel}
 \usepackage{epigraph}
 \usepackage{lmodern}
 \usepackage{geometry}
@@ -55,14 +56,9 @@
 
 %TODO: pas oublier de dire qu'on a du restreindre le multicritère a un plus petit dataset
 
-%TODO: remplacer l'adjectif basique (pas formel)
-
-%TODO: parler du chargement des données
 %TODO: parler du ballTree
 
 %TODO: parler du fait que l'algo du CSA normal nous fait faire des switch inutiles
-
-%TODO: mentionner le fait qu'on a considéré que le temps de changement entre deux trips est 0s
 
 %TODO: parler du "limited walking optimization" et que ca a besoin que nos
 %footpaths soient transitivement fermés + inégalité triangulaire ce qui en
@@ -99,22 +95,25 @@ ceux-ci au sens pareto.
 
 \begin{itemize}
 
-	\item \textbf{Arrêt (Stop)}~: Arrêt pour n'importe quel mode de transport en commun, e.g. arrêt de Bus.
+	\item \textbf{Arrêt (Stop)}~: Arrêt pour n'importe quel mode de transport
+	      en commun, e.g. arrêt de Bus.
 
-	\item \textbf{Connexion}~: Un trajet direct entre deux arrêts effectué par un
-	      véhicule, avec une heure de départ et d'arrivée ainsi qu'un point de
+	\item \textbf{Connexion}~: Un trajet direct entre deux arrêts effectué par
+	      un véhicule, avec une heure de départ et d'arrivée ainsi qu'un point de
 	      départ et d'arrivée.
 
-	\item \textbf{Chemin (à pied)}~: Un chemin direct entre deux arrêts pouvant être effectué à pied, avec un point de départ et d'arrivée.
+	\item \textbf{Chemin (à pied)}~: Un chemin direct entre deux arrêts pouvant
+	      être effectué à pied, avec un point de départ et d'arrivée.
 
 	\item \textbf{Mouvement}~: Regroupe connexion et chemin à pied.
 
 	\item \textbf{Trip}~: Une instance d'un véhicule parcourant un trajet.
 
-	\item \textbf{Horaire (Timetable)}~\cite{ConnectionScanAlgorithmLong:2017} : L'horaire fait partie des paramètres des deux algorithmes.
-	      % TODO: faire qqch montrer que c'est une citation traduite
-	      Un horaire est un quadruplet $(\mathcal{S}, \mathcal{C}, \mathcal{T} , \mathcal{F})$
-	      d'arrêts (stops) $\mathcal{S}$, de connexions (connections) $\mathcal{C}$, de trips $\mathcal{T}$, et de chemin à pieds (footpaths) $\mathcal{F}$.
+	\item \textbf{Horaire (Timetable)}~\cite{ConnectionScanAlgorithmLong:2017} :
+	      L'horaire fait partie des paramètres des deux algorithmes. \og Un horaire est un quadruplet
+	      $(\mathcal{S}, \mathcal{C}, \mathcal{T}, \mathcal{F})$ d'arrêts (stops) $\mathcal{S}$,
+	      de connexions (connections) $\mathcal{C}$, de trips $\mathcal{T}$, et de chemins à pied
+	      (footpaths) $\mathcal{F}$. \fg{}
 
 \end{itemize}
 
@@ -188,8 +187,6 @@ Le processus de chargement s'effectue en trois grandes étapes :
 
 	\item Création de l'objet \texttt{Data}, via la méthode statique \texttt{Data.loadFromCSVs(CsvSet... csvSets)} qui appellera la méthode \texttt{loadOneCsvSet}, qui pour chaque \texttt{CsvSet}, traitera les fichiers suivants :
 
-	      % TODO: expliquer comment on charge les données (probablement réutiliser ce qu'il y a dans les paragraphes en dessous)
-	      % TODO: surtout pas oublier de dire qu'on doit trier les connections par heure de départ
 	      \begin{itemize}
 		      \item \textbf{\texttt{stops.csv}} : contient les identifiants, noms et coordonnées géographiques des arrêts. Chaque arrêt est stocké dans une structure \texttt{Stop}, identifiée par son \texttt{stop\_id}.
 
@@ -232,6 +229,12 @@ Les algorithmes CSA~\cite{ConnectionScanAlgorithmLong:2017} requièrent que le g
 	\item satisfasse l'inégalité triangulaire
 
 \end{itemize}
+
+Cela permet de supposer que nous n'allons jamais emprunter deux chemins à pied
+d'affilée, car s'il existe une suite de chemins passant par les arrêts $s_0,
+	\dots, s_i$, il existe forcément un chemin reliant $s_0$ directement à $s_i$ et
+celui-ci est certainement le plus rapide pour relier ces deux arrêts, du à
+l'inégalité triangulaire.\\
 
 Une solution simple, qui respecte ces deux critères, consiste à parcourir les
 arrêts à l’aide de deux boucles for imbriquées, en considérant chaque paire de
@@ -938,12 +941,6 @@ $tDep$ ou plus tard, et arrivant en $pArr$.\\
 %-------------------------------------------------------------------
 % section PseudoCode
 
-%TODO: expliquer les différents trucs du pseudo code genre tauC etc
-
-%TODO: enlever le mix francais anglais
-
-%TODO: décrire les inputs de l'algorithme
-
 Le pseudocode \autoref{alg:Solve} renvoie les fonctions de profil de tous les
 arrêts, $S$, en considérant tous trajets arrivant en $pArr$ et empruntant
 uniquement des connexions partant en $tDep$ ou plus tard. (Les trajets partant
@@ -1007,12 +1004,12 @@ résout pour tous les arrêts de départ).
 		}
 	}
 	}
-    \Return{$S$}
+	\Return{$S$}
 	}
 
-    \caption{Calcul de toutes les fonctions de profile pour une requête}
-    \label{alg:Solve}
-\end{algorithm}\\
+	\caption{Calcul de toutes les fonctions de profile pour une requête}
+	\label{alg:Solve}
+\end{algorithm}
 
 Notons que, comme pour le CSA de base, nous pouvons à nouveau appliquer
 l'optimisation~\hyperref[item:criteredepart]{\textit{critère de départ}}, c'est
@@ -1094,12 +1091,10 @@ de cette induction pour reconstruire la solution.
 		}
 	}
 	\caption{Reconstruction d'un trajet solution}
-    \label{alg:DisplayJourney}
+	\label{alg:DisplayJourney}
 \end{algorithm}
 
 \end{document}
-
-% TODO: expliquer que vu que c'est un all-to-one, on pourrait supporter plusieurs arrêts de départ
 
 %-------------------------------------------------------------------
 
