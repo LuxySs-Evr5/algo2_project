@@ -1024,15 +1024,16 @@ Pour tout sous-trajet $j_i$, connaissant
 nous pouvons retrouver le prochain mouvement à emprunter $m_{i}$~: Il s'agit du
 mouvement se trouvant dans $S_{j_{i_{pDep}}}$, partant de $j_{i_{pDep}}$ en
 $j_{i_{tDep}}$ ou le plus tôt après, et dont le \texttt{CriteriaTracker} est
-égal à $j_{i_{\text{CriteriaTracker}}}$. Et connaissant également le mouvement
-à emprunter $m_i$, nous pouvons déterminer~:
+égal à $j_{i_{\text{CriteriaTracker}}}$. Cette étape est effectuée par la
+procédure \texttt{getFirstMatch}.
+
+Connaissant également le mouvement à emprunter $m_i$, nous pouvons déterminer~:
 \begin{itemize}
    \item $j_{{i+1}_{pDep}} = m_{i_{pArr}}$
        % TODO: rentre ca plus joli avec une accolade
    \item $j_{{i+1}_{tDep}}$, en fonction du type de mouvement qu'est $m_i$:
     \begin{itemize}
         \item $c_{tArr}$ si $m_i$ est une connexion $c$, 
-            % TODO pas sur du i-1
         \item $j_{{i-1}_{tDep}} + f_{travelTime}$ si $m_i$ est un chemin $f$.
     \end{itemize}
 
@@ -1044,14 +1045,38 @@ $j_{i_{tDep}}$ ou le plus tôt après, et dont le \texttt{CriteriaTracker} est
 Le cas de départ utilise le \texttt{CriteriaTracker} et le temps de départ du
 trajet complet (partant de $pDep$) que nous voulons reconstruire. L'algorithme
 s'arrête à l'étape à laquelle l'arrêt de départ du trajet partiel considéré est
-l'arrêt de destination, c'est à dire quand $j_{i_{pDep}} = pArr$.
+l'arrêt de destination, c'est à dire quand $j_{i_{pDep}} = pArr$.\\
 
-% \begin{algorithm}[H]
-% 	\DontPrintSemicolon
-% 	\SetAlgoLined
-%
-%
-% \end{algorithm}
+Le pseudocode suivant illustre comment nous tirons parti de cette induction~:
+
+\begin{algorithm}[H]
+\SetAlgoLined
+\DontPrintSemicolon
+\SetKwFunction{DisplayJourney}{displayJourney}
+\SetKwProg{Fn}{Function}{:}{}
+
+\Fn{\DisplayJourney{$S$, $pDepId$, $pArrId$, $tDep$, $criteriaTracker$}}{
+    $stopId \leftarrow pDepId$\;
+
+    \While{$stopId \neq pArrId$}{
+        $movement \leftarrow S[stopId].\texttt{getFirstMatch}(tDep, criteriaTracker)$\;
+        \texttt{print} ``taking'' $movement$\;
+        
+        $stopId \leftarrow movement.pArr.id$\;
+
+        $criteriaTracker \leftarrow criteriaTracker~\text{ajusté en fonction du type de transport de}~movement$\;
+
+        \eIf{$movement$ est un \texttt{Footpath}}{
+            $tDep \leftarrow tDep + movement_{travelTime}$\;
+        }{
+            $tDep \leftarrow movement_{tArr}$\;
+        }
+    }
+}
+\caption{Reconstruction d'un trajet solution}
+\end{algorithm}
+
+\end{document}
 
 % TODO: expliquer que vu que c'est un all-to-one, on pourrait supporter plusieurs arrêts de départ
 
