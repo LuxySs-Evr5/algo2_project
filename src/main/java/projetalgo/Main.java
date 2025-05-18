@@ -73,11 +73,15 @@ public class Main {
                 List<Stop> differentStopsSameNameResult = getSameStopsNameNoDuplicate(stopResult);
                 
                 if (differentStopsSameNameResult.size() == 1) {
-                    return stopResult.stream()
+                    return differentStopsSameNameResult.stream()
                             .map(Stop::getId)
                             .collect(Collectors.toList());
                 } else if (differentStopsSameNameResult.size() > 1) {
-                    String instruct = "Several stops found with the name '" + input + "'. Please enter the full name of the route who passes by this stop or enter 'all' to use all the stops with this name: ";
+                    String instruct2 = "Please enter the full name of the route that passes by this stop";
+                    if (!uniqueStop)
+                        instruct2 += "or enter 'all' to use all the stops with this name";
+
+                    String instruct = "Several stops found with the name '" + input + "'. " + instruct2 + ": ";
                     while (true) {
                         String routeName = InteractiveConsole.ask(instruct).stripTrailing();
                         if (routeName.equalsIgnoreCase("q") || routeName.equalsIgnoreCase("quit")) {
@@ -85,7 +89,7 @@ public class Main {
                             System.exit(0);
                         }
                         if (routeName.isEmpty()) {
-                            instruct = "Invalid input. Please enter the full name of the route who passes by this stop or enter 'all' to use all the stops with this name: ";
+                            instruct = "Invalid input. " + instruct2 + ": ";
                             continue;
                         }
                         if (!uniqueStop && routeName.equalsIgnoreCase("all")) { // if uniqueStop is false, we can have all the stops with the same name or not (depending on the user choice)
@@ -139,13 +143,13 @@ public class Main {
                 }
 
                 if (input.isEmpty()) {
-                    instruction = "Invalid time format, expected HH:MM:SS" + textToShow;
+                    instruction = "Invalid time format, expected HH:MM:SS\n" + textToShow;
                     continue;
                 }
 
                 int time = TimeConversion.toSeconds(input);
                 if (time == -1) {
-                    instruction = "Invalid time format, expected HH:MM:SS" + textToShow;
+                    instruction = "Invalid time format, expected HH:MM:SS\n" + textToShow;
                     continue;
                 }
                 return time;
