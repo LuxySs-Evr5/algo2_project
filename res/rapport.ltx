@@ -920,12 +920,21 @@ le code pour le cas 2 commenté, pour ne pas impacter les performances, et nous
 ne tenons pas compte de celui-ci (et de $T$) pour la suite.\\
 
 %-------------------------------------------------------------------
+% TODO: decide whether this should go here or below pseudo code
 
-% - Expliquer à quoi sert et comment est implémentée une profile function
-% - Expliquer "dominer" "optimisation pareto"
-% - Expliquer pourquoi les final footpaths sont gérés différement des interstop footpaths
-% - Parler du fait qu'on peut à nouveau faire l'opti de "critère de départ"
-
+Une fois l'ensemble des connexions scannées, $S_{pDep}$ doit contenir
+l'ensemble de tous les trajets partiels partant de $pDep$ en $tDep$ ou plus
+tard, arrivant en $pArr$ et n'étant pas dominé par un autre trajet partant plus
+tard. Connaissant notre heure de départ $tDep$, il suffit d'extraire de
+$S_{pDep}$ tous les trajets non-dominés partant en $tDep$ ou plus tard. Nous ne
+conservons donc plus les trajets qui sont dominés par d'autre tarjets partant
+plus tôt. Nous pouvons les retirer car nous avons maintenant la certitude que
+les meilleures alternatives sont atteignables puisque celles-ci démarrent en
+$tDep$ ou après. (Nous n'avions pas encore cette certitude lorsque nous
+construisions nos trajets partiels). Cet ensemble est le sous-ensemble de
+trajets \textit{pareto-optimaux} par rapport aux critères de domination imposés
+par l'utilisateur et à l'ensemble de tous les trajets partant de $pDep$ à
+$tDep$ ou plus tard, et arrivant en $pArr$.\\
 
 %-------------------------------------------------------------------
 % section PseudoCode
@@ -991,8 +1000,60 @@ ne tenons pas compte de celui-ci (et de $T$) pour la suite.\\
 
 	}
 
+	% TODO: caption
 \end{algorithm}
 
+
+%-------------------------------------------------------------------
+\subsection{Reconstruction de la solution}
+
+Nous reconstruisons les différents trajets pareto-optimaux à l'aide des
+\texttt{CriteriaTracker}, des fonctions de profile, et des temps de départ.
+
+Considérons le trajet $j$ démarrant en $j_{tDep}$ de l'arrêt $j_{pDep}$ et
+arrivant en $j_{pArr}$, composé des mouvements $m_1, \dots, m_n$. Notons $j_1,
+\dots, j_n$, les trajets partiels suffixes de $j$~: $j_i$ correspond au
+sous-trajet partiel composé de $m_i, \dots, m_n$.\\
+
+Pour tout sous-trajet $j_i$, connaissant 
+\begin{itemize}
+    \item l'arrêt de départ $j_{i_{pDep}}$,
+    \item le temps de départ $j_{i_{tDep}}$,
+    \item $j_{i_{\text{CriteriaTracker}}}$, le CriteriaTracker en $j_{i_{pDep}}$
+\end{itemize}
+nous pouvons retrouver le prochain mouvement à emprunter $m_{i}$~: Il s'agit du
+mouvement se trouvant dans $S_{j_{i_{pDep}}}$, partant de $j_{i_{pDep}}$ en
+$j_{i_{tDep}}$ ou le plus tôt après, et dont le \texttt{CriteriaTracker} est
+égal à $j_{i_{\text{CriteriaTracker}}}$. Et connaissant également le mouvement
+à emprunter $m_i$, nous pouvons déterminer~:
+\begin{itemize}
+   \item $j_{{i+1}_{pDep}} = m_{i_{pArr}}$
+       % TODO: rentre ca plus joli avec une accolade
+   \item $j_{{i+1}_{tDep}}$, en fonction du type de mouvement qu'est $m_i$:
+    \begin{itemize}
+        \item $c_{tArr}$ si $m_i$ est une connexion $c$, 
+            % TODO pas sur du i-1
+        \item $j_{{i-1}_{tDep}} + f_{travelTime}$ si $m_i$ est un chemin $f$.
+    \end{itemize}
+
+   \item $j_{{i+1}_{\text{CriteriaTracker}}}$, en décrémentant le compteur de
+       bus/tram/train/metro/chemin de $j_{i_{\text{CriteriaTracker}}}$, en
+       fonction du type de mouvement de $m_i$.
+\end{itemize}
+
+Le cas de départ utilise le \texttt{CriteriaTracker} et le temps de départ du
+trajet complet (partant de $pDep$) que nous voulons reconstruire. L'algorithme
+s'arrête à l'étape à laquelle l'arrêt de départ du trajet partiel considéré est
+l'arrêt de destination, c'est à dire quand $j_{i_{pDep}} = pArr$.
+
+% \begin{algorithm}[H]
+% 	\DontPrintSemicolon
+% 	\SetAlgoLined
+%
+%
+% \end{algorithm}
+
+% TODO: expliquer que vu que c'est un all-to-one, on pourrait supporter plusieurs arrêts de départ
 
 %-------------------------------------------------------------------
 
@@ -1053,30 +1114,6 @@ profile de $S_{c'_{pDep}}$ ne sera pas en fin de liste car il existe déjà les
 trajets partiels partant plus tôtdans le profile~: ceux partant en $c_{tDep} -
 	f_{travelTime}$.\\
 
-
-%-------------------------------------------------------------------
-% TODO: decide whether this should go here or below pseudo code
-
-Une fois l'ensemble des connexions scannées, $S_{pDep}$ doit contenir
-l'ensemble de tous les trajets partiels partant de $pDep$ en $tDep$ ou plus
-tard, arrivant en $pArr$ et n'étant pas dominé par un autre trajet partant plus
-tard. Connaissant notre heure de départ $tDep$, il suffit d'extraire de
-$S_{pDep}$ tous les trajets non-dominés partant en $tDep$ ou plus tard. Nous ne
-conservons donc plus les trajets qui sont dominés par d'autre tarjets partant
-plus tôt. Nous pouvons les retirer car nous avons maintenant la certitude que
-les meilleures alternatives sont atteignables puisque celles-ci démarrent en
-$tDep$ ou après. (Nous n'avions pas encore cette certitude lorsque nous
-construisions nos trajets partiels). Cet ensemble est le sous-ensemble de
-trajets \textit{pareto-optimaux} par rapport aux critères de domination imposés
-par l'utilisateur et à l'ensemble de tous les trajets partant de $pDep$ à
-$tDep$ ou plus tard, et arrivant en $pArr$.\\
-
-
-%-------------------------------------------------------------------
-
-
-
-%-------------------------------------------------------------------
 
 \bibliographystyle{plain}
 \bibliography{refs}
