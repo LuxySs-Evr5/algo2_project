@@ -187,10 +187,10 @@ public class Main {
 
 
             Data AllData = Data.loadFromCSVs(sncbSet, stibSet, delijnSet, tecSet);
-            Data stibData = Data.loadFromCSVs(stibSet);
+            Data sncbData = Data.loadFromCSVs(sncbSet);
             
             Solver solver = new Solver(AllData);
-            MultiCritSolver multiCritSolver = new MultiCritSolver(stibData);
+            MultiCritSolver multiCritSolver = new MultiCritSolver(sncbData);
 
             long endTime = System.nanoTime();
             double durationInSeconds = (endTime - startTime) /  1_000_000_000.0;
@@ -278,7 +278,7 @@ public class Main {
                         // -------------- Solve the shortest path --------------
 
                         System.out.println("Searching ...");
-                        multiCritSolver.solve(TramsCountCriteriaTracker::new, pDepIds.get(0), pArrIds.get(0), tDep);
+                        multiCritSolver.solve(FootpathsCountCriteriaTracker::new, pDepIds.get(0), pArrIds.get(0), tDep);
 
                         running = false;
                     }
