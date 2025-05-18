@@ -1178,6 +1178,37 @@ profile de $S_{c'_{pDep}}$ ne sera pas en fin de liste car il existe déjà les
 trajets partiels partant plus tôtdans le profile~: ceux partant en $c_{tDep} -
 	f_{travelTime}$.\\
 
+\subsection{Complexité du CSA profile multicritère pareto}
+
+Nous ne sommes pas parvenus à trouver une expression de la complexité de
+l'algorithme dans son ensemble, dans le pire cas. Toutefois, nous donnons des
+bornes pour les différentes fonctions.
+
+\begin{itemize}
+
+    \item \textbf{insertion dans une fonction de profile}~:
+        Supposons que la fonction de profile contienne déjà $n$ trajets
+        partiels, et que nous tentons d'insérer $m$ nouveaux trajets partiels dans celle-ci.
+        La complexité temporelle de l'insertion sera alors en $O(m^2 + m \cdot n)$, car 
+        pour chaque trajet partiel dans $m$, nous devons:
+        \begin{itemize}
+
+            \item ignorer celui-ci s'il est dominé par un autre autre trajet
+                partiel au sein des $m$ nouveaux trajets partiels. Cette
+                vérifiaction a une complexité temporelle en $O(m)$.
+
+            \item vérifier si celui-ci est dominé par un autre des $n$ trajets
+                partiels déjà présents et partant plus tard, auquel cas nous
+                n'ajoutons pas ce nouveau trajet partiel. Cette opération prend
+                un temps $O(n)$.
+
+            \item retirer les trajets partiels partant plus tôt et étant dominé par ce nouveau trajet partiel.
+                À nouveau, la complexité temporelle de cette opération est $O(n)$.
+
+        \end{itemize}
+
+\end{itemize}
+
 
 \bibliographystyle{plain}
 \bibliography{refs}
