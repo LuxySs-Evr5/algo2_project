@@ -920,7 +920,6 @@ le code pour le cas 2 commenté, pour ne pas impacter les performances, et nous
 ne tenons pas compte de celui-ci (et de $T$) pour la suite.\\
 
 %-------------------------------------------------------------------
-% TODO: decide whether this should go here or below pseudo code
 
 Une fois l'ensemble des connexions scannées, $S_{pDep}$ doit contenir
 l'ensemble de tous les trajets partiels partant de $pDep$ en $tDep$ ou plus
@@ -947,13 +946,22 @@ $tDep$ ou plus tard, et arrivant en $pArr$.\\
 
 %TODO: décrire les inputs de l'algorithme
 
+%TODO: parler du starting criterion pour le multicritère aussi
+
+Le pseudocode \autoref{alg:Solve} renvoit les fonctions de profil de tous les
+arrêts, $S$, en considérant tous trajets arrivant en $pArr$ et empruntant
+uniquement des connexions partant en $tDep$ ou plus tard. (Les trajets partant
+d'autres arrêts différent de $pDep$ sont également pris en compte, car cet
+algorithme est un algorithme \textit{all to one}, signifiant que celui-ci
+résout pour tous les arrêts de départ).
+
 \begin{algorithm}[H]
 	\SetAlgoLined
 	\DontPrintSemicolon
 	\SetKwFunction{Solve}{solve}
 	\SetKwProg{Fn}{Function}{:}{}
 
-	\Fn{\Solve{$pDepId$, $pArrId$, $tDep$} \textbf{return} $S$}{
+	\Fn{\Solve{$pArr$, $tDep$} \textbf{return} $S$}{
 
 	initialiser Map $S$\;
 	initialiser Map $D$\;
