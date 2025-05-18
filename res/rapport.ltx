@@ -12,6 +12,7 @@
 \usepackage{geometry}
 \usepackage{amsmath}
 \usepackage{listings}
+\usepackage[T1]{fontenc}
 \usepackage{xcolor}
 \usepackage{url}
 \usepackage{hyperref}
@@ -303,6 +304,32 @@ L'algorithme de génération s'effectue ainsi :
 \subsection{Complexité du chargement}
 % TODO: complexité temporelle (balltree + tim sort)
 % TODO: complexité spatiale
+
+Notons $n$ le nombre d'arrêts et $m$ le nombre de connexions. Le nombre de
+chemins, si nous les générons tous (fermeture transitive) correspond au nombre
+suivant~:
+\[
+    \text{nombre de manières de relier deux arrêts} - \text{nombre de manières
+    de relier un sommet à lui-même}
+\]
+
+Cela vaut exactement $n^2 - n$. La complexité spatiale du chargement est donc
+est en $\Theta(n^2 + m)$ (en utilisant uniquement deux boucles \textttt{for}
+imbriquées pour générer les chemins).
+
+La complexité temporelle de la génération des chemins, en employant la méthode
+simple permettant la fermeture transitive des chemins (i.e. la double boucle
+\texttt{for} imbriquée), est en en $\Theta(n^2)$. Le tri des connexions par
+heure de départ est en $O(n\log(n))$, car le tri de l'interface \texttt{List}
+de java est une version de \textit{tim-sort}~\cite{javaListSort}, dont la
+complexité temporelle est $O(n\log(n))$ ~\cite{timSortComplexity}. Comme
+expliqué dans \cite{complexitetris}, $\log_2(n!) \sim n\log(n)$ est la borne
+inférieure de complexité pour les algorithmes de tri par compaison, il n'est
+donc pas possible de réellement faire asymptotiquement mieux que le
+\textit{tim-sort} de l'interface \texttt{List} en utilisant un tri par
+comparaison.
+La complexité du chargement est donc en $O(n\log(n) + n^2) = O(n^2)$.
+
 
 %-------------------------------------------------------------------
 
