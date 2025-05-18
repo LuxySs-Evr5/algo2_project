@@ -134,10 +134,13 @@ ceux-ci au sens Pareto.
 
 	\item \textbf{Movement}~: représente un mouvement, une interface pour \texttt{Footpath} et \texttt{Connection}.
 
-    \item \textbf{BallTree}~: notre implémentation de \texttt{BallTree} utilisé
-        pour accélérer la création des chemins.
+    \item \textbf{BallTree}~: notre implémentation de \texttt{BallTree},
+        utilisé pour accélérer la création des chemins.
 
 	\item \textbf{TransportType}~: énumérée contenant les différents moyens de déplacement.
+
+    \item \textbf{Data}~: regroupe les donnés chargées depuis les sources GTFS,
+        les mettant à disposition des algorithmes.
 
 	\item \textbf{Solver}~: classe regroupant la logique nécessaire pour le CSA de base. Les méthodes essentielles sont~:
 
@@ -149,19 +152,23 @@ ceux-ci au sens Pareto.
 		      \item \texttt{genFootpaths()} génère les chemins à pied en ne gardant que ceux dont la longueur est inférieur ou égale celle précisée, à l'aide de la classe \texttt{BallTree}.
 	      \end{itemize}
 
-	\item \textbf{MultiCritSolver}~: classe regroupant la logique nécessaire pour le CSA multicritère. Les méthodes essentielles :
+	\item \textbf{MultiCritSolver}~: classe regroupant la logique nécessaire pour le CSA multicritère. Les méthodes essentielles sont :
 
 	      \begin{itemize}
 		      \item \texttt{solve()}~: implémentation de l'algorithme CSA multicritère.
 
 		      \item \texttt{displayJourney()}~: affiche les instructions de trajet.
 
-		      \item \texttt{genFootpaths()} génère les chemins à pied en ne gardant que ceux dont la longueur est inférieur ou égale à celle précisée, à l'aide de la classe \texttt{BallTree}.
+              \item \texttt{genFootpaths()} même but et principe que pour la classe \texttt{Solver}.
 	      \end{itemize}
 
-	\item \textbf{AbstractSolver}~: regroupe les fonctions communes à Solver et AbstractSolver.
+      \item \textbf{AbstractSolver}~: regroupe les fonctions communes à \texttt{Solver} et \texttt{MultiCritSolver}.
 
-	\item \textbf{Main}~: point d'entrée du programme. C'est cette classe qui construit les objets \texttt{data}, \texttt{Solver}, \texttt{MultiCritSolver}, et qui gère l'input de l'utilisateur pour connaître l'arrêt de départ et d'arrivée, ainsi que de l'heure de départ, pour passer ces informations à \texttt{Solver} ou \texttt{MultiCritSolver}.
+    \item \textbf{Main}~: point d'entrée du programme. Cette classe construit
+        les objets \texttt{data}, \texttt{Solver}, \texttt{MultiCritSolver}.
+        Elle gère également l'input de l'utilisateur pour déterminer les arrêts
+        de départ et d'arrivée, ainsi que de l'heure de départ. Elle passe
+        ensuite ces informations à \texttt{Solver} ou \texttt{MultiCritSolver}.
 
 \end{itemize}
 
@@ -170,8 +177,12 @@ ceux-ci au sens Pareto.
 \section{Chargement des données GTFS}
 
 
-Avant que nous puissions effectuer des requêtes de plus court chemin à l'aide de nos algorithmes, nous devons d'abord charger les données nécessaires dans les objets représentant les deux algorithmes, i.e. \texttt{Solver} et \texttt{MultiCritSolver}.
-Ces données, conformes au format \texttt{GTFS} (General Transit Feed Specification), contiennent toutes les informations liées aux arrêts, trajets, horaires et lignes de transport.\newline
+Avant que nous puissions effectuer des requêtes de plus court chemin à l'aide
+de nos algorithmes, nous devons d'abord charger les données dans un objet
+\texttt{Data} pour ensuite passer celui-ci à l'algorithme choisi. Ces données,
+conformes au format \texttt{GTFS} (General Transit Feed Specification),
+contiennent toutes les informations liées aux arrêts, trajets, horaires et
+lignes de transport.\newline
 
 Les données GTFS utilisées dans notre programme sont les données publiques fournies par \texttt{DE LIJN}, la \texttt{STIB}, le \texttt{TEC} et la \texttt{SNCB}.\newline
 
@@ -180,12 +191,15 @@ Le processus de chargement s'effectue en trois grandes étapes :
 
 	\item Création, pour chaque opérateur, d’un objet \texttt{CsvSet} contenant les chemins vers les fichiers \texttt{csv} correspondants.
 
-	\item Création de l'objet \texttt{Data}, via la méthode statique \texttt{Data.loadFromCSVs(CsvSet... csvSets)} qui appellera la méthode \texttt{loadOneCsvSet}, qui pour chaque \texttt{CsvSet}, traitera les fichiers suivants :
+	\item Création de l'objet \texttt{Data}, via la méthode statique \texttt{Data.loadFromCSVs(CsvSet... csvSets)} qui appelle la méthode \texttt{loadOneCsvSet}, qui pour chaque \texttt{CsvSet}, traite les fichiers suivants :
 
 	      \begin{itemize}
 		      \item \textbf{\texttt{stops.csv}} : contient les identifiants, noms et coordonnées géographiques des arrêts. Chaque arrêt est stocké dans une structure \texttt{Stop}, identifiée par son \texttt{stop\_id}.
 
-		      \item \textbf{\texttt{trips.csv}} : associe chaque \texttt{trip\_id} à une \texttt{route\_id}, représentant un parcours complet effectué par un véhicule.
+              \item \textbf{\texttt{trips.csv}} : liste les trips et leur
+                  associe une route (\texttt{route\_id}). Chaque trip est
+                  identifié par son \texttt{trip\_id} et représente un parcours
+                  complet effectué par un véhicule.
 
 		      \item \textbf{\texttt{routes.csv}} : fournit le nom de chaque ligne, ainsi que le type de transport, et est identifiable grâce au \texttt{route\_id}. Ces données sont enregistrées dans une structure \texttt{RouteInfo} contenant toutes ces informations.
 
@@ -234,30 +248,26 @@ Une solution simple, qui respecte ces deux critères, consiste à parcourir les
 arrêts à l’aide de deux boucles for imbriquées, en considérant chaque paire de
 \texttt{Stop} appartenant à deux chemins différents (un dans chaque sens).
 Cette approche présente une complexité spatiale et temporelle en $\Theta(n^2)$,
-où $n$ est le nombre d'arrêts, ce qui entraîne des durées d’exécution
-particulièrement longues.
+où $n$ est le nombre d'arrêts.
 
-Pour les raisons suivantes :
-\begin{itemize}
-	\item très grand nombre d'arrêts
-	      dans nos données de test,
-	\item le grand nombre de chemins extrêmement
-	      longs, qu'aucun utilisateur ne voudrait emprunté en pratique puisque certain
-	      traversent la Belgique entière,
-	\item le fait que plus un chemin est long,
-	      moins il a de chance d'être le meilleur trajet reliant son arrêt de départ à
-	      son arrivée (dû à la vitesse de marche très lente par rapport aux autre moyens
-	      de transport),
-\end{itemize}
-nous offrons la possibilité de réduire le nombre de chemins à pied en ne tenant
-pas compte de ceux dépassant une certaine distance donnée \texttt{maxDistKm}.
-Le graphe n'est alors plus transitivement fermé, les algorithmes ne donnent
-plus la/les solutions optimales. Dans la suite du rapport nous supposerons que
-\texttt{maxDistKm} est suffisamment grand pour ne pas (trop) impacter
-l'optimalité de l'algorithme. Nous pouvons ajuster cette distance via le
-paramètre \texttt{maxDistKm} des méthodes \texttt{genFootpaths} de
-\texttt{Solver} et \texttt{MultiCritSolver}, permettant de créer les instances
-de \texttt{Footpaths}.
+Étant donné le très grand nombre d'arrêts dans nos données de test, ceci
+conduirait à des durées d'éxécution particulièrement longues. Pour pallier à ce
+problème, nous limitons les chemins à pied à ceux ne dépassant une certaine
+distance donnée \texttt{maxDistKm}. Ceci se justifie d'abord par le fait qu'un
+grand nombre de chemins seraient extrêmement longs et qu'aucun utilisateur ne
+voudrait les emprunter en pratique, certains traversant la Belgique entière.
+D'autre part, plus un chemin est long, moins il a de chance d'être le meilleur
+trajet reliant son arrêt de départ à son arrivée (dû à la vitesse de marche
+très lente par rapport aux autre moyens de transport).\\
+
+Il faut cependant noter que par suite de cette simplification, le graphe n'est
+plus transitivement fermé et il n'y a donc en principe plus de garantie que les
+algorithmes donnent encore la/les solution(s) optimale(s). Dans la suite du
+rapport nous supposerons que \texttt{maxDistKm} est suffisamment grand pour ne
+pas (trop) impacter l'optimalité de l'algorithme. Nous pouvons ajuster cette
+distance via le paramètre \texttt{maxDistKm} des méthodes \texttt{genFootpaths}
+de \texttt{Solver} et \texttt{MultiCritSolver}, permettant de créer les
+instances de \texttt{Footpaths}.
 
 Il existe deux implémentations distinctes de \texttt{genFootpaths} car \texttt{Solver} et \texttt{MultiCritSolver} stockent les chemins différemment :
 \begin{itemize}
@@ -373,9 +383,9 @@ cruciales pour comprendre l'algorithme \texttt{CSA de base (arrivée la plus
 
 \begin{itemize}
 
-	\item Une connexion est dite \textit{atteignable} si nous sommes en
-	      mesures de nous trouver à son arrêt de départ au moment auquel celle-ci
-	      ne démarre, i.e. $bestKnown_{tArr}(c_{pDep}) \leq c_{tDep}$.
+    \item Une connexion est dite \textit{atteignable} si nous sommes en mesures
+        de nous trouver à son arrêt de départ au moment auquel celle-ci
+        démarre, i.e. $bestKnown_{tArr}(c_{pDep}) \leq c_{tDep}$.
 
 	\item Calcul du temps d'arrivé d'un chemin à pied : $f_{tArr} = f_{tDep} +
 		      f_{travelTime}$ où $f_{tDep}$ correspond au meilleur temps connu pour
@@ -417,20 +427,22 @@ cruciales pour comprendre l'algorithme \texttt{CSA de base (arrivée la plus
 		      \item Le mouvement emprunté \texttt{movement =} $f$
 	      \end{itemize}
 
-	\item \textbf{Scan des connections et chemins}~: Nous traitons les
-	      \texttt{Connection} de \texttt{connections} itérativement, en ne tenant
-	      compte que de celles partant à notre heure de départ ou après, i.e. à
-	      partir de l'indice trouvé a
-	      l'étape~\hyperref[item:criteredepart]{\textbf{Critère de départ}}.
-	      Appelons la connexion en cours de traitement $c$. (Pour rappelle, les
-	      connexions sont triées par ordre croissant d’heure de départ, nous les
-	      scannons donc dans ce même ordre) :
+    \item \textbf{Scan des connections et chemins}~: Nous traitons les
+        \texttt{Connection} itérativement, en ne tenant compte que de celles
+        partant à notre heure de départ ou après, i.e. à partir de l'indice
+        trouvé a l'étape~\hyperref[item:criteredepart]{\textbf{Critère de
+        départ}}. Appelons la connexion en cours de traitement $c$. (Pour
+        rappel, les connexions sont triées par ordre croissant d’heure de
+        départ, nous les scannons donc dans ce même ordre) :
 
 	      \begin{itemize}
 
 		      \item si $c$ est \textit{atteignable}~,
 
-		      \item et si $c$ permet d’arriver plus tôt à son arrêt d'arrivée $c_{pDep}$ que le meilleur temps connu pour s'y rendre à cette étape de l'algorithme~: $c_{tArr} < bestKnown_{tArr}(c_{pArr})$
+              \item et si $c$ permet d’arriver plus tôt à son arrêt d'arrivée
+                  $c_{pArr}$ que le meilleur temps connu pour s'y rendre à
+                  cette étape de l'algorithme~: $c_{tArr} <
+                  bestKnown_{tArr}(c_{pArr})$
 
 		      \item Alors, nous mettons à jour l'entrée de \texttt{bestKnown}
 		            correspondant à l’arrêt $c_{pArr}$ car nous venons de trouver
@@ -450,11 +462,10 @@ cruciales pour comprendre l'algorithme \texttt{CSA de base (arrivée la plus
 			            bestKnown_{tArr}(f_{pArr})$
 		            Si c'est le cas, nous mettons à jour bestKnown correspondant à $f_{pArr}$.
 
-                    Nous pouvons ne pas faire cette dernière étape liés aux
-                    chemins si $c$ n'était pas atteignable et plus rapide,
-                    cette optimisation est appelée \textit{limited walking}, et
+                    Notons que cette dernière étape liée aux chemins est sautée
+                    si $c$ ne s'avère pas atteignable out pas plus rapide.
+                    Cette optimisation est appelée \textit{limited walking}, et
                     est expliquée dans \cite{ConnectionScanAlgorithmLong:2017}.
-
 
 	      \end{itemize}
 
@@ -515,7 +526,7 @@ cruciales pour comprendre l'algorithme \texttt{CSA de base (arrivée la plus
 
     \item \textbf{Affichage de la solution}~: Il suffit de dépiler la pile
         construite à l'étape de
-        \hyperref[item:reconstruction]{\textit{reconstruction}} et affichée
+        \hyperref[item:reconstruction]{\textit{reconstruction}} et afficher
         chacune des étapes dans l'ordre, jusqu'à ce que cette pile soit vide.
 
 \end{enumerate}
@@ -574,8 +585,7 @@ implique que chaque transition de mouvement augmente strictement le temps. Donc
 $t' > t$, ce qui contredit le fait que $m_1, \dots, m_n$ forme un cycle, car
 certes, $m_n$ revient à l'arrêt de départ de $m_1$, mais du temps s'est écoulé
 entre le moment auquel nous démarrons le cycle et celui auquel nous arrivons du
-cycle. Certaines connexions qui étaient atteignables avant d'emprunter le cycle
-ne sont donc potentiellement plus atteignables. \\
+cycle.\\
 
 % -----------------------------
 
@@ -703,8 +713,8 @@ $X$ a un meilleur coût que $Y$, il suffit de vérifier :
 	\operatorname{cost}(x_1, \dots, x_n) < \operatorname{cost}(y_1, \dots, y_n)
 \]
 
-Malheureusement, cette approche intuitive ne fonctionne pas. Voici un
-contre-exemple :
+Malheureusement, cette approche intuitive ne fonctionne pas, comme le
+contre-exemple suivant le montre :
 
 \begin{center}
 	\begin{tikzpicture}[->, >=Stealth, node distance=1cm, thick]
@@ -782,12 +792,13 @@ critère d'arrivée le plus tôt satisfait cette propriété, les autres critèr
 garantissent pas que la connexion que nous avions prévu de prendre en $C$ soit
 toujours atteignable avec le nouveau préfixe.\\
 
-Similairement, nous pouvons définir la \textit{condition d'échangeabilité
-	suffixe} \cite{ConnectionScanAccelerated} : Soit $s_1, \dots, s_n$ un trajet
-optimal $A@\tau \rightarrow B$. Considérons n'importe quel suffixe $s_i, \dots,
-	s_n$ qui est un trajet complet partant de $C$ en $\tau'$. Remplacer ce suffixe
-par un autre trajet optimal $C@\tau' \rightarrow B$ doit donner un autre trajet
-optimal.\\
+Si cette approche intuitive ne fonctionne pas, nous pouvons cependant utiliser
+une autre condition d'échangeabilité~:
+La \textit{condition d'échangeabilité suffixe} \cite{ConnectionScanAccelerated}
+: Soit $s_1, \dots, s_n$ un trajet optimal $A@\tau \rightarrow B$. Considérons
+n'importe quel suffixe $s_i, \dots, s_n$ qui est un trajet complet partant de
+$C$ en $\tau'$. Remplacer ce suffixe par un autre trajet optimal $C@\tau'
+\rightarrow B$ doit donner un autre trajet optimal.\\
 
 Étant donné que cette seconde condition est maintenue par les
 ~\hyperref[item:CostMultiCriteria]{fonctions de coût multicritères}, nous en
@@ -841,14 +852,14 @@ où :
 	\item $j_{tDep}$ désigne l'heure de départ du trajet $j$,
 \end{itemize}
 
-Nous appelons cet ensemble $S_p$ la \textit{fonction de profil} de
-l'arrêt $p$. L'algorithme ajoute et supprime des trajets partiels (jusqu'à
-destination) dans les fonctions de profil au fur et à mesure que celui-ci
-scanne les connexions dans l'ordre de départ décroissant. À chaque connexion
-scannée $c$ nous tentons d'ajouter tous les trajets partiels qui peuvent être
-effectués à partir de la connexion $c$ dans la fonction de profile l'arrêt
-$c_{pDep}$. Ceux dominés par un trajet partiel de $S_{c_{pDep}}$
-partant en $tDep$ ou plus tard, ne sont pas gardés.\\
+Nous appelons cet ensemble $S_p$ la \textit{fonction de profil} de l'arrêt $p$.
+L'algorithme ajoute et supprime des trajets partiels (jusqu'à destination) dans
+les fonctions de profil au fur et à mesure que celui-ci scanne les connexions
+dans l'ordre de départ décroissant. À chaque connexion scannée $c$ nous tentons
+d'ajouter tous les trajets partiels qui peuvent être effectués à partir de la
+connexion $c$ dans la fonction de profile de l'arrêt $c_{pDep}$. Ceux dominés
+par un trajet partiel de $S_{c_{pDep}}$ partant en $tDep$ ou plus tard, ne sont
+pas gardés.\\
 
 Afin de rendre le choix des critères de domination souple, nous introduisons la
 notion de \texttt{CriteriaTracker}, une classe permettant de maintenir les
@@ -875,7 +886,7 @@ peuvent être dominées par $j$.\\
 De plus, nous retirons les trajets partant avant $c_{tDep}$ qui sont dominés
 par les trajets partiels que nous venons d'ajouter, car il est préférable
 d'attendre et prendre ceux qui les dominent plutôt que de prendre ces trajets
-partielles dominés.\\
+partiels dominés.\\
 
 Les trajets partiels que nous tentons d'ajouter à chaque connexion $c$ scannée
 peuvent résulter de trois cas évalués
@@ -927,13 +938,12 @@ Pour ce faire, pour chaque chemin qui arrive en $c_{pDep}$, nous réutilisons le
 groupe des meilleurs trajets partiels et nous modifons chacun de ses
 \texttt{CriteriaTracker} pour que ceux-ci tiennent compte du chemin arrivant en
 $c_{pDep}$. Nous insérons chacun de ces groupes de meilleurs trajets partiels
-modifiés dans la fonction de profile du chemin correspondant, avec le temps de
-départ $c_{tDep} - f_{travelTime}$. Lorsqu'aucun trajet partiel n'a été gardé à
+modifiés dans la fonction de profile de $c_{pDep}$, avec le temps de départ
+$c_{tDep} - f_{travelTime}$. Lorsqu'aucun trajet partiel n'a été gardé à
 l'étape précédente (l'insertion dans des meilleurs trajets partiels dans la
 fonction de profile $S_{c_{pDep}}$), cette étape-ci n'est pas nécessaire, car
 tous ces trajets seront inévitablement aussi dominés. Cette optimisation est
-appelée \textit{limited walking}~\cite{ConnectionScanAlgorithmLong:2017}.
-\\
+appelée \textit{limited walking}~\cite{ConnectionScanAlgorithmLong:2017}. \\
 
 Avec ceci et le cas 1, nous tenons compte de tous les chemins, excepté celui qui
 relie directement $pDep$ à $pArr$.\\
@@ -1037,7 +1047,7 @@ résout pour tous les arrêts de départ).
 Notons que, comme pour le CSA de base, nous pouvons à nouveau appliquer
 l'optimisation~\hyperref[item:criteredepart]{\textit{critère de départ}}, c'est
 pourquoi nous n'itérons pas sur toutes les connexions. Notons également que
-$\tau_c$ correspond est la structure dans laquelle nous procédons au groupement
+$\tau_c$ correspond à la structure dans laquelle nous procédons au groupement
 des trajets partiels empruntant $c$.
 
 %-------------------------------------------------------------------
@@ -1169,7 +1179,7 @@ nombre d'insertions en fin de liste (moins couteuses). Puisque nous scannons
 les connexions par ordre de départ décroissant, nous allons généralement
 insérer dans la fonction de profile des groupes de trajets partiels débutant de
 plus en plus tôt. Nous ne pouvons pas garantir que cela est toujours de plus en
-plus tôt à cause des chemins entre les arrêts~: Pour rappelle, pour chaque
+plus tôt à cause des chemins entre les arrêts~: Pour rappel, pour chaque
 chemin non-final, nous devons insérer nos trajets partiels empruntant $f$ suivi
 d'une connexion $c$, au temps de départ $c_{tDep} - f_{travelTime}$. Ce temps
 de départ pourrait être avant le départ de la prochaine connexion scannée
