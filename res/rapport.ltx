@@ -497,16 +497,16 @@ cruciales pour comprendre l'algorithme \texttt{CSA de base (arrivée la plus
 	      de l'arrêt d'arrivée auquel nous parvenons le plus rapidement, et ce
 	      via une simple recherche linéaire.
 
-	\item \textbf{Reconstruction}~: Une fois $pArr$ le meilleur arrêt d'arrivée
-	      trouvé, nous reconstruisons, à partir de $pArr$, le trajet final
-	      (chaque mouvement composant celui-ci) partant de $pDep$ en $tDep$ et
-	      arrivant en $pArr$ le plus rapidement. Il s'agit d'un parcours en
-	      post-ordre car nous le reconstruisons en partant du point d'arrivée.
-	      Pour ce faire, nous utilisons donc une stack appelée
-	      \texttt{finalPath}. Chaque `BestKnownEntry` (le mouvement et son temps
-	      d'arrivée) est empilée sur \texttt{finalPath}. Une autre fonction
-	      dépile ensuite la stack tout en affichant les différents segments du
-	      trajet.
+      \item \textbf{Reconstruction}~: \label{item:reconstruction} Une fois $pArr$ le
+          meilleur arrêt d'arrivée trouvé, nous reconstruisons, à partir de
+          $pArr$, le trajet final (chaque mouvement composant celui-ci) partant
+          de $pDep$ en $tDep$ et arrivant en $pArr$ le plus rapidement. Il
+          s'agit d'un parcours en post-ordre car nous le reconstruisons en
+          partant du point d'arrivée. Pour ce faire, nous utilisons donc une
+          stack appelée \texttt{finalPath}. Chaque `BestKnownEntry` (le
+          mouvement et son temps d'arrivée) est empilée sur \texttt{finalPath}.
+          Une autre fonction dépile ensuite la stack tout en affichant les
+          différents segments du trajet.
 
 	      Comme pour les arrêts d'arrivée, plusieurs arrêts de départ
 	      pourraient avoir un nom correspondant à celui entré par
@@ -531,7 +531,10 @@ cruciales pour comprendre l'algorithme \texttt{CSA de base (arrivée la plus
 		      \caption{Reconstruction du chemin optimal à partir de \texttt{bestKnown}}
 	      \end{algorithm}
 
-	      %TODO: parler de l'éventuelle dernière étape: print le trajet en dépilant
+    \item \textbf{Affichage de la solution}~: Il suffit de dépiler la pile
+        construite à l'étape de
+        \hyperref[item:reconstruction]{\textit{reconstruction}} et affichée
+        chacune des étapes dans l'ordre, jusqu'à ce que cette pile soit vide.
 
 \end{enumerate}
 
